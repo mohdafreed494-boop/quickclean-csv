@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean CSV - Free Online CSV Duplicate Remover & Data Cleaner</title>
-  <meta name="description" content="Clean your CSV files instantly. Remove duplicates, trim whitespace, and clean data directly in your browser. 100% private, no data uploaded to any server.">
-  <meta name="keywords" content="csv cleaner, remove duplicate rows, free csv cleaner, clean excel data, data cleaning tool">
+  <title>QuickClean CSV & Excel Converter - Free & Private Online Tool</title>
+  <meta name="description" content="Clean CSV duplicates and convert Excel files to CSV completely in your browser. 100% private, no server upload.">
+  <meta name="keywords" content="excel to csv converter, clean csv, remove duplicates online, xlsx to csv, privacy data tools">
+  <!-- Free SheetJS library for reading Excel files entirely inside browser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -13,7 +15,7 @@
       background-color: #f8fafc;
       color: #1e293b;
       margin: 0;
-      padding: 40px 20px;
+      padding: 30px 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -36,18 +38,40 @@
     p.subtitle {
       color: #64748b;
       font-size: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       text-align: center;
     }
     .badge {
       display: inline-block;
       background: #e0f2fe;
       color: #0369a1;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
       margin-bottom: 12px;
+    }
+    .tab-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      font-weight: 600;
+      font-size: 15px;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab-btn.active {
+      color: #0284c7;
+      border-bottom-color: #0284c7;
     }
     .upload-zone {
       border: 2px dashed #cbd5e1;
@@ -86,7 +110,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 15px;
       font-size: 13px;
     }
     th, td {
@@ -95,57 +119,86 @@
       text-align: left;
     }
     th { background: #f8fafc; font-weight: 600; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     .info-section {
-      margin-top: 40px;
+      margin-top: 35px;
       border-top: 1px solid #e2e8f0;
-      padding-top: 24px;
+      padding-top: 20px;
     }
-    .info-section h3 {
-      font-size: 16px;
-      color: #334155;
-    }
-    .info-section p {
-      font-size: 13px;
-      color: #64748b;
-      line-height: 1.6;
-    }
+    .info-section h3 { font-size: 15px; color: #334155; }
+    .info-section p { font-size: 13px; color: #64748b; line-height: 1.6; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <div style="text-align: center;">
-      <span class="badge">100% Private & Free</span>
+      <span class="badge">100% Client-Side & Confidential</span>
     </div>
-    <h1>QuickClean CSV</h1>
-    <p class="subtitle">Remove duplicate rows and clean messy data instantly inside your browser. No files are stored or uploaded to any server.</p>
+    <h1>QuickClean Suite</h1>
+    <p class="subtitle">Fast data tools for daily office tasks. No data ever leaves your device.</p>
 
-    <div class="upload-zone">
-      <input type="file" id="csvFileInput" accept=".csv">
-      <small style="color:#64748b;">Select any CSV file from your computer or phone</small>
+    <!-- Navigation Tabs -->
+    <div class="tab-container">
+      <button class="tab-btn active" onclick="switchTab('cleaner')">Clean CSV Duplicates</button>
+      <button class="tab-btn" onclick="switchTab('converter')">Excel (.xlsx) to CSV</button>
     </div>
 
-    <button class="btn" onclick="processCSV()">Clean & Download File</button>
+    <!-- Tool 1: CSV Cleaner -->
+    <div id="cleanerTab" class="tab-content active">
+      <div class="upload-zone">
+        <input type="file" id="csvFileInput" accept=".csv">
+        <small style="color:#64748b;">Select a CSV file to trim spaces & drop duplicate records</small>
+      </div>
+      <button class="btn" onclick="processCSV()">Clean & Download CSV</button>
+      <div id="csvStats" class="stats"></div>
+      <div id="csvPreviewArea" style="display:none; margin-top:20px;">
+        <h4 style="font-size:13px; margin-bottom:8px;">Preview (First 5 Rows):</h4>
+        <table id="csvPreviewTable"></table>
+      </div>
+    </div>
 
-    <div id="stats" class="stats"></div>
-
-    <div id="previewArea" style="display:none; margin-top:20px;">
-      <h3 style="font-size:14px; margin-bottom:8px;">Preview (First 5 Cleaned Rows):</h3>
-      <table id="previewTable"></table>
+    <!-- Tool 2: Excel to CSV Converter -->
+    <div id="converterTab" class="tab-content">
+      <div class="upload-zone">
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls">
+        <small style="color:#64748b;">Select any Excel spreadsheet (.xlsx or .xls)</small>
+      </div>
+      <button class="btn" onclick="processExcel()">Convert & Download CSV</button>
+      <div id="excelStats" class="stats"></div>
+      <div id="excelPreviewArea" style="display:none; margin-top:20px;">
+        <h4 style="font-size:13px; margin-bottom:8px;">Converted Preview (First 5 Rows):</h4>
+        <table id="excelPreviewTable"></table>
+      </div>
     </div>
 
     <div class="info-section">
-      <h3>Why use QuickClean CSV?</h3>
-      <p>Traditional data cleaning requires expensive subscriptions or complex formulas. QuickClean runs entirely client-side using JavaScript, ensuring your confidential client and inventory data never leaves your device.</p>
+      <h3>Confidentiality First</h3>
+      <p>Both CSV cleaning and Excel conversion execute entirely within your browser memory. Ideal for inventory lists, payroll exports, and customer spreadsheets without risk of third-party exposure.</p>
     </div>
   </div>
 
   <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      if (tab === 'cleaner') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('cleanerTab').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('converterTab').classList.add('active');
+      }
+    }
+
+    // 1. Process CSV
     function processCSV() {
       const input = document.getElementById('csvFileInput');
-      const stats = document.getElementById('stats');
-      const previewArea = document.getElementById('previewArea');
-      const previewTable = document.getElementById('previewTable');
+      const stats = document.getElementById('csvStats');
+      const previewArea = document.getElementById('csvPreviewArea');
+      const previewTable = document.getElementById('csvPreviewTable');
 
       if (!input.files.length) {
         alert("Please select a CSV file first!");
@@ -157,9 +210,7 @@
 
       reader.onload = function(e) {
         const text = e.target.result;
-        const lines = text.split(/\r?\n/)
-                          .map(l => l.trim())
-                          .filter(l => l.length > 0);
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
 
         if (lines.length === 0) {
           alert("Selected file is empty!");
@@ -169,22 +220,16 @@
         const header = lines[0];
         const rows = lines.slice(1);
         const originalCount = rows.length;
-
-        // Duplicate removal
         const uniqueRows = [...new Set(rows)];
         const duplicatesRemoved = originalCount - uniqueRows.length;
 
-        // Display results
         stats.style.display = 'block';
         stats.innerHTML = `<strong>Data Cleaned!</strong> Total records: ${originalCount} | Duplicates removed: ${duplicatesRemoved} | Final records: ${uniqueRows.length}`;
 
-        // Table preview
         previewTable.innerHTML = '';
-        const previewRows = [header, ...uniqueRows.slice(0, 5)];
-        previewRows.forEach((rowStr, index) => {
+        [header, ...uniqueRows.slice(0, 5)].forEach((rowStr, index) => {
           const tr = document.createElement('tr');
-          const cols = rowStr.split(',');
-          cols.forEach(col => {
+          rowStr.split(',').forEach(col => {
             const cell = document.createElement(index === 0 ? 'th' : 'td');
             cell.textContent = col;
             tr.appendChild(cell);
@@ -193,17 +238,71 @@
         });
         previewArea.style.display = 'block';
 
-        // Auto download clean version
         const cleanedCSV = [header, ...uniqueRows].join('\n');
-        const blob = new Blob([cleanedCSV], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cleaned_${file.name}`;
-        a.click();
+        downloadFile(cleanedCSV, `cleaned_${file.name}`, 'text/csv;charset=utf-8;');
       };
 
       reader.readAsText(file);
+    }
+
+    // 2. Process Excel to CSV
+    function processExcel() {
+      const input = document.getElementById('excelFileInput');
+      const stats = document.getElementById('excelStats');
+      const previewArea = document.getElementById('excelPreviewArea');
+      const previewTable = document.getElementById('excelPreviewTable');
+
+      if (!input.files.length) {
+        alert("Please select an Excel (.xlsx) file first!");
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        const csvData = XLSX.utils.sheet_to_csv(worksheet);
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        if (rows.length === 0) {
+          alert("The Excel sheet is empty!");
+          return;
+        }
+
+        stats.style.display = 'block';
+        stats.innerHTML = `<strong>Converted Successfully!</strong> Sheet: "<em>${firstSheetName}</em>" | Total Rows: ${rows.length}`;
+
+        previewTable.innerHTML = '';
+        rows.slice(0, 6).forEach((row, index) => {
+          const tr = document.createElement('tr');
+          row.forEach(val => {
+            const cell = document.createElement(index === 0 ? 'th' : 'td');
+            cell.textContent = val !== undefined ? val : '';
+            tr.appendChild(cell);
+          });
+          previewTable.appendChild(tr);
+        });
+        previewArea.style.display = 'block';
+
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
+        downloadFile(csvData, `${baseName}.csv`, 'text/csv;charset=utf-8;');
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
     }
   </script>
 
