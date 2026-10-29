@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickClean CSV - Free Duplicate Remover & Cleaner</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background: #ffffff;
+      max-width: 650px;
+      width: 100%;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+      color: #0f172a;
+    }
+    p.subtitle {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .upload-zone {
+      border: 2px dashed #cbd5e1;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px;
+      background: #f1f5f9;
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      display: block;
+      margin: 0 auto 10px auto;
+    }
+    .btn {
+      background-color: #2563eb;
+      color: white;
+      font-weight: 600;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 15px;
+    }
+    .btn:hover { background-color: #1d4ed8; }
+    .stats {
+      margin-top: 20px;
+      padding: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      border-radius: 6px;
+      display: none;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th { background: #f8fafc; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>QuickClean CSV</h1>
+    <p class="subtitle">100% Private, Client-Side Tool: Your data never leaves your browser.</p>
+
+    <div class="upload-zone">
+      <input type="file" id="csvFileInput" accept=".csv">
+      <small style="color:#64748b;">Select any CSV file to clean</small>
+    </div>
+
+    <button class="btn" onclick="processCSV()">Clean & Download File</button>
+
+    <div id="stats" class="stats"></div>
+
+    <div id="previewArea" style="display:none; margin-top:20px;">
+      <h3 style="font-size:14px; margin-bottom:8px;">Preview (First 5 Rows):</h3>
+      <table id="previewTable"></table>
+    </div>
+  </div>
+
+  <script>
+    function processCSV() {
+      const input = document.getElementById('csvFileInput');
+      const stats = document.getElementById('stats');
+      const previewArea = document.getElementById('previewArea');
+      const previewTable = document.getElementById('previewTable');
+
+      if (!input.files.length) {
+        alert("Please select a CSV file first!");
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/)
+                          .map(l => l.trim())
+                          .filter(l => l.length > 0);
+
+        if (lines.length === 0) {
+          alert("File is empty!");
+          return;
+        }
+
+        const header = lines[0];
+        const rows = lines.slice(1);
+        const originalCount = rows.length;
+
+        // Duplicate removal logic
+        const uniqueRows = [...new Set(rows)];
+        const duplicatesRemoved = originalCount - uniqueRows.length;
+
+        // Show stats
+        stats.style.display = 'block';
+        stats.innerHTML = `<strong>Success!</strong> Original rows: ${originalCount} | Duplicates removed: ${duplicatesRemoved} | Final rows: ${uniqueRows.length}`;
+
+        // Preview table (first 5 unique rows)
+        previewTable.innerHTML = '';
+        const previewRows = [header, ...uniqueRows.slice(0, 5)];
+        previewRows.forEach((rowStr, index) => {
+          const tr = document.createElement('tr');
+          const cols = rowStr.split(',');
+          cols.forEach(col => {
+            const cell = document.createElement(index === 0 ? 'th' : 'td');
+            cell.textContent = col;
+            tr.appendChild(cell);
+          });
+          previewTable.appendChild(tr);
+        });
+        previewArea.style.display = 'block';
+
+        // Trigger Download
+        const cleanedCSV = [header, ...uniqueRows].join('\n');
+        const blob = new Blob([cleanedCSV], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cleaned_${file.name}`;
+        a.click();
+      };
+
+      reader.readAsText(file);
+    }
+  </script>
+
+</body>
+</html>
