@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean CSV & Excel Converter - Free & Private Online Tool</title>
-  <meta name="description" content="Clean CSV duplicates and convert Excel files to CSV completely in your browser. 100% private, no server upload.">
-  <meta name="keywords" content="excel to csv converter, clean csv, remove duplicates online, xlsx to csv, privacy data tools">
-  <!-- Free SheetJS library for reading Excel files entirely inside browser -->
+  <title>QuickClean Suite - Data Cleaner, Converter & Barcode Generator</title>
+  <meta name="description" content="All-in-one private browser data utility: Clean CSV duplicates, convert spreadsheets to JSON/CSV, and generate printable barcode labels. 100% Client-Side.">
+  
+  <!-- SheetJS for Excel & JsBarcode for Barcodes -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -22,192 +24,107 @@
     }
     .container {
       background: #ffffff;
-      max-width: 700px;
+      max-width: 780px;
       width: 100%;
       padding: 32px;
       border-radius: 12px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       border: 1px solid #e2e8f0;
     }
-    h1 {
-      font-size: 26px;
-      margin-top: 0;
-      color: #0f172a;
-      text-align: center;
-    }
-    p.subtitle {
-      color: #64748b;
-      font-size: 14px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .badge {
-      display: inline-block;
-      background: #e0f2fe;
-      color: #0369a1;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-    .tab-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 12px;
-      background: none;
-      border: none;
-      font-weight: 600;
-      font-size: 15px;
-      color: #64748b;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-    }
-    .tab-btn.active {
-      color: #0284c7;
-      border-bottom-color: #0284c7;
-    }
-    .upload-zone {
-      border: 2px dashed #cbd5e1;
-      padding: 30px;
-      text-align: center;
-      border-radius: 8px;
-      background: #f1f5f9;
-      margin-bottom: 20px;
-    }
-    input[type="file"] {
-      display: block;
-      margin: 0 auto 10px auto;
-    }
-    .btn {
-      background-color: #0284c7;
-      color: white;
-      font-weight: 600;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 16px;
-    }
+    h1 { font-size: 26px; margin: 0 0 8px 0; color: #0f172a; text-align: center; }
+    p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; text-align: center; }
+    .badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    
+    /* Tabs */
+    .tab-container { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+    .tab-btn { flex: 1; padding: 12px 6px; background: none; border: none; font-weight: 600; font-size: 14px; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn.active { color: #0284c7; border-bottom-color: #0284c7; }
+    
+    .upload-zone { border: 2px dashed #cbd5e1; padding: 25px; text-align: center; border-radius: 8px; background: #f1f5f9; margin-bottom: 16px; }
+    input[type="file"], textarea { display: block; margin: 0 auto 10px auto; }
+    textarea { width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 13px; }
+    
+    .btn { background-color: #0284c7; color: white; font-weight: 600; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 15px; }
     .btn:hover { background-color: #0369a1; }
-    .stats {
-      margin-top: 20px;
-      padding: 14px;
-      background: #ecfdf5;
-      color: #065f46;
-      border-radius: 6px;
-      display: none;
-      font-size: 14px;
-      border: 1px solid #a7f3d0;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 13px;
-    }
-    th, td {
-      border: 1px solid #e2e8f0;
-      padding: 8px 12px;
-      text-align: left;
-    }
+    .btn-secondary { background-color: #475569; margin-top: 10px; }
+    .btn-secondary:hover { background-color: #334155; }
+    
+    .stats { margin-top: 16px; padding: 12px; background: #ecfdf5; color: #065f46; border-radius: 6px; display: none; font-size: 14px; border: 1px solid #a7f3d0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
     th { background: #f8fafc; font-weight: 600; }
+    
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .info-section {
-      margin-top: 35px;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 20px;
-    }
-    .info-section h3 { font-size: 15px; color: #334155; }
-    .info-section p { font-size: 13px; color: #64748b; line-height: 1.6; }
     
-    /* Buy Me a Coffee Support Box */
-    .support-box {
-      margin-top: 30px;
-      text-align: center;
-      padding: 16px;
-      background: #fffbeb;
-      border: 1px solid #fef3c7;
-      border-radius: 8px;
-    }
-    .coffee-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background-color: #FFDD00;
-      color: #000000;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      margin-top: 10px;
-    }
-    .coffee-btn:hover {
-      background-color: #facc15;
-    }
+    /* Barcode Grid */
+    #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+    .barcode-card { border: 1px dashed #cbd5e1; padding: 10px; text-align: center; background: #fff; border-radius: 6px; }
+    .barcode-card svg { max-width: 100%; height: 60px; }
+    
+    /* Coffee Button */
+    .support-box { margin-top: 30px; text-align: center; padding: 14px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; }
+    .coffee-btn { display: inline-flex; align-items: center; gap: 8px; background-color: #FFDD00; color: #000; font-weight: 700; font-size: 13px; padding: 8px 18px; border-radius: 6px; text-decoration: none; margin-top: 6px; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <div style="text-align: center;">
-      <span class="badge">100% Client-Side & Confidential</span>
+      <span class="badge">100% Client-Side Data Utility</span>
     </div>
     <h1>QuickClean Suite</h1>
-    <p class="subtitle">Fast data tools for daily office tasks. No data ever leaves your device.</p>
+    <p class="subtitle">Clean, convert formats, and generate printable labels instantly in your browser.</p>
 
-    <!-- Navigation Tabs -->
+    <!-- 3 Tabs Navigation -->
     <div class="tab-container">
-      <button class="tab-btn active" onclick="switchTab('cleaner')">Clean CSV Duplicates</button>
-      <button class="tab-btn" onclick="switchTab('converter')">Excel (.xlsx) to CSV</button>
+      <button class="tab-btn active" onclick="switchTab('cleaner')">1. Clean Duplicates</button>
+      <button class="tab-btn" onclick="switchTab('converter')">2. Format Converter (JSON)</button>
+      <button class="tab-btn" onclick="switchTab('barcode')">3. Barcode Generator</button>
     </div>
 
-    <!-- Tool 1: CSV Cleaner -->
+    <!-- Feature 1: CSV Cleaner -->
     <div id="cleanerTab" class="tab-content active">
       <div class="upload-zone">
         <input type="file" id="csvFileInput" accept=".csv">
-        <small style="color:#64748b;">Select a CSV file to trim spaces & drop duplicate records</small>
+        <small style="color:#64748b;">Drop CSV to trim extra spaces & delete duplicate rows</small>
       </div>
       <button class="btn" onclick="processCSV()">Clean & Download CSV</button>
       <div id="csvStats" class="stats"></div>
-      <div id="csvPreviewArea" style="display:none; margin-top:20px;">
-        <h4 style="font-size:13px; margin-bottom:8px;">Preview (First 5 Rows):</h4>
+      <div id="csvPreviewArea" style="display:none; margin-top:15px;">
+        <h4 style="font-size:13px; margin-bottom:6px;">Cleaned Preview:</h4>
         <table id="csvPreviewTable"></table>
       </div>
     </div>
 
-    <!-- Tool 2: Excel to CSV Converter -->
+    <!-- Feature 2: Format Converter (CSV/Excel to JSON) -->
     <div id="converterTab" class="tab-content">
       <div class="upload-zone">
-        <input type="file" id="excelFileInput" accept=".xlsx, .xls">
-        <small style="color:#64748b;">Select any Excel spreadsheet (.xlsx or .xls)</small>
+        <input type="file" id="convertFileInput" accept=".csv, .xlsx, .xls">
+        <small style="color:#64748b;">Upload Excel or CSV file to convert into JSON format</small>
       </div>
-      <button class="btn" onclick="processExcel()">Convert & Download CSV</button>
-      <div id="excelStats" class="stats"></div>
-      <div id="excelPreviewArea" style="display:none; margin-top:20px;">
-        <h4 style="font-size:13px; margin-bottom:8px;">Converted Preview (First 5 Rows):</h4>
-        <table id="excelPreviewTable"></table>
+      <button class="btn" onclick="processConversion()">Convert to JSON & Download</button>
+      <div id="convertStats" class="stats"></div>
+      <div id="convertPreviewArea" style="display:none; margin-top:15px;">
+        <h4 style="font-size:13px; margin-bottom:6px;">JSON Output Preview:</h4>
+        <textarea id="jsonPreviewBox" readonly></textarea>
       </div>
     </div>
 
-    <div class="info-section">
-      <h3>Confidentiality First</h3>
-      <p>Both CSV cleaning and Excel conversion execute entirely within your browser memory. Ideal for inventory lists, payroll exports, and customer spreadsheets without risk of third-party exposure.</p>
+    <!-- Feature 3: Barcode / Label Generator -->
+    <div id="barcodeTab" class="tab-content">
+      <div class="upload-zone">
+        <p style="margin:0 0 8px 0; font-size:13px; color:#475569; font-weight:600;">Type or paste Item Codes / Barcode Numbers (one per line):</p>
+        <textarea id="barcodeInput" placeholder="ITEM-001&#10;ITEM-002&#10;ITEM-003&#10;Danube-SKU-99"></textarea>
+      </div>
+      <button class="btn" onclick="generateBarcodes()">Generate Barcode Sheet</button>
+      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none;">🖨️ Print Labels / Save PDF</button>
+      <div id="barcodePrintArea"></div>
     </div>
 
-    <!-- Buy Me a Coffee Integration -->
+    <!-- Donation Support Box -->
     <div class="support-box">
-      <p style="margin: 0; font-size: 14px; color: #78350f;">Find this free tool helpful?</p>
+      <p style="margin: 0; font-size: 13px; color: #78350f;">Find these free utilities useful?</p>
       <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-btn">
         ☕ Buy me a coffee
       </a>
@@ -222,50 +139,43 @@
       if (tab === 'cleaner') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
         document.getElementById('cleanerTab').classList.add('active');
-      } else {
+      } else if (tab === 'converter') {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
         document.getElementById('converterTab').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('barcodeTab').classList.add('active');
       }
     }
 
-    // 1. Process CSV
+    // 1. Cleaner
     function processCSV() {
       const input = document.getElementById('csvFileInput');
       const stats = document.getElementById('csvStats');
       const previewArea = document.getElementById('csvPreviewArea');
       const previewTable = document.getElementById('csvPreviewTable');
 
-      if (!input.files.length) {
-        alert("Please select a CSV file first!");
-        return;
-      }
-
+      if (!input.files.length) { alert("Please select a CSV file!"); return; }
       const file = input.files[0];
       const reader = new FileReader();
 
       reader.onload = function(e) {
-        const text = e.target.result;
-        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-
-        if (lines.length === 0) {
-          alert("Selected file is empty!");
-          return;
-        }
+        const lines = e.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) { alert("File is empty!"); return; }
 
         const header = lines[0];
         const rows = lines.slice(1);
-        const originalCount = rows.length;
         const uniqueRows = [...new Set(rows)];
-        const duplicatesRemoved = originalCount - uniqueRows.length;
+        const duplicatesRemoved = rows.length - uniqueRows.length;
 
         stats.style.display = 'block';
-        stats.innerHTML = `<strong>Data Cleaned!</strong> Total records: ${originalCount} | Duplicates removed: ${duplicatesRemoved} | Final records: ${uniqueRows.length}`;
+        stats.innerHTML = `Original: ${rows.length} | Removed: ${duplicatesRemoved} | Final: ${uniqueRows.length}`;
 
         previewTable.innerHTML = '';
-        [header, ...uniqueRows.slice(0, 5)].forEach((rowStr, index) => {
+        [header, ...uniqueRows.slice(0, 5)].forEach((rowStr, i) => {
           const tr = document.createElement('tr');
           rowStr.split(',').forEach(col => {
-            const cell = document.createElement(index === 0 ? 'th' : 'td');
+            const cell = document.createElement(i === 0 ? 'th' : 'td');
             cell.textContent = col;
             tr.appendChild(cell);
           });
@@ -276,59 +186,77 @@
         const cleanedCSV = [header, ...uniqueRows].join('\n');
         downloadFile(cleanedCSV, `cleaned_${file.name}`, 'text/csv;charset=utf-8;');
       };
-
       reader.readAsText(file);
     }
 
-    // 2. Process Excel to CSV
-    function processExcel() {
-      const input = document.getElementById('excelFileInput');
-      const stats = document.getElementById('excelStats');
-      const previewArea = document.getElementById('excelPreviewArea');
-      const previewTable = document.getElementById('excelPreviewTable');
+    // 2. Format Converter (Excel/CSV to JSON)
+    function processConversion() {
+      const input = document.getElementById('convertFileInput');
+      const stats = document.getElementById('convertStats');
+      const previewArea = document.getElementById('convertPreviewArea');
+      const jsonBox = document.getElementById('jsonPreviewBox');
 
-      if (!input.files.length) {
-        alert("Please select an Excel (.xlsx) file first!");
-        return;
-      }
-
+      if (!input.files.length) { alert("Please select a file to convert!"); return; }
       const file = input.files[0];
       const reader = new FileReader();
 
       reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-
-        const csvData = XLSX.utils.sheet_to_csv(worksheet);
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-        if (rows.length === 0) {
-          alert("The Excel sheet is empty!");
-          return;
+        let jsonResult = [];
+        if (file.name.endsWith('.csv')) {
+          const lines = e.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+          const headers = lines[0].split(',');
+          jsonResult = lines.slice(1).map(row => {
+            const values = row.split(',');
+            let obj = {};
+            headers.forEach((h, i) => obj[h] = values[i] || '');
+            return obj;
+          });
+        } else {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          jsonResult = XLSX.utils.sheet_to_json(sheet);
         }
 
+        const jsonString = JSON.stringify(jsonResult, null, 2);
         stats.style.display = 'block';
-        stats.innerHTML = `<strong>Converted Successfully!</strong> Sheet: "<em>${firstSheetName}</em>" | Total Rows: ${rows.length}`;
-
-        previewTable.innerHTML = '';
-        rows.slice(0, 6).forEach((row, index) => {
-          const tr = document.createElement('tr');
-          row.forEach(val => {
-            const cell = document.createElement(index === 0 ? 'th' : 'td');
-            cell.textContent = val !== undefined ? val : '';
-            tr.appendChild(cell);
-          });
-          previewTable.appendChild(tr);
-        });
+        stats.innerHTML = `Successfully converted ${jsonResult.length} records into JSON.`;
+        jsonBox.value = jsonString.slice(0, 500) + "\n... (remaining data)";
         previewArea.style.display = 'block';
 
         const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
-        downloadFile(csvData, `${baseName}.csv`, 'text/csv;charset=utf-8;');
+        downloadFile(jsonString, `${baseName}.json`, 'application/json');
       };
 
-      reader.readAsArrayBuffer(file);
+      if (file.name.endsWith('.csv')) { reader.readAsText(file); }
+      else { reader.readAsArrayBuffer(file); }
+    }
+
+    // 3. Barcode Generator
+    function generateBarcodes() {
+      const input = document.getElementById('barcodeInput').value.trim();
+      const container = document.getElementById('barcodePrintArea');
+      const printBtn = document.getElementById('printBtn');
+
+      if (!input) { alert("Please enter at least one item code!"); return; }
+      const codes = input.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+
+      container.innerHTML = '';
+      codes.forEach((code, index) => {
+        const card = document.createElement('div');
+        card.className = 'barcode-card';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.id = `barcode-${index}`;
+        card.appendChild(svg);
+        container.appendChild(card);
+
+        try {
+          JsBarcode(svg, code, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+        } catch(err) {
+          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${code}</span>`;
+        }
+      });
+      printBtn.style.display = 'block';
     }
 
     function downloadFile(content, fileName, mimeType) {
