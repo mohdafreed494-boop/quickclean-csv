@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean CSV - Free Duplicate Remover & Cleaner</title>
+  <title>QuickClean CSV - Free Online CSV Duplicate Remover & Data Cleaner</title>
+  <meta name="description" content="Clean your CSV files instantly. Remove duplicates, trim whitespace, and clean data directly in your browser. 100% private, no data uploaded to any server.">
+  <meta name="keywords" content="csv cleaner, remove duplicate rows, free csv cleaner, clean excel data, data cleaning tool">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -18,7 +20,7 @@
     }
     .container {
       background: #ffffff;
-      max-width: 650px;
+      max-width: 700px;
       width: 100%;
       padding: 32px;
       border-radius: 12px;
@@ -26,14 +28,26 @@
       border: 1px solid #e2e8f0;
     }
     h1 {
-      font-size: 24px;
+      font-size: 26px;
       margin-top: 0;
       color: #0f172a;
+      text-align: center;
     }
     p.subtitle {
       color: #64748b;
       font-size: 14px;
       margin-bottom: 24px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
     }
     .upload-zone {
       border: 2px dashed #cbd5e1;
@@ -48,7 +62,7 @@
       margin: 0 auto 10px auto;
     }
     .btn {
-      background-color: #2563eb;
+      background-color: #0284c7;
       color: white;
       font-weight: 600;
       padding: 12px 24px;
@@ -56,17 +70,18 @@
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      font-size: 15px;
+      font-size: 16px;
     }
-    .btn:hover { background-color: #1d4ed8; }
+    .btn:hover { background-color: #0369a1; }
     .stats {
       margin-top: 20px;
-      padding: 12px;
+      padding: 14px;
       background: #ecfdf5;
       color: #065f46;
       border-radius: 6px;
       display: none;
       font-size: 14px;
+      border: 1px solid #a7f3d0;
     }
     table {
       width: 100%;
@@ -80,17 +95,34 @@
       text-align: left;
     }
     th { background: #f8fafc; font-weight: 600; }
+    .info-section {
+      margin-top: 40px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 24px;
+    }
+    .info-section h3 {
+      font-size: 16px;
+      color: #334155;
+    }
+    .info-section p {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
+    <div style="text-align: center;">
+      <span class="badge">100% Private & Free</span>
+    </div>
     <h1>QuickClean CSV</h1>
-    <p class="subtitle">100% Private, Client-Side Tool: Your data never leaves your browser.</p>
+    <p class="subtitle">Remove duplicate rows and clean messy data instantly inside your browser. No files are stored or uploaded to any server.</p>
 
     <div class="upload-zone">
       <input type="file" id="csvFileInput" accept=".csv">
-      <small style="color:#64748b;">Select any CSV file to clean</small>
+      <small style="color:#64748b;">Select any CSV file from your computer or phone</small>
     </div>
 
     <button class="btn" onclick="processCSV()">Clean & Download File</button>
@@ -98,8 +130,13 @@
     <div id="stats" class="stats"></div>
 
     <div id="previewArea" style="display:none; margin-top:20px;">
-      <h3 style="font-size:14px; margin-bottom:8px;">Preview (First 5 Rows):</h3>
+      <h3 style="font-size:14px; margin-bottom:8px;">Preview (First 5 Cleaned Rows):</h3>
       <table id="previewTable"></table>
+    </div>
+
+    <div class="info-section">
+      <h3>Why use QuickClean CSV?</h3>
+      <p>Traditional data cleaning requires expensive subscriptions or complex formulas. QuickClean runs entirely client-side using JavaScript, ensuring your confidential client and inventory data never leaves your device.</p>
     </div>
   </div>
 
@@ -125,7 +162,7 @@
                           .filter(l => l.length > 0);
 
         if (lines.length === 0) {
-          alert("File is empty!");
+          alert("Selected file is empty!");
           return;
         }
 
@@ -133,15 +170,15 @@
         const rows = lines.slice(1);
         const originalCount = rows.length;
 
-        // Duplicate removal logic
+        // Duplicate removal
         const uniqueRows = [...new Set(rows)];
         const duplicatesRemoved = originalCount - uniqueRows.length;
 
-        // Show stats
+        // Display results
         stats.style.display = 'block';
-        stats.innerHTML = `<strong>Success!</strong> Original rows: ${originalCount} | Duplicates removed: ${duplicatesRemoved} | Final rows: ${uniqueRows.length}`;
+        stats.innerHTML = `<strong>Data Cleaned!</strong> Total records: ${originalCount} | Duplicates removed: ${duplicatesRemoved} | Final records: ${uniqueRows.length}`;
 
-        // Preview table (first 5 unique rows)
+        // Table preview
         previewTable.innerHTML = '';
         const previewRows = [header, ...uniqueRows.slice(0, 5)];
         previewRows.forEach((rowStr, index) => {
@@ -156,7 +193,7 @@
         });
         previewArea.style.display = 'block';
 
-        // Trigger Download
+        // Auto download clean version
         const cleanedCSV = [header, ...uniqueRows].join('\n');
         const blob = new Blob([cleanedCSV], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
