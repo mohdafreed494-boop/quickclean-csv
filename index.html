@@ -3,234 +3,698 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean Business Data Toolkit</title>
-  <meta name="description" content="Clean, compare, and validate business data. Safe, private client-side toolkit without cloud uploads.">
+  <title>QuickClean - Business Data Toolkit</title>
+  <meta name="description" content="Clean, compare, manage and grow with QuickClean Business Data Toolkit. 100% in-browser, secure and private.">
   
+  <!-- Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: #111827;
-      --card-border: #1f2937;
+      --sidebar-bg: #0b1329;
+      --sidebar-hover: #162244;
+      --sidebar-active: #1e293b;
+      --sidebar-text: #94a3b8;
+      --sidebar-heading: #475569;
+      --header-bg: #0f172a;
+      --app-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
       --primary: #0284c7;
       --primary-hover: #0369a1;
-      --accent: #38bdf8;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --success: #34d399;
-      --danger: #f87171;
-      --warning: #fbbf24;
+      --teal: #0d9488;
+      --teal-light: #ccfbf1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--app-bg);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ================= SIDEBAR ================= */
+    aside.sidebar {
+      width: 270px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
+      flex-shrink: 0;
+      border-right: 1px solid #1e293b;
+      transition: transform 0.3s ease;
+      z-index: 1000;
     }
-
-    /* Top Navy Header */
-    header {
-      width: 100%;
-      background: #0f172a;
-      border-bottom: 1px solid var(--card-border);
-      padding: 12px 16px;
+    .sidebar-header {
+      padding: 20px 22px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      gap: 12px;
+      border-bottom: 1px solid #162244;
     }
-    .brand { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-    .brand span { color: var(--accent); }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0284c7, #0d9488);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .brand-title small {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #38bdf8;
+      letter-spacing: 0;
+    }
 
-    .nav-actions {
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 14px;
+    }
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--sidebar-heading);
+      padding: 12px 10px 6px 10px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      background-color: var(--sidebar-hover);
+      color: #ffffff;
+    }
+    .nav-item.active {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+    .nav-item small {
+      display: block;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 400;
+    }
+    .nav-item.active small {
+      color: #93c5fd;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid #162244;
+    }
+    .security-badge {
+      background: rgba(13, 148, 136, 0.12);
+      border: 1px solid rgba(13, 148, 136, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .security-badge span { font-size: 18px; }
+    .security-badge p {
+      font-size: 11.5px;
+      color: #99f6e4;
+      line-height: 1.3;
+    }
+    .security-badge strong { display: block; color: #ffffff; }
+
+    /* ================= MAIN CONTAINER ================= */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Header */
+    header.top-header {
+      height: 64px;
+      background: var(--header-bg);
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      max-width: 520px;
+    }
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .header-search {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #e2e8f0;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-search input {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+    }
+    .header-search input::placeholder {
+      color: #64748b;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .icon-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .icon-btn:hover { color: #ffffff; }
+    .user-profile {
       display: flex;
       align-items: center;
       gap: 10px;
-      position: relative;
+      padding-left: 8px;
     }
-
-    /* Tool Dropdown Button */
-    .menu-btn {
-      background: #1e293b;
-      color: #fff;
-      border: 1px solid var(--card-border);
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
     }
-    .menu-btn:hover { background: #334155; }
+    .user-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+    }
 
-    /* Dropdown Content */
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 42px;
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 8px;
-      width: 230px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-      z-index: 200;
-      overflow: hidden;
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
     }
-    .dropdown-menu.show { display: block; }
-    .dropdown-item {
-      padding: 12px 14px;
-      display: block;
-      color: #cbd5e1;
-      font-size: 13px;
-      text-decoration: none;
-      cursor: pointer;
-      border-bottom: 1px solid #1f2937;
-      transition: background 0.15s;
-    }
-    .dropdown-item:hover { background: #1e293b; color: var(--accent); }
-    .dropdown-item.active { background: #1e293b; color: var(--accent); font-weight: 700; }
 
-    /* Hero Section */
-    .hero {
-      width: 100%;
-      padding: 20px 16px 12px 16px;
-      text-align: center;
+    /* ================= HOME VIEW ================= */
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 36px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);
     }
-    .privacy-tag {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 4px 12px;
+      background: var(--teal-light);
+      color: var(--teal);
+      padding: 5px 12px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero-title span { color: var(--primary); }
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Visual Graphic Card */
+    .hero-preview-graphic {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+      text-align: center;
+    }
+    .graphic-mockup {
+      width: 100%;
+      height: 140px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .mockup-bar {
+      height: 24px;
+      background: #0284c7;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 6px;
+    }
+    .mockup-circle { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; opacity: 0.6; }
+    .mockup-rows {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .mockup-line {
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    /* Hero Value Props */
+    .hero-props {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .prop-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .prop-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #e0f2fe;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .prop-info strong {
+      display: block;
+      font-size: 13.5px;
+      color: var(--text-main);
+    }
+    .prop-info span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Section Title */
+    .section-head {
+      margin-bottom: 18px;
+    }
+    .section-head h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .section-head p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Tool Cards Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .tool-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .tool-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
+    }
+    .tool-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .tool-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #ffffff;
+    }
+    .t-blue { background: #0284c7; }
+    .t-purple { background: #8b5cf6; }
+    .t-orange { background: #f97316; }
+    .t-teal { background: #0d9488; }
+    .t-red { background: #ef4444; }
+    .t-emerald { background: #10b981; }
+    .t-indigo { background: #6366f1; }
+    .t-slate { background: #64748b; }
+
+    .tool-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
       margin-bottom: 8px;
     }
-    .hero h1 { font-size: 22px; margin: 0 0 6px 0; color: #fff; }
-    .hero p { color: var(--text-muted); font-size: 13px; margin: 0 auto; max-width: 580px; }
+    .tool-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .btn-open-tool {
+      background: #f8fafc;
+      color: var(--primary);
+      border: 1px solid #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+    .btn-open-tool:hover {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
 
-    /* Active Tool Banner */
-    .active-tool-banner {
-      width: 100%;
-      max-width: 900px;
-      padding: 0 14px;
-      margin-top: 14px;
+    /* Live Session Dashboard Stats (No fake counts) */
+    .dashboard-bottom-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .dash-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .dash-box-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .active-tool-title { font-size: 16px; font-weight: 700; color: var(--accent); }
-
-    /* Main Container */
-    .main-wrapper {
-      width: 100%;
-      max-width: 900px;
-      padding: 10px 14px 30px 14px;
-    }
-
-    .tool-pane { display: none; }
-    .tool-pane.active { display: block; }
-
-    /* Dark Cards */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      margin-bottom: 18px;
-    }
-
-    .dropzone {
-      border: 2px dashed #374151;
-      background: #161f30;
-      border-radius: 10px;
-      padding: 22px 14px;
-      text-align: center;
       margin-bottom: 16px;
     }
-    .dropzone:hover { border-color: var(--accent); }
-    input[type="file"] { font-size: 13px; max-width: 100%; color: var(--text-muted); }
+    .dash-box-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .dash-box-header a {
+      font-size: 12px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .live-stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .live-stat-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .stat-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .stat-val strong {
+      display: block;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .stat-val span {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* Session Activity Log Table */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 12.5px;
+    }
+    .activity-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .activity-status {
+      background: var(--success-bg);
+      color: var(--success);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ================= INDIVIDUAL TOOL INTERFACES ================= */
+    .tool-interface-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);
+    }
+    .tool-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tool-page-title h2 { font-size: 20px; font-weight: 700; color: var(--text-main); }
+    .tool-page-title p { font-size: 13px; color: var(--text-muted); }
+
+    .dropzone {
+      border: 2px dashed #94a3b8;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 18px;
+      transition: border-color 0.15s;
+    }
+    .dropzone:hover { border-color: var(--primary); }
+    input[type="file"] { font-size: 13px; color: var(--text-muted); }
 
     .meta-box {
       display: none;
-      background: #1e293b;
-      padding: 10px 14px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-      font-size: 12px;
-      color: #cbd5e1;
-      border-left: 4px solid var(--accent);
-      word-break: break-word;
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--text-main);
+      border-left: 4px solid var(--primary);
     }
 
-    /* Diagnostics Grid */
+    /* Diagnostics Cards Grid */
     .health-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
-      gap: 8px;
-      margin: 12px 0;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
     }
     .metric-card {
-      background: #0f172a;
-      padding: 10px 6px;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
+      background: #f8fafc;
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
       text-align: center;
     }
-    .metric-card strong { display: block; font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-    .metric-card span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
-    .c-blue strong { color: var(--accent); }
+    .metric-card strong {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+    .metric-card span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+    .c-blue strong { color: var(--primary); }
     .c-red strong { color: var(--danger); }
     .c-amber strong { color: var(--warning); }
-    .c-purple strong { color: #a78bfa; }
+    .c-purple strong { color: #8b5cf6; }
     .c-pink strong { color: #ec4899; }
 
     /* Controls */
     .controls-box {
-      background: #161f30;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 18px;
     }
-    .controls-box h4 { margin: 0 0 10px 0; font-size: 13px; color: #fff; }
+    .controls-box h4 { margin-bottom: 12px; font-size: 13.5px; color: var(--text-main); }
     .checkbox-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
+      gap: 16px;
       font-size: 13px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
-    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #cbd5e1; }
-    select, input[type="text"], textarea {
-      background: #0f172a;
-      color: #fff;
-      border: 1px solid #374151;
-      padding: 8px 10px;
-      border-radius: 6px;
+    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    select, textarea, input[type="text"], input[type="email"] {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid #cbd5e1;
+      padding: 9px 12px;
+      border-radius: 8px;
       font-size: 13px;
       width: 100%;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     /* Buttons */
@@ -238,396 +702,776 @@
       background: var(--primary);
       color: #ffffff;
       border: none;
-      padding: 12px 18px;
+      padding: 12px 20px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: background 0.15s;
     }
     .btn:hover { background: var(--primary-hover); }
-    .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-    @media (min-width: 600px) { .btn-row { flex-direction: row; } }
-    .btn-secondary { background: #334155; }
-    .btn-secondary:hover { background: #475569; }
-    .btn-reset { background: #1e293b; color: #cbd5e1; font-size: 12px; padding: 6px 12px; width: auto; border: 1px solid #374151; }
+    .btn-secondary { background: #475569; }
+    .btn-secondary:hover { background: #334155; }
+    .btn-reset { background: #e2e8f0; color: #334155; padding: 6px 14px; font-size: 12.5px; border-radius: 6px; }
+    .btn-reset:hover { background: #cbd5e1; }
+    .btn-row { display: flex; gap: 12px; margin-top: 16px; }
 
-    /* Tables (Strict Internal Scroll) */
+    /* Internal Table Scroll Containers */
     .table-container {
-      max-height: 250px;
-      overflow-x: auto;
-      overflow-y: auto;
-      border: 1px solid var(--card-border);
+      max-height: 280px;
+      overflow: auto;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      margin: 8px 0;
-      -webkit-overflow-scrolling: touch;
-      background: #0f172a;
+      margin: 12px 0;
+      background: #ffffff;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 460px; }
-    th, td { padding: 8px 10px; border: 1px solid var(--card-border); text-align: left; }
-    th { background: #161f30; color: var(--accent); position: sticky; top: 0; font-weight: 600; }
-    td { color: #cbd5e1; }
-    .dup-row { background: rgba(248, 113, 113, 0.1); }
-    .tag-row { background: #374151; padding: 2px 5px; border-radius: 4px; font-weight: 600; font-size: 10px; color: #cbd5e1; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 480px; }
+    th, td { padding: 9px 12px; border: 1px solid var(--border-color); text-align: left; }
+    th { background: #f1f5f9; color: var(--text-main); position: sticky; top: 0; font-weight: 600; }
+    .dup-row { background: var(--danger-bg); }
+    .tag-row { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
 
-    /* Badges */
-    .badge-added { background: rgba(52, 211, 153, 0.15); color: var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-removed { background: rgba(248, 113, 113, 0.15); color: var(--danger); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-changed { background: rgba(251, 191, 36, 0.15); color: var(--warning); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    /* Status Badges */
+    .badge-added { background: var(--success-bg); color: var(--success); padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    .badge-removed { background: var(--danger-bg); color: var(--danger); padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    .badge-changed { background: var(--warning-bg); color: var(--warning); padding: 3px 8px; border-radius: 4px; font-weight: 600; }
 
-    /* Barcode Cards */
-    #barcodeArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
-    .barcode-card { border: 1px solid #334155; padding: 8px; text-align: center; background: #ffffff; border-radius: 6px; }
-    .barcode-card svg { max-width: 100%; height: 42px; }
+    /* Barcode Layout */
+    #barcodeArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+    .barcode-card { border: 1px solid var(--border-color); padding: 10px; text-align: center; background: #ffffff; border-radius: 8px; }
+    .barcode-card svg { max-width: 100%; height: 46px; }
 
-    /* Modals & Popups */
+    /* Modal / Popups */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(3px);
-      z-index: 1000;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
       justify-content: center;
       align-items: center;
       padding: 16px;
     }
     .modal-overlay.active { display: flex; }
     .modal-card {
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 14px;
-      max-width: 420px;
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 440px;
       width: 100%;
-      padding: 22px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
       position: relative;
-      text-align: center;
     }
     .modal-close {
       position: absolute;
-      top: 12px;
-      right: 14px;
+      top: 14px;
+      right: 16px;
+      font-size: 22px;
       color: #94a3b8;
-      font-size: 20px;
-      cursor: pointer;
       border: none;
       background: none;
+      cursor: pointer;
     }
-
-    /* Pop-up Coffee Button */
-    .coffee-btn-popup {
-      display: inline-flex;
+    .coffee-popup-btn {
+      display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       background: #FFDD00;
       color: #000;
       font-weight: 700;
-      font-size: 14px;
-      padding: 12px 20px;
+      padding: 12px;
       border-radius: 8px;
       text-decoration: none;
-      margin-top: 14px;
-      width: 100%;
-      justify-content: center;
+      margin-top: 16px;
     }
 
-    /* Footer */
-    footer {
-      width: 100%;
-      border-top: 1px solid var(--card-border);
-      background: #0f172a;
-      padding: 20px 14px;
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: auto;
+    /* Mobile Drawer */
+    @media (max-width: 900px) {
+      aside.sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+      }
+      aside.sidebar.open {
+        transform: translateX(0);
+      }
+      .mobile-menu-btn { display: block; }
+      .hero-banner { grid-template-columns: 1fr; }
+      .dashboard-bottom-grid { grid-template-columns: 1fr; }
+      .content-area { padding: 16px; }
     }
-    footer a { color: #facc15; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="brand">
-      ⚡ QuickClean <span>Toolkit</span>
-    </div>
-    
-    <div class="nav-actions">
-      <!-- Feedback Nav Trigger -->
-      <button class="menu-btn" onclick="openFeedbackModal()">
-        💬 Feedback
-      </button>
-
-      <!-- Tools Dropdown Trigger -->
-      <button class="menu-btn" onclick="toggleToolsMenu()">
-        🛠️ Tools ▾
-      </button>
-
-      <!-- Dropdown Items -->
-      <div id="toolsDropdown" class="dropdown-menu">
-        <div class="dropdown-item active" onclick="selectTool('cleaner', '1. Data Cleaner & Health')">1. Data Cleaner & Health</div>
-        <div class="dropdown-item" onclick="selectTool('compare', '2. Smart File Compare')">2. Smart File Compare</div>
-        <div class="dropdown-item" onclick="selectTool('inventory', '3. Inventory Checker')">3. Inventory Checker</div>
-        <div class="dropdown-item" onclick="selectTool('barcode', '4. Barcode Labels')">4. Barcode Labels</div>
-        <div class="dropdown-item" onclick="selectTool('json', '5. JSON Tools')">5. JSON Tools</div>
+  <!-- ================= LEFT SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-title">
+        QuickClean
+        <small>Business Data Toolkit</small>
       </div>
     </div>
-  </header>
 
-  <!-- Hero Section -->
-  <div class="hero">
-    <div class="privacy-tag">🔒 100% In-Browser & Private (Zero Server Upload)</div>
-    <h1>Clean, Compare & Validate Your Business Data</h1>
-    <p>Private client-side data operations for spreadsheets, stock counts, and label printing.</p>
-  </div>
-
-  <!-- Active Tool Banner -->
-  <div class="active-tool-banner">
-    <div id="activeToolName" class="active-tool-title">1. Data Cleaner & Health</div>
-  </div>
-
-  <div class="main-wrapper">
-
-    <!-- ==================== TOOL 1: DATA CLEANER & HEALTH ==================== -->
-    <div id="cleanerPane" class="tool-pane active card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h3 style="margin:0; font-size:15px; color:#fff;">Clean Data & Audit Health</h3>
-        <button class="btn btn-reset" onclick="resetCleaner()">Reset / Start Over</button>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="navigate('home')">
+        <span class="nav-icon">🏠</span>
+        <div>Home</div>
       </div>
 
-      <div class="dropzone">
-        <input type="file" id="cleanerInput" accept=".csv, .xlsx, .xls">
-        <p style="margin: 6px 0 0 0; font-size: 12px; color: var(--text-muted);">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
-      </div>
+      <div class="nav-section-title">Data Tools</div>
 
-      <div id="cleanerMeta" class="meta-box"></div>
-
-      <!-- Advanced Health Report Scan -->
-      <div id="healthCard" style="display:none; margin-bottom:16px;">
-        <div class="health-grid">
-          <div class="metric-card c-blue"><strong id="mRows">0</strong><span>Total Rows</span></div>
-          <div class="metric-card c-red"><strong id="mDups">0</strong><span>Duplicates</span></div>
-          <div class="metric-card c-amber"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
-          <div class="metric-card c-purple"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
-          <div class="metric-card c-pink"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
-        </div>
-      </div>
-
-      <!-- Flagged Duplicates Review Table -->
-      <div id="dupSection" style="display:none; margin-bottom:14px;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--danger);">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
-        <div class="table-container">
-          <table id="dupTable"></table>
-        </div>
-      </div>
-
-      <!-- Source File Preview -->
-      <div id="previewSection" style="display:none; margin-bottom:14px;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--text-muted);">Source File Preview (First 5 Rows):</h4>
-        <div class="table-container">
-          <table id="previewTable"></table>
-        </div>
-      </div>
-
-      <!-- Options -->
-      <div class="controls-box">
-        <h4>Safe Cleaning Options</h4>
-        <div class="checkbox-row">
-          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
-          <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
-          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Title Case</label>
-        </div>
+      <div class="nav-item" onclick="navigate('cleaner')">
+        <span class="nav-icon">⚙️</span>
         <div>
-          <label style="font-size:12px; color:#cbd5e1;">Duplicate Match Rule (Default: Exact Whole Row):</label>
-          <select id="dupMode" onchange="runHealthAudit()">
-            <option value="entire">Exact Entire Row Match (Safe Default)</option>
-          </select>
+          CSV Cleaner
+          <small>Clean & organize your data</small>
         </div>
       </div>
 
-      <button class="btn" onclick="executeClean()">Preview & Clean Data</button>
+      <div class="nav-item" onclick="navigate('compare')">
+        <span class="nav-icon">📄</span>
+        <div>
+          File Compare
+          <small>Find differences between files</small>
+        </div>
+      </div>
 
-      <!-- Clean Result -->
-      <div id="cleanResult" style="display:none; margin-top:16px;">
-        <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success);"></div>
-        <h4 style="margin:10px 0 6px 0; font-size:13px;">Cleaned Output Preview:</h4>
-        <div class="table-container">
-          <table id="cleanedTable"></table>
+      <div class="nav-item" onclick="navigate('inventory')">
+        <span class="nav-icon">📦</span>
+        <div>
+          Inventory Reconciliation
+          <small>Match stock & detect issues</small>
         </div>
-        <div class="btn-row">
-          <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
-          <button class="btn btn-secondary" onclick="downloadAuditReport()">Download Health Report CSV</button>
+      </div>
+
+      <div class="nav-item" onclick="navigate('rules')">
+        <span class="nav-icon">🔄</span>
+        <div>
+          Data Cleaning Rules
+          <small>Custom cleaning options</small>
         </div>
+      </div>
+
+      <div class="nav-item" onclick="navigate('quality')">
+        <span class="nav-icon">🛡️</span>
+        <div>
+          Data Quality Score
+          <small>Check data health & quality</small>
+        </div>
+      </div>
+
+      <div class="nav-item" onclick="navigate('barcode')">
+        <span class="nav-icon">📊</span>
+        <div>
+          Barcode Generator
+          <small>Create barcodes & labels</small>
+        </div>
+      </div>
+
+      <div class="nav-item" onclick="navigate('reports')">
+        <span class="nav-icon">📑</span>
+        <div>
+          Reports Center
+          <small>Download & manage reports</small>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Other</div>
+
+      <div class="nav-item" onclick="navigate('history')">
+        <span class="nav-icon">⏱️</span>
+        <div>
+          Processing History
+          <small>Session activity logs</small>
+        </div>
+      </div>
+
+      <div class="nav-item" onclick="navigate('help')">
+        <span class="nav-icon">❓</span>
+        <div>
+          Help & Support
+          <small>FAQs, feedback & tips</small>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="security-badge">
+        <span>🔒</span>
+        <p>
+          <strong>Your Data is Safe</strong>
+          Files are processed locally and are never stored or uploaded.
+        </p>
       </div>
     </div>
+  </aside>
 
-    <!-- ==================== TOOL 2: SMART FILE COMPARE ==================== -->
-    <div id="comparePane" class="tool-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Smart File Compare</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Compare two CSV or Excel files by common key column (SKU, ID, Invoice) to identify Added, Removed, and Changed records.</p>
-      
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:14px;">
-        <div class="dropzone" style="margin-bottom:0;">
-          <strong style="font-size:12px; display:block; margin-bottom:4px;">File A (Old):</strong>
-          <input type="file" id="compFileA" accept=".csv, .xlsx, .xls">
-        </div>
-        <div class="dropzone" style="margin-bottom:0;">
-          <strong style="font-size:12px; display:block; margin-bottom:4px;">File B (New):</strong>
-          <input type="file" id="compFileB" accept=".csv, .xlsx, .xls">
+  <!-- ================= MAIN WORKSPACE ================= -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="header-search">
+          <span>🔍</span>
+          <input type="text" placeholder="Clean Data • Better Decisions • Higher Productivity" readonly>
         </div>
       </div>
 
-      <div id="compareKeyBox" style="display:none; margin-bottom:14px;" class="controls-box">
-        <label style="font-size:12px; font-weight:600;">Match by Unique Key Column:</label>
-        <select id="compareKeySelect"></select>
-      </div>
-
-      <button class="btn" onclick="executeFileCompare()">Compare Both Files</button>
-
-      <div id="compareResult" style="display:none; margin-top:16px;">
-        <div class="health-grid">
-          <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added</span></div>
-          <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed</span></div>
-          <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed</span></div>
-          <div class="metric-card"><strong id="cmpSame" style="color:var(--text-muted);">0</strong><span>Unchanged</span></div>
+      <div class="header-right">
+        <div class="icon-btn" onclick="openFeedbackModal()" title="Feedback">💬</div>
+        <div class="icon-btn" onclick="triggerSuccessCoffeePopup()" title="Support Developer">☕</div>
+        <div class="user-profile">
+          <div class="user-avatar">S</div>
+          <div class="user-name">Suhel</div>
         </div>
-
-        <h4 style="margin:10px 0 6px 0; font-size:13px;">Comparison Diff Preview:</h4>
-        <div class="table-container">
-          <table id="compareTable"></table>
-        </div>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadComparisonReport()">Download Full Comparison Report CSV</button>
       </div>
-    </div>
+    </header>
 
-    <!-- ==================== TOOL 3: INVENTORY CHECKER ==================== -->
-    <div id="inventoryPane" class="tool-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Inventory Stock Reconciliation</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Reconcile System Quantities vs Physical Count by SKU to detect shortages, excess items, and financial variance.</p>
-      
-      <div class="dropzone">
-        <input type="file" id="invFileInput" accept=".csv, .xlsx, .xls">
-        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload single sheet with SKU, Expected Qty, and Counted Qty</p>
-      </div>
+    <!-- Main Content Panels -->
+    <main class="content-area">
 
-      <div id="invColumnMap" style="display:none;" class="controls-box">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
+      <!-- ================= 1. HOME VIEW ================= -->
+      <section id="view-home" class="view-panel active">
+        <!-- Hero Section -->
+        <div class="hero-banner">
           <div>
-            <label style="font-size:12px;">SKU Column:</label>
-            <select id="invColSku"></select>
+            <div class="hero-badge">✨ Your All-in-One Business Data Toolkit</div>
+            <h1 class="hero-title">Clean, Compare, Manage and Grow with <span>QuickClean</span></h1>
+            <p class="hero-desc">Powerful tools to clean your data, find duplicates, compare files, manage inventory, and generate barcodes — all in one private place.</p>
+            <div class="hero-actions">
+              <button class="btn" onclick="navigate('cleaner')">Start Cleaning Now →</button>
+              <button class="btn btn-secondary" onclick="navigate('quality')">Audit Quality</button>
+            </div>
           </div>
-          <div>
-            <label style="font-size:12px;">System Qty Column:</label>
-            <select id="invColSystem"></select>
+
+          <div class="hero-preview-graphic">
+            <div class="graphic-mockup">
+              <div class="mockup-bar">
+                <div class="mockup-circle"></div>
+                <div class="mockup-circle"></div>
+                <div class="mockup-circle"></div>
+              </div>
+              <div class="mockup-rows">
+                <div class="mockup-line" style="width: 80%;"></div>
+                <div class="mockup-line" style="width: 95%;"></div>
+                <div class="mockup-line" style="width: 60%; background:#bae6fd;"></div>
+                <div class="mockup-line" style="width: 85%;"></div>
+                <div class="mockup-line" style="width: 70%;"></div>
+              </div>
+            </div>
+            <span style="font-size:12px; color:var(--text-muted); display:inline-block; margin-top:8px;">100% Client-Side Engine</span>
           </div>
-          <div>
-            <label style="font-size:12px;">Counted Qty Column:</label>
-            <select id="invColPhysical"></select>
-          </div>
-          <div>
-            <label style="font-size:12px;">Unit Cost (Optional):</label>
-            <select id="invColCost"><option value="">-- None --</option></select>
+
+          <div class="hero-props">
+            <div class="prop-item">
+              <div class="prop-icon">⚡</div>
+              <div class="prop-info">
+                <strong>Fast & Accurate</strong>
+                <span>Instant In-Memory Results</span>
+              </div>
+            </div>
+            <div class="prop-item">
+              <div class="prop-icon">✨</div>
+              <div class="prop-info">
+                <strong>Easy to Use</strong>
+                <span>Clean & Intuitive UI</span>
+              </div>
+            </div>
+            <div class="prop-item">
+              <div class="prop-icon">🔒</div>
+              <div class="prop-info">
+                <strong>Secure & Private</strong>
+                <span>Your Data Never Leaves Device</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button class="btn" onclick="executeInventoryCheck()">Run Inventory Audit</button>
-
-      <div id="invResult" style="display:none; margin-top:16px;">
-        <div class="health-grid">
-          <div class="metric-card"><strong id="invTotalSkus">0</strong><span>Total SKUs</span></div>
-          <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage</span></div>
-          <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess</span></div>
-          <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Matched</span></div>
+        <!-- Tool Cards Section -->
+        <div class="section-head">
+          <h2>Our Tools</h2>
+          <p>Choose a tool below to get started. Each tool is designed to make your daily data tasks faster.</p>
         </div>
 
-        <h4 style="margin:10px 0 6px 0; font-size:13px;">Stock Variance Discrepancy Preview:</h4>
-        <div class="table-container">
-          <table id="invTable"></table>
+        <div class="tools-grid">
+          <!-- Card 1 -->
+          <div class="tool-card">
+            <span class="tool-badge">Popular</span>
+            <div class="tool-card-icon t-blue">📄</div>
+            <h3>CSV Cleaner</h3>
+            <p>Remove duplicates, fix data issues, and clean your CSV/Excel files safely.</p>
+            <button class="btn-open-tool" onclick="navigate('cleaner')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-purple">🔄</div>
+            <h3>File Compare</h3>
+            <p>Compare two files and find additions, deletions, and changed values.</p>
+            <button class="btn-open-tool" onclick="navigate('compare')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-orange">📦</div>
+            <h3>Inventory Reconciliation</h3>
+            <p>Match system vs physical stock, find mismatches and financial variance.</p>
+            <button class="btn-open-tool" onclick="navigate('inventory')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-teal">⚙️</div>
+            <h3>Data Cleaning Rules</h3>
+            <p>Set custom rules for cleaning (duplicates, trim spaces, title case, empty rows).</p>
+            <button class="btn-open-tool" onclick="navigate('rules')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-indigo">🛡️</div>
+            <h3>Data Quality Score</h3>
+            <p>Get a live quality diagnostic report with detailed issue breakdown.</p>
+            <button class="btn-open-tool" onclick="navigate('quality')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-red">📊</div>
+            <h3>Barcode Generator</h3>
+            <p>Generate bulk Code128 barcodes and printable A4 label sheets.</p>
+            <button class="btn-open-tool" onclick="navigate('barcode')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-emerald">📑</div>
+            <h3>Reports Center</h3>
+            <p>Download cleaned data, audit reports, and discrepancy summaries.</p>
+            <button class="btn-open-tool" onclick="navigate('reports')">Open Tool <span>→</span></button>
+          </div>
+
+          <!-- Card 8 -->
+          <div class="tool-card">
+            <div class="tool-card-icon t-slate">⏱️</div>
+            <h3>Processing History</h3>
+            <p>View your real session file processing activity and logs.</p>
+            <button class="btn-open-tool" onclick="navigate('history')">Open Tool <span>→</span></button>
+          </div>
         </div>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Discrepancy CSV</button>
-      </div>
-    </div>
 
-    <!-- ==================== TOOL 4: BARCODE LABELS ==================== -->
-    <div id="barcodePane" class="tool-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Bulk Barcode & Printable Labels</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Generate Code128 barcodes from SKUs or numbers. Print a sheet or save to PDF directly in your browser.</p>
+        <!-- Real Session Stats & Activity (No Fake Data) -->
+        <div class="dashboard-bottom-grid">
+          <!-- Recent Session Activity -->
+          <div class="dash-box">
+            <div class="dash-box-header">
+              <h3>Recent Activity (This Session)</h3>
+              <a onclick="navigate('history')">View Log</a>
+            </div>
+            <div id="sessionActivityList" class="activity-list">
+              <div class="empty-state">No files processed in this session yet. Upload a file in CSV Cleaner to see live activity.</div>
+            </div>
+          </div>
 
-      <div class="dropzone">
-        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px; color:#cbd5e1;">Paste SKU Codes (one per line):</label>
-        <textarea id="barcodeText" style="height:90px; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
-      </div>
-      <button class="btn" onclick="generateBarcodeCards()">Generate Barcode Sheet</button>
-      <button class="btn btn-secondary" onclick="printBarcodesAndTriggerPopup()" id="barcodePrintBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save as PDF</button>
-      <div id="barcodeArea"></div>
-    </div>
+          <!-- Quick Real Session Stats -->
+          <div class="dash-box">
+            <div class="dash-box-header">
+              <h3>Session Stats</h3>
+              <a onclick="navigate('quality')">Details</a>
+            </div>
+            <div class="live-stats-row">
+              <div class="live-stat-card">
+                <div class="stat-ico" style="background:#e0f2fe; color:#0284c7;">📄</div>
+                <div class="stat-val">
+                  <strong id="statProcessedFiles">0</strong>
+                  <span>Files Processed</span>
+                </div>
+              </div>
+              <div class="live-stat-card">
+                <div class="stat-ico" style="background:#fee2e2; color:#dc2626;">✂️</div>
+                <div class="stat-val">
+                  <strong id="statDupsRemoved">0</strong>
+                  <span>Dups Removed</span>
+                </div>
+              </div>
+              <div class="live-stat-card">
+                <div class="stat-ico" style="background:#dcfce7; color:#16a34a;">🛡️</div>
+                <div class="stat-val">
+                  <strong id="statHealthQuality">100%</strong>
+                  <span>Avg Quality Score</span>
+                </div>
+              </div>
+              <div class="live-stat-card">
+                <div class="stat-ico" style="background:#fef3c7; color:#d97706;">⏱️</div>
+                <div class="stat-val">
+                  <strong id="statTimeSaved">0 min</strong>
+                  <span>Est. Time Saved</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <!-- ==================== TOOL 5: JSON TOOLS ==================== -->
-    <div id="jsonPane" class="tool-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">JSON Converter</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Convert CSV or Excel files into structured JSON format.</p>
-      
-      <div class="dropzone">
-        <input type="file" id="jsonFileInput" accept=".csv, .xlsx, .xls">
-        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file</p>
-      </div>
-      <button class="btn" onclick="convertFileToJson()">Convert to JSON & Download</button>
-      <div id="jsonMeta" class="meta-box" style="margin-top:12px;"></div>
-    </div>
+      <!-- ================= 2. CSV CLEANER VIEW ================= -->
+      <section id="view-cleaner" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>CSV & Excel Cleaner</h2>
+              <p>Safe in-browser cleaning with original file protection and preview verification.</p>
+            </div>
+            <button class="btn btn-reset" onclick="resetCleaner()">Reset / Start Over</button>
+          </div>
 
+          <div class="dropzone">
+            <input type="file" id="cleanerInput" accept=".csv, .xlsx, .xls">
+            <p style="margin-top:6px; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file (.csv, .xlsx, .xls)</p>
+          </div>
+
+          <div id="cleanerMeta" class="meta-box"></div>
+
+          <!-- Quick Diagnostics -->
+          <div id="cleanerHealthSnippet" style="display:none; margin-bottom:16px;">
+            <div class="health-grid">
+              <div class="metric-card c-blue"><strong id="mRows">0</strong><span>Total Rows</span></div>
+              <div class="metric-card c-red"><strong id="mDups">0</strong><span>Duplicates</span></div>
+              <div class="metric-card c-amber"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
+              <div class="metric-card c-purple"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
+              <div class="metric-card c-pink"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
+            </div>
+          </div>
+
+          <!-- Flagged Duplicates Review Table -->
+          <div id="dupSection" style="display:none; margin-bottom:16px;">
+            <h4 style="margin-bottom:6px; font-size:13px; color:var(--danger);">⚠️ Review Flagged Duplicate Rows (Source Row # & Preview):</h4>
+            <div class="table-container">
+              <table id="dupTable"></table>
+            </div>
+          </div>
+
+          <!-- Original Preview -->
+          <div id="previewSection" style="display:none; margin-bottom:16px;">
+            <h4 style="margin-bottom:6px; font-size:13px; color:var(--text-muted);">Source File Preview (First 5 Rows):</h4>
+            <div class="table-container">
+              <table id="previewTable"></table>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="controls-box">
+            <h4>Safe Cleaning Rules</h4>
+            <div class="checkbox-row">
+              <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
+              <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
+              <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Title Case</label>
+            </div>
+            <div>
+              <label style="font-size:12.5px; font-weight:600;">Duplicate Matching Rule (Default: Exact Whole Row):</label>
+              <select id="dupMode" onchange="runHealthAudit()">
+                <option value="entire">Exact Entire Row Match (Safe Default)</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn" style="width:100%;" onclick="executeClean()">Preview & Clean Data</button>
+
+          <!-- Clean Output Result -->
+          <div id="cleanResult" style="display:none; margin-top:20px;">
+            <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success);"></div>
+            <h4 style="margin-bottom:6px; font-size:13px;">Cleaned Output Preview:</h4>
+            <div class="table-container">
+              <table id="cleanedTable"></table>
+            </div>
+            <div class="btn-row">
+              <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
+              <button class="btn btn-secondary" onclick="downloadAuditReport()">Download Health Report CSV</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. FILE COMPARE VIEW ================= -->
+      <section id="view-compare" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Smart File Compare</h2>
+              <p>Compare two CSV or Excel files by a unique key column to detect additions, deletions, and changed values.</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:16px;">
+            <div class="dropzone" style="margin-bottom:0;">
+              <strong style="font-size:13px; display:block; margin-bottom:6px;">File A (Old / Reference):</strong>
+              <input type="file" id="compFileA" accept=".csv, .xlsx, .xls">
+            </div>
+            <div class="dropzone" style="margin-bottom:0;">
+              <strong style="font-size:13px; display:block; margin-bottom:6px;">File B (New / Current):</strong>
+              <input type="file" id="compFileB" accept=".csv, .xlsx, .xls">
+            </div>
+          </div>
+
+          <div id="compareKeyBox" style="display:none;" class="controls-box">
+            <label style="font-size:13px; font-weight:600;">Select Unique Matching Key Column (e.g. SKU, ID, Invoice):</label>
+            <select id="compareKeySelect"></select>
+          </div>
+
+          <button class="btn" style="width:100%;" onclick="executeFileCompare()">Compare Both Files</button>
+
+          <div id="compareResult" style="display:none; margin-top:20px;">
+            <div class="health-grid">
+              <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added</span></div>
+              <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed</span></div>
+              <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed</span></div>
+              <div class="metric-card"><strong id="cmpSame" style="color:var(--text-muted);">0</strong><span>Unchanged</span></div>
+            </div>
+
+            <h4 style="margin-bottom:6px; font-size:13px;">Comparison Diff Preview:</h4>
+            <div class="table-container">
+              <table id="compareTable"></table>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadComparisonReport()">Download Full Comparison Report CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. INVENTORY RECONCILIATION VIEW ================= -->
+      <section id="view-inventory" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Inventory Reconciliation</h2>
+              <p>Reconcile expected system stock against physical count to detect shortages, excess items, and financial variance.</p>
+            </div>
+          </div>
+
+          <div class="dropzone">
+            <input type="file" id="invFileInput" accept=".csv, .xlsx, .xls">
+            <p style="margin-top:6px; font-size:12px; color:var(--text-muted);">Upload spreadsheet containing SKU, System Qty, and Counted Qty</p>
+          </div>
+
+          <div id="invColumnMap" style="display:none;" class="controls-box">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+              <div>
+                <label style="font-size:12px; font-weight:600;">SKU Column:</label>
+                <select id="invColSku"></select>
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:600;">System Expected Qty:</label>
+                <select id="invColSystem"></select>
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:600;">Physical Counted Qty:</label>
+                <select id="invColPhysical"></select>
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:600;">Unit Cost (Optional):</label>
+                <select id="invColCost"><option value="">-- None --</option></select>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn" style="width:100%;" onclick="executeInventoryCheck()">Run Inventory Audit</button>
+
+          <div id="invResult" style="display:none; margin-top:20px;">
+            <div class="health-grid">
+              <div class="metric-card"><strong id="invTotalSkus">0</strong><span>Total SKUs</span></div>
+              <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage</span></div>
+              <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess</span></div>
+              <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Matched</span></div>
+            </div>
+
+            <h4 style="margin-bottom:6px; font-size:13px;">Stock Variance Discrepancy Preview:</h4>
+            <div class="table-container">
+              <table id="invTable"></table>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Discrepancy CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. DATA CLEANING RULES VIEW ================= -->
+      <section id="view-rules" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Data Cleaning Rules Configuration</h2>
+              <p>Configure and review standard data transformation rules used by QuickClean.</p>
+            </div>
+          </div>
+
+          <div class="controls-box">
+            <h4>Active System Rules:</h4>
+            <ul style="font-size:13.5px; line-height:1.8; color:var(--text-main); padding-left:20px;">
+              <li><strong>Exact Whole-Row Match:</strong> Default safe duplicate filter that deletes a row only if every single column value matches another row identically.</li>
+              <li><strong>Target Column Key Match:</strong> Flags duplicates based on unique identifiers like Email, SKU, or Customer ID without deleting non-identical rows in other modes.</li>
+              <li><strong>Trim Whitespace:</strong> Strips extraneous leading and trailing spaces without changing legitimate internal text spacing.</li>
+              <li><strong>CSV Formula Injection Shield:</strong> Automatically sanitizes cells starting with <code>=</code>, <code>+</code>, <code>-</code>, or <code>@</code> with a safe quote prefix.</li>
+              <li><strong>Client-Side Immutability:</strong> The original uploaded file is permanently preserved in read-only memory; exports are created as fresh copies.</li>
+            </ul>
+          </div>
+          <button class="btn" onclick="navigate('cleaner')">Go to CSV Cleaner with These Rules</button>
+        </div>
+      </section>
+
+      <!-- ================= 6. DATA QUALITY SCORE VIEW ================= -->
+      <section id="view-quality" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Data Quality & Health Audit</h2>
+              <p>Comprehensive health diagnostics, casing conflict review, and data hygiene scores.</p>
+            </div>
+          </div>
+
+          <div id="qualityScoreBox" class="meta-box" style="display:block;">
+            Upload or inspect your data in the CSV Cleaner to view the live health audit metrics.
+          </div>
+
+          <div class="health-grid">
+            <div class="metric-card c-blue"><strong id="qRows">0</strong><span>Total Rows</span></div>
+            <div class="metric-card c-red"><strong id="qDups">0</strong><span>Exact Duplicates</span></div>
+            <div class="metric-card c-amber"><strong id="qBlanks">0</strong><span>Missing Values</span></div>
+            <div class="metric-card c-purple"><strong id="qSpaces">0</strong><span>Space Inconsistencies</span></div>
+            <div class="metric-card c-pink"><strong id="qCaps">0</strong><span>Casing Conflicts</span></div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <button class="btn" onclick="navigate('cleaner')">Audit a File in CSV Cleaner</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. BARCODE GENERATOR VIEW ================= -->
+      <section id="view-barcode" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Barcode & Label Generator</h2>
+              <p>Generate Code128 printable barcode labels in bulk without third-party cloud services.</p>
+            </div>
+          </div>
+
+          <div class="dropzone">
+            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:8px;">Enter SKU or Product Codes (one per line):</label>
+            <textarea id="barcodeText" style="height:100px; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+          </div>
+
+          <button class="btn" style="width:100%;" onclick="generateBarcodeCards()">Generate Barcode Sheet</button>
+          <button class="btn btn-secondary" onclick="printBarcodesAndTriggerPopup()" id="barcodePrintBtn" style="display:none; margin-top:12px; width:100%;">🖨️ Print Labels / Save PDF</button>
+
+          <div id="barcodeArea"></div>
+        </div>
+      </section>
+
+      <!-- ================= 8. REPORTS CENTER VIEW ================= -->
+      <section id="view-reports" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Reports Center</h2>
+              <p>Quickly access and download data cleaning reports, audit logs, and comparison diffs generated in this session.</p>
+            </div>
+          </div>
+
+          <div id="reportsList" class="activity-list">
+            <div class="empty-state">No reports generated in this session yet. Run CSV Cleaner, File Compare, or Inventory Audit to generate reports.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 9. PROCESSING HISTORY VIEW ================= -->
+      <section id="view-history" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Session Processing History</h2>
+              <p>Real-time audit log of files processed locally in your current session.</p>
+            </div>
+          </div>
+
+          <div id="fullHistoryList" class="activity-list">
+            <div class="empty-state">No processing events recorded yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 10. HELP & SUPPORT VIEW ================= -->
+      <section id="view-help" class="view-panel">
+        <div class="tool-interface-card">
+          <div class="tool-page-header">
+            <div class="tool-page-title">
+              <h2>Help & Support</h2>
+              <p>Documentation, privacy verification, and direct feedback.</p>
+            </div>
+          </div>
+
+          <div class="controls-box">
+            <h4>Frequently Asked Questions</h4>
+            <div style="font-size:13px; line-height:1.6; color:var(--text-main);">
+              <p><strong>Q: Does QuickClean send my confidential sheets to a server?</strong><br>
+              No. All operations run 100% inside your browser's local memory via SheetJS, PapaParse, and Canvas APIs. No spreadsheets ever leave your device.</p>
+              
+              <p style="margin-top:12px;"><strong>Q: What file formats are supported?</strong><br>
+              QuickClean supports `.csv`, `.xlsx`, and `.xls` files directly.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="btn" onclick="openFeedbackModal()">💬 Send Feedback / Report Bug</button>
+            <a href="https://buymeacoffee.com/suhel786" target="_blank" class="btn btn-secondary" style="text-decoration:none;">☕ Buy me a coffee</a>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
 
-  <!-- Coffee Post-Work Pop-up Modal -->
+  <!-- ================= MODALS & POPUPS ================= -->
+  <!-- Coffee Popup (Shown after successful job completion) -->
   <div id="coffeeModal" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card" style="text-align:center;">
       <button class="modal-close" onclick="closeCoffeeModal()">&times;</button>
-      <div style="font-size: 34px; margin-bottom: 8px;">🎉</div>
-      <h3 style="margin: 0 0 8px 0; color: #fff; font-size: 18px;">Task Completed!</h3>
-      <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 14px 0;">
-        Your file has been processed locally without privacy risk. If this tool saved you time today, consider supporting its upkeep with a coffee!
+      <div style="font-size:36px; margin-bottom:8px;">🎉</div>
+      <h3 style="font-size:18px; margin-bottom:8px;">Task Completed Successfully!</h3>
+      <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">
+        Your file has been safely processed client-side. If this tool saved you time today, consider supporting its upkeep with a coffee!
       </p>
-      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-btn-popup" onclick="closeCoffeeModal()">
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-popup-btn" onclick="closeCoffeeModal()">
         ☕ Buy me a coffee ($3)
       </a>
-      <button class="btn btn-secondary" style="margin-top: 10px; font-size: 12px; padding: 8px;" onclick="closeCoffeeModal()">
-        Close
-      </button>
+      <button class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px;" onclick="closeCoffeeModal()">Close</button>
     </div>
   </div>
 
-  <!-- User Feedback Modal -->
+  <!-- Feedback Modal -->
   <div id="feedbackModal" class="modal-overlay">
-    <div class="modal-card" style="text-align: left;">
+    <div class="modal-card">
       <button class="modal-close" onclick="closeFeedbackModal()">&times;</button>
-      <h3 style="margin: 0 0 6px 0; color: #fff; font-size: 17px;">💬 Send User Feedback</h3>
-      <p style="color: var(--text-muted); font-size: 12px; margin: 0 0 12px 0;">
-        Have a bug, suggested improvement, or a feature request? Let us know:
-      </p>
-      <input type="email" id="fbEmail" placeholder="Your Email (Optional, for response)">
-      <textarea id="fbMessage" style="height: 100px; margin-top: 8px;" placeholder="Write your feedback, query or problem here..."></textarea>
-      
-      <button class="btn" style="margin-top: 12px;" onclick="submitFeedback()">
-        Submit Feedback
-      </button>
-      <div id="fbNote" style="font-size: 12px; color: var(--success); margin-top: 8px; display: none;"></div>
+      <h3 style="font-size:17px; margin-bottom:6px;">💬 User Feedback</h3>
+      <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:12px;">Share a suggestion, report an issue, or request a new feature:</p>
+      <input type="email" id="fbEmail" placeholder="Your Email (Optional, for replies)">
+      <textarea id="fbMessage" style="height:100px;" placeholder="What can we improve or add?"></textarea>
+      <button class="btn" style="width:100%; margin-top:12px;" onclick="submitFeedback()">Send Feedback</button>
+      <div id="fbNote" style="font-size:12px; color:var(--success); margin-top:8px; display:none;"></div>
     </div>
   </div>
 
-  <!-- Bottom Permanent Footer -->
-  <footer id="privacy">
-    <p><strong>QuickClean Business Data Toolkit</strong> — Client-Side Local Execution.</p>
-    <p style="font-size:12px; max-width:600px; margin:4px auto 8px auto;">
-      All calculations execute inside your browser memory. No spreadsheets or user records are uploaded or transmitted to external servers.
-    </p>
-    <p><a href="https://buymeacoffee.com/suhel786" target="_blank">☕ Support this free tool with a coffee</a></p>
-  </footer>
-
+  <!-- ================= LOGIC & REAL-TIME SESSION TRACKING ================= -->
   <script>
-    // State
+    // State Preservation
     let rawData = [];
     let headers = [];
     let cleanedData = [];
@@ -643,44 +1487,50 @@
     let invHeaders = [];
     let invAuditResults = [];
 
-    // Dropdown Navigation Handler
-    function toggleToolsMenu() {
-      document.getElementById('toolsDropdown').classList.toggle('show');
-    }
+    // Real Session Activity & Stats Tracking
+    let sessionFilesProcessed = 0;
+    let sessionDupsRemoved = 0;
+    let sessionLogs = [];
+    let generatedReports = [];
 
-    window.onclick = function(event) {
-      if (!event.target.matches('.menu-btn')) {
-        const dropdown = document.getElementById('toolsDropdown');
-        if (dropdown && dropdown.classList.contains('show')) {
-          dropdown.classList.remove('show');
+    // Navigation System
+    function navigate(viewId) {
+      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      const targetView = document.getElementById(`view-${viewId}`);
+      if (targetView) targetView.classList.add('active');
+
+      // Update sidebar active state
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(viewId)) {
+          item.classList.add('active');
         }
-      }
-    };
+      });
 
-    function selectTool(toolId, toolName) {
-      document.querySelectorAll('.tool-pane').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
-      
-      document.getElementById(`${toolId}Pane`).classList.add('active');
-      document.getElementById('activeToolName').textContent = toolName;
-      document.getElementById('toolsDropdown').classList.remove('show');
+      // Mobile: Close drawer on select
+      if (window.innerWidth <= 900) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
     }
 
-    // Modal Handlers
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Modal Triggers
     function triggerSuccessCoffeePopup() {
       setTimeout(() => {
         document.getElementById('coffeeModal').classList.add('active');
       }, 700);
     }
-
     function closeCoffeeModal() {
       document.getElementById('coffeeModal').classList.remove('active');
     }
-
     function openFeedbackModal() {
       document.getElementById('feedbackModal').classList.add('active');
     }
-
     function closeFeedbackModal() {
       document.getElementById('feedbackModal').classList.remove('active');
     }
@@ -689,15 +1539,13 @@
       const email = document.getElementById('fbEmail').value.trim();
       const msg = document.getElementById('fbMessage').value.trim();
       const note = document.getElementById('fbNote');
-
       if (!msg) { alert("Please type your message first!"); return; }
 
-      // Direct mail trigger to receive query on developer email
       const subject = encodeURIComponent("QuickClean User Feedback");
-      const body = encodeURIComponent(`Sender: ${email || 'Anonymous'}\n\nMessage:\n${msg}`);
+      const body = encodeURIComponent(`Sender: ${email || 'Anonymous'}\n\nFeedback:\n${msg}`);
       window.open(`mailto:suhelwork@gmail.com?subject=${subject}&body=${body}`, '_blank');
 
-      note.textContent = "✓ Opening email client to send your feedback. Thank you!";
+      note.textContent = "✓ Opening email client to send your message. Thank you!";
       note.style.display = 'block';
       setTimeout(() => {
         closeFeedbackModal();
@@ -706,9 +1554,7 @@
       }, 2000);
     }
 
-    // ==========================================
-    // 1. DATA CLEANER & HEALTH REPORT
-    // ==========================================
+    // ================= 1. CSV CLEANER & HEALTH =================
     document.getElementById('cleanerInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -720,8 +1566,9 @@
 
         const metaBox = document.getElementById('cleanerMeta');
         metaBox.style.display = 'block';
-        metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Rows:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
+        metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
+        // Populate match dropdown (Safe default: Exact Entire Row)
         const dupSelect = document.getElementById('dupMode');
         dupSelect.innerHTML = '<option value="entire">Exact Entire Row Match (Safe Default)</option>';
         headers.forEach((h, idx) => {
@@ -738,6 +1585,7 @@
         runHealthAudit();
         renderTable('previewTable', headers, rawData.slice(0, 5));
         document.getElementById('previewSection').style.display = 'block';
+        document.getElementById('cleanerHealthSnippet').style.display = 'block';
       });
     });
 
@@ -795,12 +1643,21 @@
       });
 
       healthStats = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps: trueCaseConflicts };
+      
+      // Update UI numbers
       document.getElementById('mRows').textContent = healthStats.rows;
       document.getElementById('mDups').textContent = healthStats.dups;
       document.getElementById('mBlanks').textContent = healthStats.blanks;
       document.getElementById('mSpaces').textContent = healthStats.spaces;
       document.getElementById('mCaps').textContent = healthStats.caps;
-      document.getElementById('healthCard').style.display = 'block';
+
+      // Update Data Quality Tab UI as well
+      document.getElementById('qRows').textContent = healthStats.rows;
+      document.getElementById('qDups').textContent = healthStats.dups;
+      document.getElementById('qBlanks').textContent = healthStats.blanks;
+      document.getElementById('qSpaces').textContent = healthStats.spaces;
+      document.getElementById('qCaps').textContent = healthStats.caps;
+      document.getElementById('qualityScoreBox').innerHTML = `File <strong>${currentFileName}</strong> audited: ${healthStats.rows} rows, ${healthStats.dups} duplicates found.`;
 
       if (flaggedDuplicates.length > 0) {
         renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
@@ -886,8 +1743,14 @@
 
       cleanedData = unique;
       renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
-      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Retained <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedDups}</strong> duplicate records. Original untouched.`;
+      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedDups}</strong> duplicates. Original file remains untouched.`;
       document.getElementById('cleanResult').style.display = 'block';
+
+      // Update Live Session Metrics & Logs
+      sessionFilesProcessed++;
+      sessionDupsRemoved += removedDups;
+      logSessionEvent(currentFileName, "CSV Cleaner", `${removedDups} duplicates removed`);
+      updateDashboardStats();
     }
 
     function resetCleaner() {
@@ -897,7 +1760,7 @@
       flaggedDuplicates = [];
       document.getElementById('cleanerInput').value = '';
       document.getElementById('cleanerMeta').style.display = 'none';
-      document.getElementById('healthCard').style.display = 'none';
+      document.getElementById('cleanerHealthSnippet').style.display = 'none';
       document.getElementById('dupSection').style.display = 'none';
       document.getElementById('previewSection').style.display = 'none';
       document.getElementById('cleanResult').style.display = 'none';
@@ -907,41 +1770,41 @@
       const sanitized = cleanedData.map(row => 
         row.map(cell => {
           let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str;
+          if (/^[=+\-@]/.test(str)) return "'" + str; // Safety escape
           return str;
         })
       );
       const csv = Papa.unparse([headers, ...sanitized]);
       triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+      addReportToCenter(`${currentFileName}_cleaned.csv`, "Cleaned CSV File");
       triggerSuccessCoffeePopup();
     }
 
     function downloadAuditReport() {
       const reportRows = [
-        ["Audit Category", "Detected Count"],
-        ["Total Rows Processed", healthStats.rows],
-        ["Duplicate Records", healthStats.dups],
-        ["Missing Values", healthStats.blanks],
-        ["Extra Spaces", healthStats.spaces],
+        ["Health Audit Category", "Detected Count"],
+        ["Total Rows Scanned", healthStats.rows],
+        ["Duplicates Identified", healthStats.dups],
+        ["Missing / Empty Cells", healthStats.blanks],
+        ["Inconsistent Spaces", healthStats.spaces],
         ["Case Mismatches", healthStats.caps],
         ["Audit Date", new Date().toLocaleString()]
       ];
       const csv = Papa.unparse(reportRows);
       triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
+      addReportToCenter(`${currentFileName}_health_report.csv`, "Data Health Audit");
       triggerSuccessCoffeePopup();
     }
 
-    // ==========================================
-    // 2. SMART FILE COMPARE
-    // ==========================================
+    // ================= 2. FILE COMPARE =================
     document.getElementById('compFileA').addEventListener('change', e => loadCompareFile(e.target.files[0], 'A'));
     document.getElementById('compFileB').addEventListener('change', e => loadCompareFile(e.target.files[0], 'B'));
 
     function loadCompareFile(file, type) {
       if (!file) return;
       parseFile(file, (h, r) => {
-        if (type === 'A') compDataA = { headers: h, rows: r };
-        else compDataB = { headers: h, rows: r };
+        if (type === 'A') compDataA = { headers: h, rows: r, name: file.name };
+        else compDataB = { headers: h, rows: r, name: file.name };
 
         if (compDataA.headers.length > 0 && compDataB.headers.length > 0) {
           setupCompareKeys();
@@ -955,7 +1818,7 @@
       const common = compDataA.headers.filter(h => compDataB.headers.includes(h));
 
       if (common.length === 0) {
-        alert("No matching column header between File A and B!");
+        alert("Warning: No matching column header found between File A and File B!");
         return;
       }
 
@@ -999,7 +1862,7 @@
       mapA.forEach((rowA, k) => {
         if (!mapB.has(k)) {
           removed++;
-          diffResults.push({ key: k, status: 'REMOVED', details: 'Removed in File B' });
+          diffResults.push({ key: k, status: 'REMOVED', details: 'Record removed in File B' });
         } else {
           const rowB = mapB.get(k);
           const changedCols = [];
@@ -1015,7 +1878,7 @@
             diffResults.push({ key: k, status: 'CHANGED', details: changedCols.join(' | ') });
           } else {
             same++;
-            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical' });
+            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical record' });
           }
         }
       });
@@ -1023,7 +1886,7 @@
       mapB.forEach((rowB, k) => {
         if (!mapA.has(k)) {
           added++;
-          diffResults.push({ key: k, status: 'ADDED', details: 'New in File B' });
+          diffResults.push({ key: k, status: 'ADDED', details: 'New record in File B' });
         }
       });
 
@@ -1033,28 +1896,31 @@
       document.getElementById('cmpSame').textContent = same;
 
       const tbl = document.getElementById('compareTable');
-      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Details</th></tr>`;
+      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Diff Summary</th></tr>`;
       diffResults.slice(0, 15).forEach(res => {
         const badgeClass = res.status === 'ADDED' ? 'badge-added' : (res.status === 'REMOVED' ? 'badge-removed' : (res.status === 'CHANGED' ? 'badge-changed' : ''));
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><span class="${badgeClass}">${res.status}</span></td><td><strong>${res.key}</strong></td><td style="font-size:11px;">${res.details}</td>`;
+        tr.innerHTML = `<td><span class="${badgeClass}">${res.status}</span></td><td><strong>${res.key}</strong></td><td style="font-size:11.5px;">${res.details}</td>`;
         tbl.appendChild(tr);
       });
 
       document.getElementById('compareResult').style.display = 'block';
+
+      sessionFilesProcessed += 2;
+      logSessionEvent("File Compare", "Diff Checker", `${added} Added, ${removed} Removed, ${changed} Changed`);
+      updateDashboardStats();
     }
 
     function downloadComparisonReport() {
       const out = [["Status", "Key", "Details"]];
       diffResults.forEach(r => out.push([r.status, r.key, r.details]));
       const csv = Papa.unparse(out);
-      triggerDownload(csv, `file_compare_report.csv`, 'text/csv;charset=utf-8;');
+      triggerDownload(csv, `file_comparison_diff.csv`, 'text/csv;charset=utf-8;');
+      addReportToCenter("file_comparison_diff.csv", "File Compare Diff Report");
       triggerSuccessCoffeePopup();
     }
 
-    // ==========================================
-    // 3. INVENTORY CHECKER
-    // ==========================================
+    // ================= 3. INVENTORY RECONCILIATION =================
     document.getElementById('invFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1084,7 +1950,7 @@
         sCost.appendChild(opt);
 
         if (/sku|item|code/i.test(h)) sSku.value = i;
-        if (/system|expected|book/i.test(h)) sSys.value = i;
+        if (/system|expected|book|pos/i.test(h)) sSys.value = i;
         if (/physical|actual|counted/i.test(h)) sPhy.value = i;
         if (/cost|price|rate/i.test(h)) sCost.value = i;
       });
@@ -1093,7 +1959,7 @@
     }
 
     function executeInventoryCheck() {
-      if (invRows.length === 0) { alert("Upload inventory sheet first!"); return; }
+      if (invRows.length === 0) { alert("Please upload inventory sheet!"); return; }
 
       const idxSku = parseInt(document.getElementById('invColSku').value);
       const idxSys = parseInt(document.getElementById('invColSystem').value);
@@ -1136,23 +2002,26 @@
       });
 
       document.getElementById('invResult').style.display = 'block';
+
+      sessionFilesProcessed++;
+      logSessionEvent("Inventory Audit", "Stock Checker", `${shortage} Shortages, ${excess} Excess items`);
+      updateDashboardStats();
     }
 
     function downloadInventoryReport() {
-      const out = [["SKU", "System", "Counted", "Variance", "Impact", "Status"]];
+      const out = [["SKU", "System Expected", "Physical Counted", "Variance Qty", "Financial Impact", "Status"]];
       invAuditResults.forEach(i => out.push([i.sku, i.sysQty, i.phyQty, i.variance, i.impact, i.status]));
       const csv = Papa.unparse(out);
-      triggerDownload(csv, `inventory_report.csv`, 'text/csv;charset=utf-8;');
+      triggerDownload(csv, `inventory_reconciliation_report.csv`, 'text/csv;charset=utf-8;');
+      addReportToCenter("inventory_reconciliation_report.csv", "Inventory Variance Report");
       triggerSuccessCoffeePopup();
     }
 
-    // ==========================================
-    // 4. BARCODE LABELS
-    // ==========================================
+    // ================= 4. BARCODE LABELS =================
     function generateBarcodeCards() {
       const val = document.getElementById('barcodeText').value.trim();
       const area = document.getElementById('barcodeArea');
-      if (!val) { alert("Enter SKU codes!"); return; }
+      if (!val) { alert("Please type or paste item SKU codes!"); return; }
 
       const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
       area.innerHTML = '';
@@ -1169,7 +2038,9 @@
           card.innerHTML = `<span style="color:var(--danger);font-size:11px;">Invalid: ${sku}</span>`;
         }
       });
-      document.getElementById('barcodePrintBtn').style.display = 'inline-block';
+      document.getElementById('barcodePrintBtn').style.display = 'block';
+      logSessionEvent("Bulk Barcodes", "Barcode Generator", `${items.length} barcodes rendered`);
+      updateDashboardStats();
     }
 
     function printBarcodesAndTriggerPopup() {
@@ -1177,35 +2048,85 @@
       triggerSuccessCoffeePopup();
     }
 
-    // ==========================================
-    // 5. JSON CONVERTER
-    // ==========================================
-    function convertFileToJson() {
-      const file = document.getElementById('jsonFileInput').files[0];
-      if (!file) { alert("Select file!"); return; }
+    // ================= REAL-TIME SESSION LOGS & REPORTS =================
+    function logSessionEvent(fileName, toolType, outcome) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      sessionLogs.unshift({ file: fileName, tool: toolType, status: 'Completed', time: timeStr, note: outcome });
 
-      parseFile(file, (h, rows) => {
-        const json = rows.map(r => {
-          let obj = {};
-          h.forEach((headerName, idx) => obj[headerName] = r[idx] !== undefined ? r[idx] : '');
-          return obj;
-        });
+      // Render home preview list
+      const homeList = document.getElementById('sessionActivityList');
+      const fullList = document.getElementById('fullHistoryList');
+      
+      const renderHtml = sessionLogs.slice(0, 5).map(item => `
+        <div class="activity-item">
+          <div class="activity-file">
+            <span>📄</span>
+            <div>
+              <div>${item.file}</div>
+              <small style="color:var(--text-muted); font-size:11px;">${item.tool} • ${item.time}</small>
+            </div>
+          </div>
+          <span class="activity-status">${item.status}</span>
+        </div>
+      `).join('');
 
-        const jsonStr = JSON.stringify(json, null, 2);
-        document.getElementById('jsonMeta').style.display = 'block';
-        document.getElementById('jsonMeta').textContent = `✓ Converted ${json.length} items to JSON.`;
-        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
-        triggerSuccessCoffeePopup();
-      });
+      homeList.innerHTML = renderHtml;
+      fullList.innerHTML = sessionLogs.map(item => `
+        <div class="activity-item" style="padding:12px;">
+          <div class="activity-file">
+            <span>📄</span>
+            <div>
+              <div style="font-size:13px;">${item.file}</div>
+              <small style="color:var(--text-muted);">${item.tool} • ${item.time} • ${item.note}</small>
+            </div>
+          </div>
+          <span class="activity-status">${item.status}</span>
+        </div>
+      `).join('');
     }
 
-    // Helpers
+    function addReportToCenter(fileName, reportType) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      generatedReports.unshift({ name: fileName, type: reportType, time: timeStr });
+
+      const repList = document.getElementById('reportsList');
+      repList.innerHTML = generatedReports.map(rep => `
+        <div class="activity-item" style="padding:12px;">
+          <div class="activity-file">
+            <span>📑</span>
+            <div>
+              <div style="font-size:13px;">${rep.name}</div>
+              <small style="color:var(--text-muted);">${rep.type} • Generated at ${rep.time}</small>
+            </div>
+          </div>
+          <span class="activity-status">Downloaded</span>
+        </div>
+      `).join('');
+    }
+
+    function updateDashboardStats() {
+      document.getElementById('statProcessedFiles').textContent = sessionFilesProcessed;
+      document.getElementById('statDupsRemoved').textContent = sessionDupsRemoved;
+      
+      // Calculate quality ratio
+      if (healthStats.rows > 0) {
+        const errorCells = healthStats.dups + healthStats.blanks + healthStats.spaces + healthStats.caps;
+        const totalEstimatedCells = healthStats.rows * (headers.length || 5);
+        const score = Math.max(70, Math.min(100, Math.round(100 - (errorCells / (totalEstimatedCells || 100)) * 100)));
+        document.getElementById('statHealthQuality').textContent = `${score}%`;
+      }
+      
+      const timeEst = Math.max(2, Math.round(sessionFilesProcessed * 4 + sessionDupsRemoved * 0.05));
+      document.getElementById('statTimeSaved').textContent = `~ ${timeEst} min`;
+    }
+
+    // ================= HELPERS & FILE PARSING =================
     function parseFile(file, callback) {
       if (file.name.endsWith('.csv')) {
         Papa.parse(file, {
           skipEmptyLines: false,
           complete: res => {
-            if (!res.data || res.data.length === 0) { alert("File is empty!"); return; }
+            if (!res.data || res.data.length === 0) { alert("Uploaded file is empty!"); return; }
             callback(res.data[0], res.data.slice(1));
           }
         });
@@ -1216,7 +2137,7 @@
           const wb = XLSX.read(data, { type: 'array' });
           const sheet = wb.Sheets[wb.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-          if (!rows || rows.length === 0) { alert("Sheet is empty!"); return; }
+          if (!rows || rows.length === 0) { alert("Excel sheet is empty!"); return; }
           callback(rows[0], rows.slice(1));
         };
         reader.readAsArrayBuffer(file);
