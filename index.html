@@ -4,35 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickClean Business Data Toolkit</title>
-  <meta name="description" content="Clean, compare, and validate business data. Safe, private client-side CSV/Excel cleaner, file compare, and inventory checker.">
+  <meta name="description" content="Clean, compare, and validate business data. Safe, private client-side toolkit without cloud uploads.">
   
-  <!-- Third-party Client-Side Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
   <style>
     :root {
-      --navy: #0f172a;
-      --navy-light: #1e293b;
-      --teal: #0d9488;
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
       --primary: #0284c7;
       --primary-hover: #0369a1;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --success: #16a34a;
-      --warning: #d97706;
-      --danger: #dc2626;
+      --accent: #38bdf8;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
     }
 
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
-      color: var(--text-main);
+      color: var(--text);
       margin: 0;
       padding: 0;
       display: flex;
@@ -45,145 +42,178 @@
     /* Top Navy Header */
     header {
       width: 100%;
-      background: var(--navy);
-      color: #ffffff;
-      padding: 14px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--navy-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
-    .brand span { color: #38bdf8; }
-    .nav-links { display: flex; gap: 14px; font-size: 13px; }
-    .nav-links a { color: #94a3b8; text-decoration: none; font-weight: 500; }
-    .nav-links a:hover { color: #ffffff; }
+    .brand { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .brand span { color: var(--accent); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    /* Tool Dropdown Button */
+    .menu-btn {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .menu-btn:hover { background: #334155; }
+
+    /* Dropdown Content */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 42px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      width: 230px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 200;
+      overflow: hidden;
+    }
+    .dropdown-menu.show { display: block; }
+    .dropdown-item {
+      padding: 12px 14px;
+      display: block;
+      color: #cbd5e1;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      border-bottom: 1px solid #1f2937;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover { background: #1e293b; color: var(--accent); }
+    .dropdown-item.active { background: #1e293b; color: var(--accent); font-weight: 700; }
 
     /* Hero Section */
     .hero {
       width: 100%;
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 24px 16px;
+      padding: 20px 16px 12px 16px;
       text-align: center;
     }
-    .hero h1 { font-size: 24px; margin: 0 0 6px 0; color: var(--navy); }
-    .hero p { color: var(--text-muted); font-size: 14px; margin: 0 auto 16px auto; max-width: 600px; }
     .privacy-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #ecfdf5;
+      background: rgba(16, 185, 129, 0.12);
       color: var(--success);
-      border: 1px solid #bbf7d0;
+      border: 1px solid rgba(16, 185, 129, 0.25);
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
+      margin-bottom: 8px;
     }
+    .hero h1 { font-size: 22px; margin: 0 0 6px 0; color: #fff; }
+    .hero p { color: var(--text-muted); font-size: 13px; margin: 0 auto; max-width: 580px; }
+
+    /* Active Tool Banner */
+    .active-tool-banner {
+      width: 100%;
+      max-width: 900px;
+      padding: 0 14px;
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .active-tool-title { font-size: 16px; font-weight: 700; color: var(--accent); }
 
     /* Main Container */
     .main-wrapper {
       width: 100%;
-      max-width: 950px;
-      padding: 20px 14px;
+      max-width: 900px;
+      padding: 10px 14px 30px 14px;
     }
 
-    /* Navigation Tabs */
-    .tab-bar {
-      display: flex;
-      gap: 6px;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 20px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 2px;
-    }
-    .tab-btn {
-      padding: 10px 14px;
-      background: none;
-      border: none;
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-      border-radius: 4px 4px 0 0;
-    }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-      background: #f1f5f9;
-    }
+    .tool-pane { display: none; }
+    .tool-pane.active { display: block; }
 
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
-
-    /* Card Panels */
+    /* Dark Cards */
     .card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       margin-bottom: 18px;
     }
 
     .dropzone {
-      border: 2px dashed #cbd5e1;
-      background: #f8fafc;
-      border-radius: 8px;
-      padding: 24px 14px;
+      border: 2px dashed #374151;
+      background: #161f30;
+      border-radius: 10px;
+      padding: 22px 14px;
       text-align: center;
       margin-bottom: 16px;
     }
+    .dropzone:hover { border-color: var(--accent); }
     input[type="file"] { font-size: 13px; max-width: 100%; color: var(--text-muted); }
 
     .meta-box {
       display: none;
-      background: #f1f5f9;
+      background: #1e293b;
       padding: 10px 14px;
       border-radius: 6px;
       margin-bottom: 14px;
       font-size: 12px;
-      color: var(--navy-light);
-      border-left: 4px solid var(--primary);
+      color: #cbd5e1;
+      border-left: 4px solid var(--accent);
       word-break: break-word;
     }
 
     /* Diagnostics Grid */
     .health-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 10px;
-      margin: 14px 0;
+      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
     }
     .metric-card {
-      background: #f8fafc;
-      padding: 12px 8px;
+      background: #0f172a;
+      padding: 10px 6px;
       border-radius: 8px;
-      border: 1px solid var(--border);
+      border: 1px solid #1f2937;
       text-align: center;
     }
     .metric-card strong { display: block; font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-    .metric-card span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
-    
-    .metric-rows strong { color: var(--primary); }
-    .metric-dups strong { color: var(--danger); }
-    .metric-blanks strong { color: var(--warning); }
-    .metric-spaces strong { color: #8b5cf6; }
-    .metric-caps strong { color: #ec4899; }
+    .metric-card span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .c-blue strong { color: var(--accent); }
+    .c-red strong { color: var(--danger); }
+    .c-amber strong { color: var(--warning); }
+    .c-purple strong { color: #a78bfa; }
+    .c-pink strong { color: #ec4899; }
 
-    /* Form Controls */
+    /* Controls */
     .controls-box {
-      background: #f8fafc;
-      border: 1px solid var(--border);
+      background: #161f30;
+      border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 14px;
       margin-bottom: 16px;
     }
-    .controls-box h4 { margin: 0 0 10px 0; font-size: 13px; color: var(--navy); }
+    .controls-box h4 { margin: 0 0 10px 0; font-size: 13px; color: #fff; }
     .checkbox-row {
       display: flex;
       flex-wrap: wrap;
@@ -191,11 +221,11 @@
       font-size: 13px;
       margin-bottom: 12px;
     }
-    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--navy-light); }
-    select, input[type="text"] {
-      background: #ffffff;
-      color: var(--text-main);
-      border: 1px solid #cbd5e1;
+    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #cbd5e1; }
+    select, input[type="text"], textarea {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid #374151;
       padding: 8px 10px;
       border-radius: 6px;
       font-size: 13px;
@@ -209,7 +239,7 @@
       color: #ffffff;
       border: none;
       padding: 12px 18px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -219,65 +249,131 @@
     .btn:hover { background: var(--primary-hover); }
     .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     @media (min-width: 600px) { .btn-row { flex-direction: row; } }
-    .btn-secondary { background: #475569; }
-    .btn-secondary:hover { background: #334155; }
-    .btn-danger { background: #ef4444; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-reset { background: #e2e8f0; color: #334155; font-size: 12px; padding: 6px 12px; width: auto; }
-    .btn-reset:hover { background: #cbd5e1; }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-reset { background: #1e293b; color: #cbd5e1; font-size: 12px; padding: 6px 12px; width: auto; border: 1px solid #374151; }
 
-    /* Tables (Strictly Scrollable Within Container) */
+    /* Tables (Strict Internal Scroll) */
     .table-container {
       max-height: 250px;
       overflow-x: auto;
       overflow-y: auto;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      margin: 10px 0;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin: 8px 0;
       -webkit-overflow-scrolling: touch;
-      background: #ffffff;
+      background: #0f172a;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
-    th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
-    th { background: #f1f5f9; color: var(--navy); position: sticky; top: 0; font-weight: 600; }
-    .dup-row { background: #fef2f2; }
-    .tag-row { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-weight: 600; font-size: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 460px; }
+    th, td { padding: 8px 10px; border: 1px solid var(--card-border); text-align: left; }
+    th { background: #161f30; color: var(--accent); position: sticky; top: 0; font-weight: 600; }
+    td { color: #cbd5e1; }
+    .dup-row { background: rgba(248, 113, 113, 0.1); }
+    .tag-row { background: #374151; padding: 2px 5px; border-radius: 4px; font-weight: 600; font-size: 10px; color: #cbd5e1; }
 
-    /* Compare Status Badges */
-    .badge-added { background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-removed { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-changed { background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-same { background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; }
+    /* Badges */
+    .badge-added { background: rgba(52, 211, 153, 0.15); color: var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-removed { background: rgba(248, 113, 113, 0.15); color: var(--danger); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-changed { background: rgba(251, 191, 36, 0.15); color: var(--warning); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
 
-    /* Barcode Layout */
+    /* Barcode Cards */
     #barcodeArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
-    .barcode-card { border: 1px solid var(--border); padding: 8px; text-align: center; background: #ffffff; border-radius: 6px; }
-    .barcode-card svg { max-width: 100%; height: 45px; }
+    .barcode-card { border: 1px solid #334155; padding: 8px; text-align: center; background: #ffffff; border-radius: 6px; }
+    .barcode-card svg { max-width: 100%; height: 42px; }
+
+    /* Modals & Popups */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 14px;
+      max-width: 420px;
+      width: 100%;
+      padding: 22px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+      position: relative;
+      text-align: center;
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* Pop-up Coffee Button */
+    .coffee-btn-popup {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFDD00;
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 14px;
+      width: 100%;
+      justify-content: center;
+    }
 
     /* Footer */
     footer {
       width: 100%;
-      border-top: 1px solid var(--border);
-      background: #ffffff;
-      padding: 18px 14px;
+      border-top: 1px solid var(--card-border);
+      background: #0f172a;
+      padding: 20px 14px;
       text-align: center;
       font-size: 13px;
       color: var(--text-muted);
       margin-top: auto;
     }
-    footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    footer a { color: #facc15; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Top Header Navigation -->
+  <!-- Header -->
   <header>
     <div class="brand">
       ⚡ QuickClean <span>Toolkit</span>
     </div>
-    <div class="nav-links">
-      <a href="#tools">Tools</a>
-      <a href="#privacy">Privacy</a>
+    
+    <div class="nav-actions">
+      <!-- Feedback Nav Trigger -->
+      <button class="menu-btn" onclick="openFeedbackModal()">
+        💬 Feedback
+      </button>
+
+      <!-- Tools Dropdown Trigger -->
+      <button class="menu-btn" onclick="toggleToolsMenu()">
+        🛠️ Tools ▾
+      </button>
+
+      <!-- Dropdown Items -->
+      <div id="toolsDropdown" class="dropdown-menu">
+        <div class="dropdown-item active" onclick="selectTool('cleaner', '1. Data Cleaner & Health')">1. Data Cleaner & Health</div>
+        <div class="dropdown-item" onclick="selectTool('compare', '2. Smart File Compare')">2. Smart File Compare</div>
+        <div class="dropdown-item" onclick="selectTool('inventory', '3. Inventory Checker')">3. Inventory Checker</div>
+        <div class="dropdown-item" onclick="selectTool('barcode', '4. Barcode Labels')">4. Barcode Labels</div>
+        <div class="dropdown-item" onclick="selectTool('json', '5. JSON Tools')">5. JSON Tools</div>
+      </div>
     </div>
   </header>
 
@@ -285,57 +381,50 @@
   <div class="hero">
     <div class="privacy-tag">🔒 100% In-Browser & Private (Zero Server Upload)</div>
     <h1>Clean, Compare & Validate Your Business Data</h1>
-    <p>Client-side toolkit for spreadsheets, file audits, inventory reconciliation, and label printing without privacy exposure.</p>
+    <p>Private client-side data operations for spreadsheets, stock counts, and label printing.</p>
   </div>
 
-  <div class="main-wrapper" id="tools">
-    <!-- Tool Category Tabs -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('cleaner')">1. Data Cleaner & Health</button>
-      <button class="tab-btn" onclick="switchTab('compare')">2. Smart File Compare</button>
-      <button class="tab-btn" onclick="switchTab('inventory')">3. Inventory Checker</button>
-      <button class="tab-btn" onclick="switchTab('barcode')">4. Barcode Labels</button>
-      <button class="tab-btn" onclick="switchTab('json')">5. JSON Tools</button>
-    </div>
+  <!-- Active Tool Banner -->
+  <div class="active-tool-banner">
+    <div id="activeToolName" class="active-tool-title">1. Data Cleaner & Health</div>
+  </div>
 
-    <!-- ==================== TAB 1: CSV/EXCEL CLEANER & HEALTH ==================== -->
-    <div id="cleanerPane" class="tab-pane active card">
+  <div class="main-wrapper">
+
+    <!-- ==================== TOOL 1: DATA CLEANER & HEALTH ==================== -->
+    <div id="cleanerPane" class="tool-pane active card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h3 style="margin:0; font-size:16px;">Clean Data & Inspect Health</h3>
+        <h3 style="margin:0; font-size:15px; color:#fff;">Clean Data & Audit Health</h3>
         <button class="btn btn-reset" onclick="resetCleaner()">Reset / Start Over</button>
       </div>
 
       <div class="dropzone">
         <input type="file" id="cleanerInput" accept=".csv, .xlsx, .xls">
-        <p style="margin: 6px 0 0 0; font-size: 12px; color: var(--text-muted);">Upload CSV or Excel sheet (Original file is never altered)</p>
+        <p style="margin: 6px 0 0 0; font-size: 12px; color: var(--text-muted);">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
       </div>
 
       <div id="cleanerMeta" class="meta-box"></div>
 
-      <!-- Health Diagnostics Scan -->
+      <!-- Advanced Health Report Scan -->
       <div id="healthCard" style="display:none; margin-bottom:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong style="font-size:13px;">Data Health Audit:</strong>
-          <span style="font-size:11px; color:var(--text-muted);">Client-side verified</span>
-        </div>
         <div class="health-grid">
-          <div class="metric-card metric-rows"><strong id="mRows">0</strong><span>Total Rows</span></div>
-          <div class="metric-card metric-dups"><strong id="mDups">0</strong><span>Duplicates</span></div>
-          <div class="metric-card metric-blanks"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
-          <div class="metric-card metric-spaces"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
-          <div class="metric-card metric-caps"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
+          <div class="metric-card c-blue"><strong id="mRows">0</strong><span>Total Rows</span></div>
+          <div class="metric-card c-red"><strong id="mDups">0</strong><span>Duplicates</span></div>
+          <div class="metric-card c-amber"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
+          <div class="metric-card c-purple"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
+          <div class="metric-card c-pink"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
         </div>
       </div>
 
       <!-- Flagged Duplicates Review Table -->
       <div id="dupSection" style="display:none; margin-bottom:14px;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--danger);">⚠️ Review Flagged Duplicate Rows (Row Number & Preview):</h4>
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--danger);">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
         <div class="table-container">
           <table id="dupTable"></table>
         </div>
       </div>
 
-      <!-- Initial File Preview -->
+      <!-- Source File Preview -->
       <div id="previewSection" style="display:none; margin-bottom:14px;">
         <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--text-muted);">Source File Preview (First 5 Rows):</h4>
         <div class="table-container">
@@ -343,16 +432,16 @@
         </div>
       </div>
 
-      <!-- Cleaning Controls (Safe Defaults) -->
+      <!-- Options -->
       <div class="controls-box">
         <h4>Safe Cleaning Options</h4>
         <div class="checkbox-row">
-          <label><input type="checkbox" id="optTrim" checked> Trim leading/trailing spaces</label>
+          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
           <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
           <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Title Case</label>
         </div>
         <div>
-          <label style="font-size:12px; font-weight:600; color:var(--navy);">Duplicate Match Rule (Default: Exact Whole Row):</label>
+          <label style="font-size:12px; color:#cbd5e1;">Duplicate Match Rule (Default: Exact Whole Row):</label>
           <select id="dupMode" onchange="runHealthAudit()">
             <option value="entire">Exact Entire Row Match (Safe Default)</option>
           </select>
@@ -361,9 +450,9 @@
 
       <button class="btn" onclick="executeClean()">Preview & Clean Data</button>
 
-      <!-- Action Confirmation & Export -->
+      <!-- Clean Result -->
       <div id="cleanResult" style="display:none; margin-top:16px;">
-        <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success); background:#f0fdf4;"></div>
+        <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success);"></div>
         <h4 style="margin:10px 0 6px 0; font-size:13px;">Cleaned Output Preview:</h4>
         <div class="table-container">
           <table id="cleanedTable"></table>
@@ -375,35 +464,34 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 2: SMART FILE COMPARE ==================== -->
-    <div id="comparePane" class="tab-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px;">Smart File Compare</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Compare two CSV or Excel files (e.g. Old vs New stock report) by a common key column like SKU, ID, or Invoice Number.</p>
+    <!-- ==================== TOOL 2: SMART FILE COMPARE ==================== -->
+    <div id="comparePane" class="tool-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Smart File Compare</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Compare two CSV or Excel files by common key column (SKU, ID, Invoice) to identify Added, Removed, and Changed records.</p>
       
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-bottom:14px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:14px;">
         <div class="dropzone" style="margin-bottom:0;">
-          <strong style="font-size:13px; display:block; margin-bottom:4px;">File A (Old / Base):</strong>
+          <strong style="font-size:12px; display:block; margin-bottom:4px;">File A (Old):</strong>
           <input type="file" id="compFileA" accept=".csv, .xlsx, .xls">
         </div>
         <div class="dropzone" style="margin-bottom:0;">
-          <strong style="font-size:13px; display:block; margin-bottom:4px;">File B (New / Current):</strong>
+          <strong style="font-size:12px; display:block; margin-bottom:4px;">File B (New):</strong>
           <input type="file" id="compFileB" accept=".csv, .xlsx, .xls">
         </div>
       </div>
 
       <div id="compareKeyBox" style="display:none; margin-bottom:14px;" class="controls-box">
-        <label style="font-size:13px; font-weight:600;">Select Unique Matching Key Column (e.g., SKU, ID):</label>
+        <label style="font-size:12px; font-weight:600;">Match by Unique Key Column:</label>
         <select id="compareKeySelect"></select>
-        <div id="compareKeyWarning" style="color:var(--danger); font-size:12px; margin-top:4px; display:none;"></div>
       </div>
 
       <button class="btn" onclick="executeFileCompare()">Compare Both Files</button>
 
       <div id="compareResult" style="display:none; margin-top:16px;">
         <div class="health-grid">
-          <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added Rows</span></div>
-          <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed Rows</span></div>
-          <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed Rows</span></div>
+          <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added</span></div>
+          <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed</span></div>
+          <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed</span></div>
           <div class="metric-card"><strong id="cmpSame" style="color:var(--text-muted);">0</strong><span>Unchanged</span></div>
         </div>
 
@@ -415,9 +503,9 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 3: INVENTORY CHECKER ==================== -->
-    <div id="inventoryPane" class="tab-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px;">Inventory & Stock Reconciliation</h3>
+    <!-- ==================== TOOL 3: INVENTORY CHECKER ==================== -->
+    <div id="inventoryPane" class="tool-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Inventory Stock Reconciliation</h3>
       <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Reconcile System Quantities vs Physical Count by SKU to detect shortages, excess items, and financial variance.</p>
       
       <div class="dropzone">
@@ -426,21 +514,21 @@
       </div>
 
       <div id="invColumnMap" style="display:none;" class="controls-box">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
           <div>
-            <label style="font-size:12px; font-weight:600;">SKU / Item Column:</label>
+            <label style="font-size:12px;">SKU Column:</label>
             <select id="invColSku"></select>
           </div>
           <div>
-            <label style="font-size:12px; font-weight:600;">System Qty Column:</label>
+            <label style="font-size:12px;">System Qty Column:</label>
             <select id="invColSystem"></select>
           </div>
           <div>
-            <label style="font-size:12px; font-weight:600;">Counted Qty Column:</label>
+            <label style="font-size:12px;">Counted Qty Column:</label>
             <select id="invColPhysical"></select>
           </div>
           <div>
-            <label style="font-size:12px; font-weight:600;">Unit Cost (Optional):</label>
+            <label style="font-size:12px;">Unit Cost (Optional):</label>
             <select id="invColCost"><option value="">-- None --</option></select>
           </div>
         </div>
@@ -451,41 +539,41 @@
       <div id="invResult" style="display:none; margin-top:16px;">
         <div class="health-grid">
           <div class="metric-card"><strong id="invTotalSkus">0</strong><span>Total SKUs</span></div>
-          <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage (Missing)</span></div>
-          <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess (Over)</span></div>
-          <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Exact Matches</span></div>
+          <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage</span></div>
+          <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess</span></div>
+          <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Matched</span></div>
         </div>
 
         <h4 style="margin:10px 0 6px 0; font-size:13px;">Stock Variance Discrepancy Preview:</h4>
         <div class="table-container">
           <table id="invTable"></table>
         </div>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Stock Discrepancy Report CSV</button>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Discrepancy CSV</button>
       </div>
     </div>
 
-    <!-- ==================== TAB 4: BARCODE & LABELS ==================== -->
-    <div id="barcodePane" class="tab-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px;">Bulk Barcode & Printable Labels</h3>
+    <!-- ==================== TOOL 4: BARCODE LABELS ==================== -->
+    <div id="barcodePane" class="tool-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">Bulk Barcode & Printable Labels</h3>
       <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Generate Code128 barcodes from SKUs or numbers. Print a sheet or save to PDF directly in your browser.</p>
 
       <div class="dropzone">
-        <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;">Type or Paste SKU Codes (one per line):</label>
-        <textarea id="barcodeText" style="width:100%; height:90px; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-family:monospace; font-size:13px;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px; color:#cbd5e1;">Paste SKU Codes (one per line):</label>
+        <textarea id="barcodeText" style="height:90px; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
       </div>
       <button class="btn" onclick="generateBarcodeCards()">Generate Barcode Sheet</button>
-       <button class="btn btn-secondary" onclick="window.print()" id="barcodePrintBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save as PDF</button>
+      <button class="btn btn-secondary" onclick="printBarcodesAndTriggerPopup()" id="barcodePrintBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save as PDF</button>
       <div id="barcodeArea"></div>
     </div>
 
-    <!-- ==================== TAB 5: JSON TOOLS ==================== -->
-    <div id="jsonPane" class="tab-pane card">
-      <h3 style="margin:0 0 6px 0; font-size:16px;">JSON Converter & Formatter</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Convert spreadsheet files into formatted JSON or format/validate existing JSON.</p>
+    <!-- ==================== TOOL 5: JSON TOOLS ==================== -->
+    <div id="jsonPane" class="tool-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px; color:#fff;">JSON Converter</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Convert CSV or Excel files into structured JSON format.</p>
       
       <div class="dropzone">
         <input type="file" id="jsonFileInput" accept=".csv, .xlsx, .xls">
-        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file to convert to JSON</p>
+        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file</p>
       </div>
       <button class="btn" onclick="convertFileToJson()">Convert to JSON & Download</button>
       <div id="jsonMeta" class="meta-box" style="margin-top:12px;"></div>
@@ -493,18 +581,53 @@
 
   </div>
 
-  <!-- Footer & Privacy Notes -->
+  <!-- Coffee Post-Work Pop-up Modal -->
+  <div id="coffeeModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeCoffeeModal()">&times;</button>
+      <div style="font-size: 34px; margin-bottom: 8px;">🎉</div>
+      <h3 style="margin: 0 0 8px 0; color: #fff; font-size: 18px;">Task Completed!</h3>
+      <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 14px 0;">
+        Your file has been processed locally without privacy risk. If this tool saved you time today, consider supporting its upkeep with a coffee!
+      </p>
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-btn-popup" onclick="closeCoffeeModal()">
+        ☕ Buy me a coffee ($3)
+      </a>
+      <button class="btn btn-secondary" style="margin-top: 10px; font-size: 12px; padding: 8px;" onclick="closeCoffeeModal()">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- User Feedback Modal -->
+  <div id="feedbackModal" class="modal-overlay">
+    <div class="modal-card" style="text-align: left;">
+      <button class="modal-close" onclick="closeFeedbackModal()">&times;</button>
+      <h3 style="margin: 0 0 6px 0; color: #fff; font-size: 17px;">💬 Send User Feedback</h3>
+      <p style="color: var(--text-muted); font-size: 12px; margin: 0 0 12px 0;">
+        Have a bug, suggested improvement, or a feature request? Let us know:
+      </p>
+      <input type="email" id="fbEmail" placeholder="Your Email (Optional, for response)">
+      <textarea id="fbMessage" style="height: 100px; margin-top: 8px;" placeholder="Write your feedback, query or problem here..."></textarea>
+      
+      <button class="btn" style="margin-top: 12px;" onclick="submitFeedback()">
+        Submit Feedback
+      </button>
+      <div id="fbNote" style="font-size: 12px; color: var(--success); margin-top: 8px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Permanent Footer -->
   <footer id="privacy">
     <p><strong>QuickClean Business Data Toolkit</strong> — Client-Side Local Execution.</p>
     <p style="font-size:12px; max-width:600px; margin:4px auto 8px auto;">
-      Data security notice: All file calculations, deduplication, and formatting execute inside your browser memory using Web APIs. No spreadsheets or user records are uploaded, stored, or transmitted to external servers.
+      All calculations execute inside your browser memory. No spreadsheets or user records are uploaded or transmitted to external servers.
     </p>
     <p><a href="https://buymeacoffee.com/suhel786" target="_blank">☕ Support this free tool with a coffee</a></p>
   </footer>
 
-  <!-- Complete Javascript Logic -->
   <script>
-    // Global State
+    // State
     let rawData = [];
     let headers = [];
     let cleanedData = [];
@@ -512,34 +635,75 @@
     let currentFileName = "data";
     let healthStats = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
 
-    let compDataA = { headers: [], rows: [], name: 'File A' };
-    let compDataB = { headers: [], rows: [], name: 'File B' };
+    let compDataA = { headers: [], rows: [] };
+    let compDataB = { headers: [], rows: [] };
     let diffResults = [];
 
     let invRows = [];
     let invHeaders = [];
     let invAuditResults = [];
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    // Dropdown Navigation Handler
+    function toggleToolsMenu() {
+      document.getElementById('toolsDropdown').classList.toggle('show');
+    }
 
-      if (tabId === 'cleaner') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('cleanerPane').classList.add('active');
-      } else if (tabId === 'compare') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('comparePane').classList.add('active');
-      } else if (tabId === 'inventory') {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('inventoryPane').classList.add('active');
-      } else if (tabId === 'barcode') {
-        document.querySelectorAll('.tab-btn')[3].classList.add('active');
-        document.getElementById('barcodePane').classList.add('active');
-      } else if (tabId === 'json') {
-        document.querySelectorAll('.tab-btn')[4].classList.add('active');
-        document.getElementById('jsonPane').classList.add('active');
+    window.onclick = function(event) {
+      if (!event.target.matches('.menu-btn')) {
+        const dropdown = document.getElementById('toolsDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+          dropdown.classList.remove('show');
+        }
       }
+    };
+
+    function selectTool(toolId, toolName) {
+      document.querySelectorAll('.tool-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
+      
+      document.getElementById(`${toolId}Pane`).classList.add('active');
+      document.getElementById('activeToolName').textContent = toolName;
+      document.getElementById('toolsDropdown').classList.remove('show');
+    }
+
+    // Modal Handlers
+    function triggerSuccessCoffeePopup() {
+      setTimeout(() => {
+        document.getElementById('coffeeModal').classList.add('active');
+      }, 700);
+    }
+
+    function closeCoffeeModal() {
+      document.getElementById('coffeeModal').classList.remove('active');
+    }
+
+    function openFeedbackModal() {
+      document.getElementById('feedbackModal').classList.add('active');
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').classList.remove('active');
+    }
+
+    function submitFeedback() {
+      const email = document.getElementById('fbEmail').value.trim();
+      const msg = document.getElementById('fbMessage').value.trim();
+      const note = document.getElementById('fbNote');
+
+      if (!msg) { alert("Please type your message first!"); return; }
+
+      // Direct mail trigger to receive query on developer email
+      const subject = encodeURIComponent("QuickClean User Feedback");
+      const body = encodeURIComponent(`Sender: ${email || 'Anonymous'}\n\nMessage:\n${msg}`);
+      window.open(`mailto:suhelwork@gmail.com?subject=${subject}&body=${body}`, '_blank');
+
+      note.textContent = "✓ Opening email client to send your feedback. Thank you!";
+      note.style.display = 'block';
+      setTimeout(() => {
+        closeFeedbackModal();
+        note.style.display = 'none';
+        document.getElementById('fbMessage').value = '';
+      }, 2000);
     }
 
     // ==========================================
@@ -558,7 +722,6 @@
         metaBox.style.display = 'block';
         metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Rows:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
-        // Populate Match Dropdown (Safe default: Entire Row)
         const dupSelect = document.getElementById('dupMode');
         dupSelect.innerHTML = '<option value="entire">Exact Entire Row Match (Safe Default)</option>';
         headers.forEach((h, idx) => {
@@ -723,7 +886,7 @@
 
       cleanedData = unique;
       renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
-      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Retained <strong>${cleanedData.length}</strong> verified unique records | Removed <strong>${removedDups}</strong> duplicate rows. Original source remains untouched.`;
+      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Retained <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedDups}</strong> duplicate records. Original untouched.`;
       document.getElementById('cleanResult').style.display = 'block';
     }
 
@@ -744,30 +907,32 @@
       const sanitized = cleanedData.map(row => 
         row.map(cell => {
           let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str; // Protect against formula injection
+          if (/^[=+\-@]/.test(str)) return "'" + str;
           return str;
         })
       );
       const csv = Papa.unparse([headers, ...sanitized]);
       triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+      triggerSuccessCoffeePopup();
     }
 
     function downloadAuditReport() {
       const reportRows = [
-        ["Audit Diagnostic Category", "Detected Count", "Action/Standard"],
-        ["Total Rows Processed", healthStats.rows, "Audited locally"],
-        ["Duplicate Records Found", healthStats.dups, "Flagged with exact source row #"],
-        ["Missing / Empty Values", healthStats.blanks, "Verified"],
-        ["Extra Inconsistent Spaces", healthStats.spaces, "Trimmed"],
-        ["Case Mismatches (Variants)", healthStats.caps, "Tracked per column"],
-        ["Audit Date", new Date().toLocaleString(), "100% Client-Side"]
+        ["Audit Category", "Detected Count"],
+        ["Total Rows Processed", healthStats.rows],
+        ["Duplicate Records", healthStats.dups],
+        ["Missing Values", healthStats.blanks],
+        ["Extra Spaces", healthStats.spaces],
+        ["Case Mismatches", healthStats.caps],
+        ["Audit Date", new Date().toLocaleString()]
       ];
       const csv = Papa.unparse(reportRows);
-      triggerDownload(csv, `${currentFileName}_data_health_report.csv`, 'text/csv;charset=utf-8;');
+      triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
+      triggerSuccessCoffeePopup();
     }
 
     // ==========================================
-    // 2. SMART FILE COMPARE (Priority 1)
+    // 2. SMART FILE COMPARE
     // ==========================================
     document.getElementById('compFileA').addEventListener('change', e => loadCompareFile(e.target.files[0], 'A'));
     document.getElementById('compFileB').addEventListener('change', e => loadCompareFile(e.target.files[0], 'B'));
@@ -775,8 +940,8 @@
     function loadCompareFile(file, type) {
       if (!file) return;
       parseFile(file, (h, r) => {
-        if (type === 'A') compDataA = { headers: h, rows: r, name: file.name };
-        else compDataB = { headers: h, rows: r, name: file.name };
+        if (type === 'A') compDataA = { headers: h, rows: r };
+        else compDataB = { headers: h, rows: r };
 
         if (compDataA.headers.length > 0 && compDataB.headers.length > 0) {
           setupCompareKeys();
@@ -790,7 +955,7 @@
       const common = compDataA.headers.filter(h => compDataB.headers.includes(h));
 
       if (common.length === 0) {
-        alert("Warning: No matching column header found between File A and File B!");
+        alert("No matching column header between File A and B!");
         return;
       }
 
@@ -831,11 +996,10 @@
       diffResults = [];
       let added = 0, removed = 0, changed = 0, same = 0;
 
-      // Check for removed, changed, unchanged
       mapA.forEach((rowA, k) => {
         if (!mapB.has(k)) {
           removed++;
-          diffResults.push({ key: k, status: 'REMOVED', details: 'Record removed in File B', row: rowA });
+          diffResults.push({ key: k, status: 'REMOVED', details: 'Removed in File B' });
         } else {
           const rowB = mapB.get(k);
           const changedCols = [];
@@ -848,19 +1012,18 @@
 
           if (changedCols.length > 0) {
             changed++;
-            diffResults.push({ key: k, status: 'CHANGED', details: changedCols.join(' | '), row: rowB });
+            diffResults.push({ key: k, status: 'CHANGED', details: changedCols.join(' | ') });
           } else {
             same++;
-            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical record', row: rowB });
+            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical' });
           }
         }
       });
 
-      // Check for added
       mapB.forEach((rowB, k) => {
         if (!mapA.has(k)) {
           added++;
-          diffResults.push({ key: k, status: 'ADDED', details: 'New record in File B', row: rowB });
+          diffResults.push({ key: k, status: 'ADDED', details: 'New in File B' });
         }
       });
 
@@ -869,11 +1032,10 @@
       document.getElementById('cmpChanged').textContent = changed;
       document.getElementById('cmpSame').textContent = same;
 
-      // Render Diff Table
       const tbl = document.getElementById('compareTable');
-      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Diff Summary</th></tr>`;
+      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Details</th></tr>`;
       diffResults.slice(0, 15).forEach(res => {
-        const badgeClass = res.status === 'ADDED' ? 'badge-added' : (res.status === 'REMOVED' ? 'badge-removed' : (res.status === 'CHANGED' ? 'badge-changed' : 'badge-same'));
+        const badgeClass = res.status === 'ADDED' ? 'badge-added' : (res.status === 'REMOVED' ? 'badge-removed' : (res.status === 'CHANGED' ? 'badge-changed' : ''));
         const tr = document.createElement('tr');
         tr.innerHTML = `<td><span class="${badgeClass}">${res.status}</span></td><td><strong>${res.key}</strong></td><td style="font-size:11px;">${res.details}</td>`;
         tbl.appendChild(tr);
@@ -883,14 +1045,15 @@
     }
 
     function downloadComparisonReport() {
-      const out = [["Status", "Matching Key", "Discrepancy Details"]];
+      const out = [["Status", "Key", "Details"]];
       diffResults.forEach(r => out.push([r.status, r.key, r.details]));
       const csv = Papa.unparse(out);
-      triggerDownload(csv, `file_comparison_audit.csv`, 'text/csv;charset=utf-8;');
+      triggerDownload(csv, `file_compare_report.csv`, 'text/csv;charset=utf-8;');
+      triggerSuccessCoffeePopup();
     }
 
     // ==========================================
-    // 3. INVENTORY CHECKER (Priority 2)
+    // 3. INVENTORY CHECKER
     // ==========================================
     document.getElementById('invFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -921,7 +1084,7 @@
         sCost.appendChild(opt);
 
         if (/sku|item|code/i.test(h)) sSku.value = i;
-        if (/system|expected|book|pos/i.test(h)) sSys.value = i;
+        if (/system|expected|book/i.test(h)) sSys.value = i;
         if (/physical|actual|counted/i.test(h)) sPhy.value = i;
         if (/cost|price|rate/i.test(h)) sCost.value = i;
       });
@@ -930,7 +1093,7 @@
     }
 
     function executeInventoryCheck() {
-      if (invRows.length === 0) { alert("Please upload inventory sheet!"); return; }
+      if (invRows.length === 0) { alert("Upload inventory sheet first!"); return; }
 
       const idxSku = parseInt(document.getElementById('invColSku').value);
       const idxSys = parseInt(document.getElementById('invColSystem').value);
@@ -963,7 +1126,7 @@
       document.getElementById('invMatch').textContent = matched;
 
       const tbl = document.getElementById('invTable');
-      tbl.innerHTML = `<tr><th>SKU</th><th>System Qty</th><th>Counted Qty</th><th>Variance</th><th>Impact</th><th>Status</th></tr>`;
+      tbl.innerHTML = `<tr><th>SKU</th><th>System</th><th>Counted</th><th>Variance</th><th>Impact</th><th>Status</th></tr>`;
 
       invAuditResults.filter(a => a.status !== 'MATCHED').slice(0, 15).forEach(res => {
         const tr = document.createElement('tr');
@@ -976,24 +1139,25 @@
     }
 
     function downloadInventoryReport() {
-      const out = [["SKU", "System Expected", "Physical Counted", "Variance Qty", "Estimated Value Impact", "Status"]];
+      const out = [["SKU", "System", "Counted", "Variance", "Impact", "Status"]];
       invAuditResults.forEach(i => out.push([i.sku, i.sysQty, i.phyQty, i.variance, i.impact, i.status]));
       const csv = Papa.unparse(out);
-      triggerDownload(csv, `inventory_discrepancy_report.csv`, 'text/csv;charset=utf-8;');
+      triggerDownload(csv, `inventory_report.csv`, 'text/csv;charset=utf-8;');
+      triggerSuccessCoffeePopup();
     }
 
     // ==========================================
-    // 4. BULK BARCODES & LABELS (Priority 3)
+    // 4. BARCODE LABELS
     // ==========================================
     function generateBarcodeCards() {
       const val = document.getElementById('barcodeText').value.trim();
       const area = document.getElementById('barcodeArea');
-      if (!val) { alert("Please type or paste item SKU codes!"); return; }
+      if (!val) { alert("Enter SKU codes!"); return; }
 
       const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
       area.innerHTML = '';
 
-      items.forEach((sku, i) => {
+      items.forEach((sku) => {
         const card = document.createElement('div');
         card.className = 'barcode-card';
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -1008,12 +1172,17 @@
       document.getElementById('barcodePrintBtn').style.display = 'inline-block';
     }
 
+    function printBarcodesAndTriggerPopup() {
+      window.print();
+      triggerSuccessCoffeePopup();
+    }
+
     // ==========================================
-    // 5. JSON TOOLBOX
+    // 5. JSON CONVERTER
     // ==========================================
     function convertFileToJson() {
       const file = document.getElementById('jsonFileInput').files[0];
-      if (!file) { alert("Please select a file to convert!"); return; }
+      if (!file) { alert("Select file!"); return; }
 
       parseFile(file, (h, rows) => {
         const json = rows.map(r => {
@@ -1024,20 +1193,19 @@
 
         const jsonStr = JSON.stringify(json, null, 2);
         document.getElementById('jsonMeta').style.display = 'block';
-        document.getElementById('jsonMeta').textContent = `✓ Successfully converted ${json.length} records into JSON.`;
+        document.getElementById('jsonMeta').textContent = `✓ Converted ${json.length} items to JSON.`;
         triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+        triggerSuccessCoffeePopup();
       });
     }
 
-    // ==========================================
-    // HELPERS & FILE PARSING
-    // ==========================================
+    // Helpers
     function parseFile(file, callback) {
       if (file.name.endsWith('.csv')) {
         Papa.parse(file, {
           skipEmptyLines: false,
           complete: res => {
-            if (!res.data || res.data.length === 0) { alert("Uploaded file is empty!"); return; }
+            if (!res.data || res.data.length === 0) { alert("File is empty!"); return; }
             callback(res.data[0], res.data.slice(1));
           }
         });
@@ -1048,12 +1216,12 @@
           const wb = XLSX.read(data, { type: 'array' });
           const sheet = wb.Sheets[wb.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-          if (!rows || rows.length === 0) { alert("Excel sheet is empty!"); return; }
+          if (!rows || rows.length === 0) { alert("Sheet is empty!"); return; }
           callback(rows[0], rows.slice(1));
         };
         reader.readAsArrayBuffer(file);
       } else {
-        alert("Unsupported file format! Please upload .csv, .xlsx, or .xls.");
+        alert("Upload .csv, .xlsx, or .xls file!");
       }
     }
 
