@@ -1,964 +1,669 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Utility Hub - Free Online Tools</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- QRCode.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickClean Business Data Toolkit</title>
+  <meta name="description" content="Safe, private client-side business data cleaner, smart duplicate review, and diagnostic health report.">
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
   <style>
+    * { box-sizing: border-box; }
     body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 24px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    .container {
+      background: #111827;
+      max-width: 880px;
+      width: 100%;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid #1f2937;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
     }
+    h1 { font-size: 26px; margin: 0 0 6px 0; color: #ffffff; letter-spacing: -0.5px; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin: 0 0 24px 0; }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid #1f2937;
+      margin-bottom: 22px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 12px 18px;
+      background: none;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      color: #94a3b8;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .dropzone {
+      border: 2px dashed #374151;
+      background: #161f30;
+      border-radius: 12px;
+      padding: 26px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .dropzone:hover { border-color: #38bdf8; }
+    input[type="file"] { color: #94a3b8; font-size: 13px; }
+
+    .meta-box {
+      display: none;
+      background: #1e293b;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: #cbd5e1;
+      border-left: 4px solid #38bdf8;
+    }
+
+    /* Health Diagnostic Cards Grid */
+    .health-card {
+      display: none;
+      background: #161f30;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .health-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .metric-card {
+      background: #0f172a;
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      text-align: center;
+    }
+    .metric-card strong {
+      display: block;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .metric-card span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+    
+    .c-blue strong { color: #38bdf8; }
+    .c-red strong { color: #f87171; }
+    .c-amber strong { color: #fbbf24; }
+    .c-purple strong { color: #a78bfa; }
+    .c-pink strong { color: #f472b6; }
+
+    /* Controls */
+    .options-group {
+      background: #161f30;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .options-group h4 { margin: 0 0 12px 0; font-size: 13px; color: #e2e8f0; }
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; }
+    
+    select {
+      background: #0f172a;
+      color: #f1f5f9;
+      border: 1px solid #374151;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      width: 100%;
+      max-width: 320px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn:hover { background: #0369a1; }
+    .btn-row { display: flex; gap: 12px; margin-top: 14px; }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Tables */
+    .table-wrapper {
+      max-height: 250px;
+      overflow: auto;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      margin: 10px 0 16px 0;
+      background: #0f172a;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 9px 12px; border: 1px solid #1f2937; text-align: left; }
+    th { background: #161f30; color: #38bdf8; position: sticky; top: 0; }
+    td { color: #cbd5e1; }
+    .dup-row { background: rgba(248, 113, 113, 0.08); }
+    .row-badge { background: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #94a3b8; }
+
+    /* Barcode Grid */
+    #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+    .barcode-card { border: 1px solid #334155; padding: 12px; text-align: center; background: #ffffff; border-radius: 8px; }
+    .barcode-card svg { max-width: 100%; height: 50px; }
+
+    .footer-support {
+      margin-top: 24px;
+      padding: 14px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .footer-support a { color: #facc15; font-weight: 700; text-decoration: none; margin-left: 6px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body>
 
-  <!-- TOP NAVIGATION HEADER -->
-  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      
-      <!-- Left: Hamburger + Undo / Redo Navigation + Logo -->
-      <div class="flex items-center gap-3">
-        <!-- 3 Line Hamburger Menu -->
-        <button id="menu-toggle-btn" onclick="toggleSidebar()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="Toggle Menu">
-          <i class="fa-solid fa-bars text-lg"></i>
-        </button>
+  <div class="container">
+    <div class="header-badge">
+      🔒 100% In-Browser & Confidential (No Cloud Storage)
+    </div>
+    <h1>QuickClean Business Data Toolkit</h1>
+    <p class="subtitle">Inspect data health, review flagged duplicates, and clean records safely.</p>
 
-        <!-- UNDO (Back) & REDO (Forward) ARROWS -->
-        <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-          <button id="nav-undo-btn" onclick="goBack()" disabled class="p-2 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition rounded" title="Undo / Go Back">
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div class="w-px h-4 bg-slate-700"></div>
-          <button id="nav-redo-btn" onclick="goForward()" disabled class="p-2 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition rounded" title="Redo / Go Forward">
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchView('cleaner')">1. Smart Duplicate Review & Health</button>
+      <button class="tab-btn" onclick="switchView('converter')">2. Format Converter (JSON)</button>
+      <button class="tab-btn" onclick="switchView('barcode')">3. Barcode Labels</button>
+    </div>
+
+    <!-- TAB 1: SMART CLEANER & DUPLICATE REVIEW -->
+    <div id="cleanerPane" class="tab-pane active">
+      <div class="dropzone">
+        <input type="file" id="dataFile" accept=".csv, .xlsx, .xls">
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
+      </div>
+
+      <div id="fileMeta" class="meta-box"></div>
+
+      <!-- Priority 3: Deep Health Diagnostic Scan -->
+      <div id="healthCard" class="health-card">
+        <div class="health-header">
+          <strong style="font-size:14px; color:#f8fafc;">📊 Advanced Data Health Report</strong>
+          <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Completed</span>
         </div>
-
-        <!-- Logo / App Name -->
-        <a href="javascript:void(0)" onclick="navigateTo('dashboard')" class="flex items-center gap-2.5 ml-1 group">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-            <i class="fa-solid fa-layer-group text-sm"></i>
-          </div>
-          <span class="font-bold text-lg tracking-tight hidden sm:inline text-white group-hover:text-indigo-400 transition">DevUtility<span class="text-indigo-400">Hub</span></span>
-        </a>
-      </div>
-
-      <!-- Right: BUY ME A COFFEE CUP BUTTON (Replaced Login & Sign up) -->
-      <div class="flex items-center gap-3">
-        <a href="https://buymeacoffee.com/suhel786" target="_blank" rel="noopener noreferrer" 
-           class="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-[#ffea4d] text-slate-900 font-semibold px-4 py-2 rounded-xl text-sm shadow-md transition transform active:scale-95">
-          <i class="fa-solid fa-mug-hot text-base"></i>
-          <span class="hidden sm:inline">Buy Me a Coffee</span>
-          <span class="sm:hidden font-bold">Coffee</span>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- SIDEBAR / DRAWER MENU -->
-  <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 z-50 backdrop-blur-sm hidden transition-opacity"></div>
-  <aside id="sidebar-drawer" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
-    <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
-          <i class="fa-solid fa-tools text-sm"></i>
-        </div>
-        <span class="font-bold text-white">All Tools Menu</span>
-      </div>
-      <button onclick="toggleSidebar()" class="p-2 text-slate-400 hover:text-white rounded-lg">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
-    </div>
-
-    <!-- Quick Undo/Redo inside sidebar drawer too -->
-    <div class="px-4 py-2 bg-slate-950/40 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-      <span>History Navigation:</span>
-      <div class="flex gap-1">
-        <button onclick="goBack(); toggleSidebar();" class="px-2 py-1 bg-slate-800 rounded hover:text-white"><i class="fa-solid fa-arrow-left mr-1"></i>Back</button>
-        <button onclick="goForward(); toggleSidebar();" class="px-2 py-1 bg-slate-800 rounded hover:text-white">Next<i class="fa-solid fa-arrow-right ml-1"></i></button>
-      </div>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-4 space-y-1.5 custom-scrollbar">
-      <button onclick="navigateTo('dashboard'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-grid-2 text-indigo-400 w-5"></i>
-        <span>Dashboard / All Tools</span>
-      </button>
-      <div class="pt-2 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider px-3">Available Tools</div>
-      
-      <button onclick="navigateTo('tool-csv'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-file-excel text-emerald-400 w-5"></i>
-        <span>CSV & Excel Cleaner</span>
-      </button>
-      <button onclick="navigateTo('tool-qr'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-qrcode text-sky-400 w-5"></i>
-        <span>QR Code Generator</span>
-      </button>
-      <button onclick="navigateTo('tool-text'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-spell-check text-purple-400 w-5"></i>
-        <span>Text & Case Analyzer</span>
-      </button>
-      <button onclick="navigateTo('tool-password'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-key text-amber-400 w-5"></i>
-        <span>Password Generator</span>
-      </button>
-      <button onclick="navigateTo('tool-unit'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-calculator text-rose-400 w-5"></i>
-        <span>Digital Storage Converter</span>
-      </button>
-      <button onclick="navigateTo('tool-base64'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
-        <i class="fa-solid fa-image text-indigo-400 w-5"></i>
-        <span>Image to Base64</span>
-      </button>
-    </div>
-
-    <!-- Sidebar footer -->
-    <div class="p-4 border-t border-slate-800">
-      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="w-full flex items-center justify-center gap-2 bg-[#FFDD00] text-slate-900 font-semibold py-2 rounded-lg text-sm">
-        <i class="fa-solid fa-mug-hot"></i> Support Developer
-      </a>
-    </div>
-  </aside>
-
-  <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-    
-    <!-- ==================== 1. DASHBOARD VIEW ==================== -->
-    <section id="view-dashboard" class="space-y-8">
-      <!-- Hero Banner -->
-      <div class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 relative overflow-hidden">
-        <div class="max-w-2xl relative z-10">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
-            <i class="fa-solid fa-sparkles"></i> 100% Free & Client-Side Secure
-          </span>
-          <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Fast, Private & Simple <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Online Utility Tools</span>
-          </h1>
-          <p class="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
-            Clean messy spreadsheets, generate custom QR codes, convert text case, create cryptographically secure passwords, and more directly in your browser.
-          </p>
+        <div class="health-grid">
+          <div class="metric-card c-blue"><strong id="metricRows">0</strong><span>Total Rows</span></div>
+          <div class="metric-card c-red"><strong id="metricDups">0</strong><span>Duplicates</span></div>
+          <div class="metric-card c-amber"><strong id="metricBlanks">0</strong><span>Missing Values</span></div>
+          <div class="metric-card c-purple"><strong id="metricSpaces">0</strong><span>Extra Spaces</span></div>
+          <div class="metric-card c-pink"><strong id="metricCaps">0</strong><span>Case Mismatch</span></div>
         </div>
       </div>
 
-      <!-- Tools Grid -->
-      <div>
-        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> Explore Tools
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          
-          <!-- Card: CSV & Excel Cleaner -->
-          <div onclick="navigateTo('tool-csv')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-file-excel"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">CSV & Excel Cleaner</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Remove empty rows, trim whitespace, deduplicate entries, and export clean CSV instantly.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
-          <!-- Card: QR Code Generator -->
-          <div onclick="navigateTo('tool-qr')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-qrcode"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">QR Code Generator</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Create instant QR codes for URLs, WiFi credentials, plain text, and download high-res PNG.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-sky-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
-          <!-- Card: Text Analyzer & Converter -->
-          <div onclick="navigateTo('tool-text')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-spell-check"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Text & Case Converter</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Instant word, character, and sentence counting with uppercase, lowercase, title, and slug conversion.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-purple-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
-          <!-- Card: Password Generator -->
-          <div onclick="navigateTo('tool-password')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-key"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Password & Key Generator</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Generate random, secure strings and passwords with custom length, symbols, and strength rating.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
-          <!-- Card: Digital Storage Converter -->
-          <div onclick="navigateTo('tool-unit')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-calculator"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Digital Storage Converter</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Convert data sizes between Bytes, KB, MB, GB, and TB with live instant calculation.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-rose-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
-          <!-- Card: Image to Base64 -->
-          <div onclick="navigateTo('tool-base64')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
-            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
-              <i class="fa-solid fa-image"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Image to Base64</h3>
-            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Convert local PNG, JPEG, SVG or WebP images into Data URIs ready for web code.</p>
-            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-indigo-400">
-              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          </div>
-
+      <!-- Priority 1: Flagged Duplicate Rows Preview -->
+      <div id="dupReviewSection" style="display:none;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:#f87171;">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
+        <div class="table-wrapper">
+          <table id="dupTable"></table>
         </div>
       </div>
-    </section>
 
-    <!-- ==================== 2. CSV & EXCEL CLEANER TOOL ==================== -->
-    <section id="view-tool-csv" class="hidden space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <!-- Initial Preview -->
+      <div id="previewSection" style="display:none;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original File Preview (First 5 Rows):</h4>
+        <div class="table-wrapper">
+          <table id="previewTable"></table>
+        </div>
+      </div>
+
+      <!-- Priority 2: Smart Duplicate Rules -->
+      <div class="options-group">
+        <h4>Duplicate Detection & Cleaning Options</h4>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
+          <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
+          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name/Text Capitalization</label>
+        </div>
         <div>
-          <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-          </button>
-          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-file-excel text-emerald-400"></i> CSV & Data Cleaner
-          </h2>
-          <p class="text-sm text-slate-400">Clean dirty rows, remove duplicates, strip whitespace, and format tabular data.</p>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="loadSampleCSV()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300">
-            Load Sample Data
-          </button>
-          <button onclick="clearCSVInput()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-red-900/50 text-xs font-medium text-red-400">
-            Clear
-          </button>
+          <label style="font-size:13px; color:#cbd5e1; display:block;">Match Duplicate Records By:</label>
+          <select id="dupMode" onchange="recalculateDuplicates()">
+            <option value="entire">Entire Row Match</option>
+          </select>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Input & Options Panel -->
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload CSV or Paste Data</label>
-            <input type="file" id="csv-file-input" accept=".csv, .txt" onchange="handleCSVFileUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 mb-2 cursor-pointer" />
-            <textarea id="csv-raw-input" rows="8" placeholder="name, email, age&#10; Rahul Sharma , rahul@test.com , 28&#10;Rahul Sharma, rahul@test.com, 28&#10; , , &#10; Priya Verma , priya@test.com , 24" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 custom-scrollbar"></textarea>
-          </div>
+      <button class="btn" onclick="executeSafeClean()">Clean & Export Data</button>
 
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Cleaning Options</h4>
-            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input type="checkbox" id="clean-trim" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
-              <span>Trim extra spaces from cells</span>
-            </label>
-            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input type="checkbox" id="clean-empty" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
-              <span>Remove completely empty rows</span>
-            </label>
-            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input type="checkbox" id="clean-duplicates" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
-              <span>Remove duplicate rows</span>
-            </label>
-            
-            <button onclick="processCleanCSV()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition">
-              <i class="fa-solid fa-broom"></i> Clean & Filter Now
-            </button>
-          </div>
-        </div>
-
-        <!-- Output & Preview Panel -->
-        <div class="lg:col-span-2 space-y-4">
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Clean Data Preview</h4>
-                <span id="csv-stats-badge" class="text-[11px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full font-medium">0 Rows</span>
-              </div>
-              <button onclick="downloadCleanCSV()" id="csv-download-btn" disabled class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
-                <i class="fa-solid fa-download"></i> Export CSV
-              </button>
-            </div>
-
-            <!-- Table Preview -->
-            <div class="overflow-x-auto max-h-96 border border-slate-800 rounded-lg custom-scrollbar">
-              <table id="csv-preview-table" class="w-full text-left text-xs text-slate-300">
-                <thead class="bg-slate-950 text-slate-400 sticky top-0 uppercase text-[10px] tracking-wider">
-                  <tr id="csv-table-header">
-                    <th class="p-3">Data will appear here after cleaning</th>
-                  </tr>
-                </thead>
-                <tbody id="csv-table-body" class="divide-y divide-slate-800 bg-slate-900/60 font-mono">
-                  <tr><td class="p-4 text-center text-slate-500">Paste or load sample data to test.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 3. QR CODE GENERATOR TOOL ==================== -->
-    <section id="view-tool-qr" class="hidden space-y-6">
-      <div class="border-b border-slate-800 pb-4">
-        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-        </button>
-        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-qrcode text-sky-400"></i> QR Code Generator
-        </h2>
-        <p class="text-sm text-slate-400">Generate customizable QR codes for links, text, contacts, or payments.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Enter URL or Content</label>
-            <input type="text" id="qr-input-text" value="https://buymeacoffee.com/suhel786" placeholder="https://example.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Size (px)</label>
-              <select id="qr-size-select" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-                <option value="180">180 x 180</option>
-                <option value="256" selected>256 x 256</option>
-                <option value="380">380 x 380</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Color</label>
-              <input type="color" id="qr-color-picker" value="#0f172a" class="w-full h-9 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer p-0.5" />
-            </div>
-          </div>
-
-          <button onclick="generateQRCode()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-600/30 transition">
-            <i class="fa-solid fa-arrows-rotate"></i> Update QR Code
-          </button>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4">
-          <div class="p-4 bg-white rounded-2xl shadow-xl flex items-center justify-center" id="qrcode-container"></div>
-          <div class="flex gap-2 w-full max-w-xs">
-            <button onclick="downloadQRCode()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 border border-slate-700">
-              <i class="fa-solid fa-download"></i> Download PNG
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 4. TEXT & CASE ANALYZER TOOL ==================== -->
-    <section id="view-tool-text" class="hidden space-y-6">
-      <div class="border-b border-slate-800 pb-4">
-        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-        </button>
-        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-spell-check text-purple-400"></i> Text & Case Converter
-        </h2>
-        <p class="text-sm text-slate-400">Analyze character stats, word density, and change cases quickly.</p>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-          <div id="stat-words" class="text-2xl font-bold text-purple-400">0</div>
-          <div class="text-xs text-slate-500 uppercase mt-1">Words</div>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-          <div id="stat-chars" class="text-2xl font-bold text-indigo-400">0</div>
-          <div class="text-xs text-slate-500 uppercase mt-1">Characters</div>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-          <div id="stat-lines" class="text-2xl font-bold text-sky-400">0</div>
-          <div class="text-xs text-slate-500 uppercase mt-1">Lines</div>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-          <div id="stat-read" class="text-2xl font-bold text-emerald-400">0m</div>
-          <div class="text-xs text-slate-500 uppercase mt-1">Reading Time</div>
-        </div>
-      </div>
-
-      <div class="space-y-4">
-        <textarea id="text-tool-input" oninput="updateTextStats()" rows="8" placeholder="Type or paste your text here..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-purple-500 custom-scrollbar"></textarea>
+      <!-- Clean Summary & Exports -->
+      <div id="cleanSummary" style="display:none; margin-top: 18px;">
+        <div id="summaryText" class="meta-box" style="display:block; border-left-color:#34d399;"></div>
         
-        <div class="flex flex-wrap gap-2">
-          <button onclick="convertText('upper')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">UPPERCASE</button>
-          <button onclick="convertText('lower')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">lowercase</button>
-          <button onclick="convertText('title')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">Title Case</button>
-          <button onclick="convertText('slug')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">url-slug-case</button>
-          <button onclick="copyTextOutput()" class="ml-auto px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5">
-            <i class="fa-solid fa-copy"></i> Copy Text
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 5. PASSWORD GENERATOR TOOL ==================== -->
-    <section id="view-tool-password" class="hidden space-y-6">
-      <div class="border-b border-slate-800 pb-4">
-        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-        </button>
-        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-key text-amber-400"></i> Password & Secret Generator
-        </h2>
-        <p class="text-sm text-slate-400">Generate high-entropy cryptographically safe passwords.</p>
-      </div>
-
-      <div class="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-        <div class="relative">
-          <input type="text" id="pass-output" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-base font-mono text-amber-300 tracking-wider pr-24 focus:outline-none" />
-          <button onclick="copyGeneratedPassword()" class="absolute right-2 top-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
-            Copy
-          </button>
+        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Result Preview:</h4>
+        <div class="table-wrapper">
+          <table id="cleanedTable"></table>
         </div>
 
-        <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-xs text-slate-400 font-semibold mb-1">
-              <span>Password Length</span>
-              <span id="pass-length-val" class="text-amber-400 font-bold">16</span>
-            </div>
-            <input type="range" id="pass-length" min="6" max="64" value="16" oninput="document.getElementById('pass-length-val').innerText = this.value; generateNewPassword();" class="w-full accent-amber-500 cursor-pointer" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-xs text-slate-300">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="pass-upper" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
-              <span>Uppercase (A-Z)</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="pass-lower" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
-              <span>Lowercase (a-z)</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="pass-numbers" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
-              <span>Numbers (0-9)</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="pass-symbols" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
-              <span>Symbols (!@#$%^&*)</span>
-            </label>
-          </div>
-
-          <button onclick="generateNewPassword()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition">
-            <i class="fa-solid fa-arrows-rotate"></i> Regenerate Password
-          </button>
+        <div class="btn-row">
+          <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
+          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Full Health Report</button>
         </div>
+         </div>
+    </div>
+
+    <!-- TAB 2: CONVERTER -->
+    <div id="converterPane" class="tab-pane">
+      <div class="dropzone">
+        <input type="file" id="convertFile" accept=".csv, .xlsx, .xls">
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Convert Excel (.xlsx) or CSV directly to JSON</p>
       </div>
-    </section>
+      <button class="btn" onclick="processJSONConvert()">Convert & Download JSON</button>
+      <div id="convertLog" class="meta-box" style="margin-top:14px;"></div>
+    </div>
 
-    <!-- ==================== 6. DIGITAL STORAGE CONVERTER TOOL ==================== -->
-    <section id="view-tool-unit" class="hidden space-y-6">
-      <div class="border-b border-slate-800 pb-4">
-        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-        </button>
-        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-calculator text-rose-400"></i> Digital Storage Converter
-        </h2>
-        <p class="text-sm text-slate-400">Convert between Bytes, Kilobytes, Megabytes, Gigabytes, and Terabytes.</p>
+    <!-- TAB 3: BARCODE LABELS -->
+    <div id="barcodePane" class="tab-pane">
+      <div class="dropzone">
+        <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#e2e8f0;">Item SKU / Barcode Numbers (one per line):</p>
+        <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #374151; color:#fff; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
       </div>
+      <button class="btn" onclick="createBarcodes()">Generate Labels</button>
+      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
+      <div id="barcodePrintArea"></div>
+    </div>
 
-      <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Value</label>
-            <input type="number" id="unit-val-input" value="1024" oninput="runUnitConvert()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">From Unit</label>
-            <select id="unit-from-select" onchange="runUnitConvert()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-              <option value="B">Bytes (B)</option>
-              <option value="KB">Kilobytes (KB)</option>
-              <option value="MB" selected>Megabytes (MB)</option>
-              <option value="GB">Gigabytes (GB)</option>
-              <option value="TB">Terabytes (TB)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-            <span class="text-xs text-slate-500 block">Bytes</span>
-            <span id="res-b" class="text-sm font-mono font-bold text-white">0</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-            <span class="text-xs text-slate-500 block">Kilobytes (KB)</span>
-            <span id="res-kb" class="text-sm font-mono font-bold text-white">0</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-            <span class="text-xs text-slate-500 block">Megabytes (MB)</span>
-            <span id="res-mb" class="text-sm font-mono font-bold text-indigo-400">0</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-            <span class="text-xs text-slate-500 block">Gigabytes (GB)</span>
-            <span id="res-gb" class="text-sm font-mono font-bold text-emerald-400">0</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center col-span-2 sm:col-span-1">
-            <span class="text-xs text-slate-500 block">Terabytes (TB)</span>
-            <span id="res-tb" class="text-sm font-mono font-bold text-rose-400">0</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 7. IMAGE TO BASE64 TOOL ==================== -->
-    <section id="view-tool-base64" class="hidden space-y-6">
-      <div class="border-b border-slate-800 pb-4">
-        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
-        </button>
-        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-image text-indigo-400"></i> Image to Base64 Encoder
-        </h2>
-        <p class="text-sm text-slate-400">Convert local image files into clean HTML/CSS Base64 Data Strings.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <label class="block text-xs font-semibold text-slate-300">Choose Image</label>
-          <input type="file" id="base64-file" accept="image/*" onchange="handleImageBase64(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" />
-          <div class="w-full h-48 border-2 border-dashed border-slate-800 rounded-xl flex items-center justify-center p-2 bg-slate-950 overflow-hidden">
-            <img id="base64-preview-img" src="" alt="Preview" class="max-h-full max-w-full rounded hidden object-contain" />
-            <span id="base64-placeholder-txt" class="text-xs text-slate-600">No image selected yet</span>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Base64 Data String</label>
-            <textarea id="base64-output-area" readonly rows="8" placeholder="Data URI will appear here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none custom-scrollbar"></textarea>
-          </div>
-          <button onclick="copyBase64String()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
-            <i class="fa-solid fa-copy"></i> Copy Base64 String
-          </button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-slate-800/80 bg-slate-900/60 py-6 mt-12 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p>© 2026 Smart Utility Hub. All tools run 100% locally in your browser.</p>
-      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="text-amber-400 hover:underline flex items-center gap-1 font-medium">
-        <i class="fa-solid fa-mug-hot"></i> buymeacoffee.com/suhel786
+    <!-- Support Box -->
+    <div class="footer-support">
+      Enjoying QuickClean Toolkit? 
+      <a href="https://buymeacoffee.com/suhel786" target="_blank">
+        ☕ Buy me a coffee
       </a>
     </div>
-  </footer>
+  </div>
 
-  <!-- SCRIPT LOGIC -->
   <script>
-    /* ==========================================================================
-       NAVIGATION & HISTORY STATE ENGINE (UNDO / REDO / DRAWER)
-       ========================================================================== */
-    let navHistory = ['dashboard'];
-    let currentNavIndex = 0;
+    let rawData = [];
+    let headers = [];
+    let cleanedData = [];
+    let flaggedDuplicates = [];
+    let currentFileName = "data";
+    let healthMetrics = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
 
-    function updateNavButtonsState() {
-      const undoBtn = document.getElementById('nav-undo-btn');
-      const redoBtn = document.getElementById('nav-redo-btn');
-      
-      if (undoBtn) undoBtn.disabled = (currentNavIndex <= 0);
-      if (redoBtn) redoBtn.disabled = (currentNavIndex >= navHistory.length - 1);
-    }
-
-    function renderActiveView(viewId) {
-      const views = ['dashboard', 'tool-csv', 'tool-qr', 'tool-text', 'tool-password', 'tool-unit', 'tool-base64'];
-      views.forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) {
-          if (v === viewId) {
-            el.classList.remove('hidden');
-          } else {
-            el.classList.add('hidden');
-          }
-        }
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function navigateTo(viewId) {
-      if (navHistory[currentNavIndex] === viewId) return;
-      // Slice any redo history forward
-      navHistory = navHistory.slice(0, currentNavIndex + 1);
-      navHistory.push(viewId);
-      currentNavIndex++;
-      
-      renderActiveView(viewId);
-      updateNavButtonsState();
-    }
-
-    function goBack() {
-      if (currentNavIndex > 0) {
-        currentNavIndex--;
-        renderActiveView(navHistory[currentNavIndex]);
-        updateNavButtonsState();
-      }
-    }
-
-    function goForward() {
-      if (currentNavIndex < navHistory.length - 1) {
-        currentNavIndex++;
-        renderActiveView(navHistory[currentNavIndex]);
-        updateNavButtonsState();
-      }
-    }
-
-    function toggleSidebar() {
-      const drawer = document.getElementById('sidebar-drawer');
-      const backdrop = document.getElementById('sidebar-backdrop');
-      if (drawer.classList.contains('-translate-x-full')) {
-        drawer.classList.remove('-translate-x-full');
-        backdrop.classList.remove('hidden');
+    function switchView(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      if(tab === 'cleaner') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('cleanerPane').classList.add('active');
+      } else if(tab === 'converter') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('converterPane').classList.add('active');
       } else {
-        drawer.classList.add('-translate-x-full');
-        backdrop.classList.add('hidden');
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('barcodePane').classList.add('active');
       }
     }
 
-    /* ==========================================================================
-       TOOL 1: CSV & EXCEL CLEANER LOGIC
-       ========================================================================== */
-    let currentCleanedCSVData = [];
-
-    function loadSampleCSV() {
-      const sample = `Name, Email, Department, Salary
-  Rahul Sharma , rahul@test.com , Logistics , 2500  
-Rahul Sharma, rahul@test.com, Logistics, 2500
-  , , , 
-Priya Verma , priya@test.com, Data Entry, 2200
-Amit Kumar, amit@test.com , Operations, 3000
-Amit Kumar, amit@test.com , Operations, 3000
-Sunil Rao, sunil@test.com, Inventory, 2100`;
-      document.getElementById('csv-raw-input').value = sample;
-      processCleanCSV();
-    }
-
-    function clearCSVInput() {
-      document.getElementById('csv-raw-input').value = '';
-      document.getElementById('csv-table-header').innerHTML = '<th class="p-3">Cleaned Data Header</th>';
-      document.getElementById('csv-table-body').innerHTML = '<tr><td class="p-4 text-center text-slate-500">No data loaded</td></tr>';
-      document.getElementById('csv-stats-badge').innerText = '0 Rows';
-      document.getElementById('csv-download-btn').disabled = true;
-      currentCleanedCSVData = [];
-    }
-
-    function handleCSVFileUpload(e) {
+    document.getElementById('dataFile').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        document.getElementById('csv-raw-input').value = evt.target.result;
-        processCleanCSV();
-      };
-      reader.readAsText(file);
-    }
 
-    function parseCSVLine(text) {
-      let p = '', row = [''], i = 0, r = 0, q = false;
-      for (let c of text) {
-        if (c === '"') {
-          if (q && p === '"') { row[i] += '"'; }
-          q = !q;
-        } else if (c === ',' && !q) {
-          row[++i] = '';
-        } else if (c === '\n' && !q) {
-          if (p === '\r') row[i] = row[i].slice(0, -1);
-          break;
-        } else {
-          row[i] += c;
-        }
-        p = c;
+      currentFileName = file.name.replace(/\.[^/.]+$/, "");
+      
+      if (file.name.endsWith('.csv')) {
+        Papa.parse(file, {
+          skipEmptyLines: false,
+          complete: function(results) { handleParsedData(file, results.data); }
+        });
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const sheetRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+          handleParsedData(file, sheetRows);
+        };
+        reader.readAsArrayBuffer(file);
       }
-      return row;
-    }
+    });
 
-    function processCleanCSV() {
-      const rawText = document.getElementById('csv-raw-input').value.trim();
-      if (!rawText) return;
+    function handleParsedData(file, rows) {
+      if (!rows || rows.length === 0) { alert("File is empty!"); return; }
 
-      const doTrim = document.getElementById('clean-trim').checked;
-      const doEmpty = document.getElementById('clean-empty').checked;
-      const doDuplicates = document.getElementById('clean-duplicates').checked;
+      headers = rows[0];
+      rawData = rows.slice(1).filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
 
-      const lines = rawText.split(/\r\n|\n/);
-      let parsedRows = [];
-
-      lines.forEach(line => {
-        let row = parseCSVLine(line);
-        if (doTrim) {
-          row = row.map(cell => cell.trim());
+      // Populate Duplicate Match Options
+      const dupSelect = document.getElementById('dupMode');
+      dupSelect.innerHTML = '<option value="entire">Entire Row Match</option>';
+      
+      headers.forEach((h, idx) => {
+        if (h && h.toString().trim() !== '') {
+          const name = h.toString().trim();
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = `Match by ${name}`;
+          
+          // Auto-select smart columns (Email, Phone, SKU, ID)
+          if (/email/i.test(name)) opt.textContent += " (Smart: Email)";
+          if (/phone|mobile/i.test(name)) opt.textContent += " (Smart: Phone)";
+          if (/sku|item_id|person_id|id/i.test(name)) opt.textContent += " (Smart: Identifier)";
+          
+          dupSelect.appendChild(opt);
         }
-        if (doEmpty) {
-          const isEmpty = row.every(cell => cell === '');
-          if (isEmpty) return;
-        }
-        parsedRows.push(row);
       });
 
-      if (doDuplicates && parsedRows.length > 1) {
-        const header = parsedRows[0];
-        const dataRows = parsedRows.slice(1);
-        const seen = new Set();
-        const unique = [];
+      const metaBox = document.getElementById('fileMeta');
+      metaBox.style.display = 'block';
+      metaBox.innerHTML = `<strong>Loaded File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
-        dataRows.forEach(r => {
-          const key = JSON.stringify(r);
-          if (!seen.has(key)) {
-            seen.add(key);
-            unique.push(r);
+      recalculateDuplicates();
+      renderTable('previewTable', headers, rawData.slice(0, 5), false);
+      document.getElementById('previewSection').style.display = 'block';
+    }
+
+    function recalculateDuplicates() {
+      if (rawData.length === 0) return;
+      const dupMode = document.getElementById('dupMode').value;
+      
+      let blanks = 0;
+      let spaces = 0;
+      let caps = 0;
+      let seen = new Map();
+      flaggedDuplicates = [];
+
+      rawData.forEach((row, index) => {
+        const actualRowNumber = index + 2; // Row number in Excel/CSV
+        let key;
+        if (dupMode === 'entire') {
+          key = JSON.stringify(row);
+        } else {
+          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
+        }
+
+        if (key !== '' && key !== '""') {
+          if (seen.has(key)) {
+            flaggedDuplicates.push({ rowNum: actualRowNumber, originalRow: row });
+          } else {
+            seen.set(key, actualRowNumber);
+          }
+        }
+
+        // Diagnostic checks
+        row.forEach(cell => {
+          if (!cell || cell.toString().trim() === '') blanks++;
+          else {
+            const str = cell.toString();
+            if (str !== str.trim()) spaces++;
+            if (/[a-z]/.test(str) && /[A-Z]/.test(str) && str === str.toLowerCase()) caps++;
+            if (str.length > 2 && str === str.toLowerCase() && isNaN(str)) caps++;
           }
         });
-        parsedRows = [header, ...unique];
-      }
+          });
 
-      currentCleanedCSVData = parsedRows;
-      renderCSVTable(parsedRows);
-    }
+      healthMetrics = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps };
+      document.getElementById('metricRows').textContent = healthMetrics.rows;
+      document.getElementById('metricDups').textContent = healthMetrics.dups;
+      document.getElementById('metricBlanks').textContent = healthMetrics.blanks;
+      document.getElementById('metricSpaces').textContent = healthMetrics.spaces;
+      document.getElementById('metricCaps').textContent = healthMetrics.caps;
+      document.getElementById('healthCard').style.display = 'block';
 
-    function renderCSVTable(rows) {
-      const thead = document.getElementById('csv-table-header');
-      const tbody = document.getElementById('csv-table-body');
-      const statsBadge = document.getElementById('csv-stats-badge');
-      const downloadBtn = document.getElementById('csv-download-btn');
-
-      if (!rows || rows.length === 0) {
-        clearCSVInput();
-        return;
-      }
-
-      const headers = rows[0];
-      const dataRows = rows.slice(1);
-
-      thead.innerHTML = headers.map(h => `<th class="p-3 border-b border-slate-800 text-slate-300 font-semibold">${escapeHtml(h)}</th>`).join('');
-      
-      if (dataRows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="' + headers.length + '" class="p-4 text-center text-slate-500">No records found after filtering</td></tr>';
+      // Render Flagged Duplicate Details
+      if (flaggedDuplicates.length > 0) {
+        renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
+        document.getElementById('dupReviewSection').style.display = 'block';
       } else {
-        tbody.innerHTML = dataRows.map(row => {
-          const cells = row.map(c => `<td class="p-3 border-b border-slate-800/60">${escapeHtml(c)}</td>`).join('');
-          return `<tr>${cells}</tr>`;
-        }).join('');
+        document.getElementById('dupReviewSection').style.display = 'none';
       }
-
-      statsBadge.innerText = `${dataRows.length} Rows Cleaned`;
-      downloadBtn.disabled = false;
     }
 
-    function downloadCleanCSV() {
-      if (!currentCleanedCSVData || currentCleanedCSVData.length === 0) return;
-      const csvContent = currentCleanedCSVData.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'cleaned_data.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    function renderDuplicateTable(tableId, head, dupList) {
+      const tbl = document.getElementById(tableId);
+      tbl.innerHTML = '';
+      
+      const trH = document.createElement('tr');
+      const thIndex = document.createElement('th');
+      thIndex.textContent = "Source Row #";
+      trH.appendChild(thIndex);
 
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+      head.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trH.appendChild(th);
+      });
+      tbl.appendChild(trH);
 
-    /* ==========================================================================
-       TOOL 2: QR CODE GENERATOR LOGIC
-       ========================================================================== */
-    let qrInstance = null;
+      dupList.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'dup-row';
+        const tdIdx = document.createElement('td');
+        tdIdx.innerHTML = `<span class="row-badge">Row ${item.rowNum}</span>`;
+        tr.appendChild(tdIdx);
 
-    function generateQRCode() {
-      const container = document.getElementById('qrcode-container');
-      const text = document.getElementById('qr-input-text').value.trim() || 'https://buymeacoffee.com/suhel786';
-      const size = parseInt(document.getElementById('qr-size-select').value) || 256;
-      const color = document.getElementById('qr-color-picker').value || '#000000';
-
-      container.innerHTML = '';
-      qrInstance = new QRCode(container, {
-        text: text,
-        width: size,
-        height: size,
-        colorDark: color,
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
+        item.originalRow.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
       });
     }
 
-    function downloadQRCode() {
-      const img = document.querySelector('#qrcode-container img');
-      if (img && img.src) {
-        const link = document.createElement('a');
-        link.download = 'qrcode.png';
-        link.href = img.src;
-        link.click();
-      } else {
-        const canvas = document.querySelector('#qrcode-container canvas');
-        if (canvas) {
-          const link = document.createElement('a');
-          link.download = 'qrcode.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
+    }
+
+    function executeSafeClean() {
+      if (rawData.length === 0) { alert("Please upload a file first!"); return; }
+
+      const doTrim = document.getElementById('optTrim').checked;
+      const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
+      const doFixCaps = document.getElementById('optFixCaps').checked;
+      const dupMode = document.getElementById('dupMode').value;
+
+      let processed = rawData.map(row => 
+        row.map(cell => {
+          if (!cell) return '';
+          let val = cell.toString();
+          if (doTrim) val = val.trim();
+          if (doFixCaps && isNaN(val) && val.length > 1 && !val.includes('@')) {
+            val = toTitleCase(val);
+          }
+          return val;
+        })
+      );
+
+      if (doRemoveEmpty) {
+        processed = processed.filter(row => row.some(cell => cell.toString().trim() !== ''));
+      }
+
+      let unique = [];
+      let seen = new Set();
+      let removedCount = 0;
+
+      processed.forEach(row => {
+        let key;
+        if (dupMode === 'entire') {
+          key = JSON.stringify(row);
+        } else {
+          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
         }
-      }
+
+        if (key && seen.has(key)) {
+          removedCount++;
+        } else {
+          if (key) seen.add(key);
+          unique.push(row);
+        }
+      });
+
+      cleanedData = unique;
+
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5), false);
+      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedCount}</strong> duplicate records.`;
+      document.getElementById('cleanSummary').style.display = 'block';
     }
 
-    /* ==========================================================================
-       TOOL 3: TEXT ANALYZER LOGIC
-       ========================================================================== */
-    function updateTextStats() {
-      const text = document.getElementById('text-tool-input').value;
-      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-      const chars = text.length;
-      const lines = text.trim() ? text.split(/\r\n|\n/).length : 0;
-      const readTime = Math.ceil(words / 200);
+    function renderTable(tableId, head, rows) {
+      const tbl = document.getElementById(tableId);
+      tbl.innerHTML = '';
+      const trH = document.createElement('tr');
+      head.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trH.appendChild(th);
+      });
+      tbl.appendChild(trH);
 
-      document.getElementById('stat-words').innerText = words;
-      document.getElementById('stat-chars').innerText = chars;
-      document.getElementById('stat-lines').innerText = lines;
-      document.getElementById('stat-read').innerText = `${readTime}m`;
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        r.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
     }
 
-    function convertText(mode) {
-      const el = document.getElementById('text-tool-input');
-      let val = el.value;
-      if (!val) return;
-
-      if (mode === 'upper') {
-        val = val.toUpperCase();
-      } else if (mode === 'lower') {
-        val = val.toLowerCase();
-      } else if (mode === 'title') {
-        val = val.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
-      } else if (mode === 'slug') {
-        val = val.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
-      }
-      el.value = val;
-      updateTextStats();
+    function downloadCleanedFile() {
+      const sanitized = cleanedData.map(row => 
+        row.map(cell => {
+          let str = (cell === null || cell === undefined) ? '' : cell.toString();
+          if (/^[=+\-@]/.test(str)) return "'" + str;
+          return str;
+        })
+      );
+      const csv = Papa.unparse([headers, ...sanitized]);
+      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
     }
 
-    function copyTextOutput() {
-      const val = document.getElementById('text-tool-input').value;
-      if (val) navigator.clipboard.writeText(val);
+    function downloadIssueReport() {
+      const reportRows = [
+        ["Health Diagnostic Category", "Detected Count", "Action Taken"],
+        ["Total Scanned Records", healthMetrics.rows, "Parsed Locally"],
+        ["Duplicate Rows Found", healthMetrics.dups, "Flagged with Row #"],
+        ["Missing / Empty Values", healthMetrics.blanks, "Audited"],
+        ["Extra Inconsistent Spaces", healthMetrics.spaces, "Trimmed"],
+        ["Case Mismatches (Names/Text)", healthMetrics.caps, "Normalized to Title Case"],
+        ["Audit Date", new Date().toLocaleString(), "Certified Safe"]
+      ];
+      const csv = Papa.unparse(reportRows);
+      triggerDownload(csv, `${currentFileName}_health_audit.csv`, 'text/csv;charset=utf-8;');
     }
 
-    /* ==========================================================================
-       TOOL 4: PASSWORD GENERATOR LOGIC
-       ========================================================================== */
-    function generateNewPassword() {
-      const len = parseInt(document.getElementById('pass-length').value) || 16;
-      const useUpper = document.getElementById('pass-upper').checked;
-      const useLower = document.getElementById('pass-lower').checked;
-      const useNum = document.getElementById('pass-numbers').checked;
-      const useSym = document.getElementById('pass-symbols').checked;
-
-      let charset = '';
-      if (useUpper) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      if (useLower) charset += 'abcdefghijklmnopqrstuvwxyz';
-      if (useNum) charset += '0123456789';
-      if (useSym) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-
-      if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-      const array = new Uint32Array(len);
-      window.crypto.getRandomValues(array);
-      let pass = '';
-      for (let i = 0; i < len; i++) {
-        pass += charset[array[i] % charset.length];
-      }
-      document.getElementById('pass-output').value = pass;
-    }
-
-    function copyGeneratedPassword() {
-      const pass = document.getElementById('pass-output').value;
-      if (pass) navigator.clipboard.writeText(pass);
-    }
-
-    /* ==========================================================================
-       TOOL 5: UNIT CONVERTER LOGIC
-       ========================================================================== */
-    function runUnitConvert() {
-      const val = parseFloat(document.getElementById('unit-val-input').value) || 0;
-      const from = document.getElementById('unit-from-select').value;
-      
-      const toBytesMultiplier = {
-        'B': 1,
-        'KB': 1024,
-        'MB': 1024 * 1024,
-        'GB': 1024 * 1024 * 1024,
-        'TB': 1024 * 1024 * 1024 * 1024
-      };
-
-      const totalBytes = val * toBytesMultiplier[from];
-
-      document.getElementById('res-b').innerText = Number(totalBytes.toFixed(2)).toLocaleString();
-      document.getElementById('res-kb').innerText = Number((totalBytes / 1024).toFixed(4)).toLocaleString();
-      document.getElementById('res-mb').innerText = Number((totalBytes / (1024 * 1024)).toFixed(4)).toLocaleString();
-      document.getElementById('res-gb').innerText = Number((totalBytes / (1024 * 1024 * 1024)).toFixed(6)).toLocaleString();
-      document.getElementById('res-tb').innerText = Number((totalBytes / (1024 * 1024 * 1024 * 1024)).toFixed(8)).toLocaleString();
-    }
-
-    /* ==========================================================================
-       TOOL 6: IMAGE BASE64 ENCODER LOGIC
-       ========================================================================== */
-    function handleImageBase64(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
+    function processJSONConvert() {
+      const input = document.getElementById('convertFile');
+      if (!input.files.length) { alert("Select file!"); return; }
+      const file = input.files[0];
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        const result = evt.target.result;
-        document.getElementById('base64-output-area').value = result;
-        const preview = document.getElementById('base64-preview-img');
-        const placeholder = document.getElementById('base64-placeholder-txt');
-        preview.src = result;
-        preview.classList.remove('hidden');
-        placeholder.classList.add('hidden');
+
+      reader.onload = function(e) {
+        let json = [];
+        if (file.name.endsWith('.csv')) {
+          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
+          json = res.data;
+        } else {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+        const jsonStr = JSON.stringify(json, null, 2);
+        document.getElementById('convertLog').style.display = 'block';
+        document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
+        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
       };
-      reader.readAsDataURL(file);
+
+      if (file.name.endsWith('.csv')) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
     }
 
-    function copyBase64String() {
-      const str = document.getElementById('base64-output-area').value;
-      if (str) navigator.clipboard.writeText(str);
+    function createBarcodes() {
+      const val = document.getElementById('barcodeList').value.trim();
+      const area = document.getElementById('barcodePrintArea');
+      if (!val) { alert("Enter SKU codes!"); return; }
+      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      area.innerHTML = '';
+
+      items.forEach((sku, i) => {
+        const card = document.createElement('div');
+        card.className = 'barcode-card';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        card.appendChild(svg);
+        area.appendChild(card);
+        try {
+          JsBarcode(svg, sku, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+        } catch(err) {
+          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${sku}</span>`;
+        }
+      });
+      document.getElementById('printBtn').style.display = 'block';
     }
 
-    /* INIT ON LOAD */
-    window.addEventListener('DOMContentLoaded', () => {
-      generateQRCode();
-      generateNewPassword();
-      runUnitConvert();
-      updateNavButtonsState();
-    });
+    function triggerDownload(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
   </script>
 </body>
 </html>
