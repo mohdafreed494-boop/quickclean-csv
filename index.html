@@ -260,5 +260,250 @@
         <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
       </div>
       <button class="btn" onclick="createBarcodes()">Generate Labels</button>
-      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save
-        
+      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
+      <div id="barcodePrintArea"></div>
+    </div>
+
+    <div class="footer-support">
+      Enjoying QuickClean Toolkit? 
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" style="color:#b45309; font-weight:700; text-decoration:none; margin-left:6px;">
+        ☕ Buy me a coffee
+      </a>
+    </div>
+  </div>
+
+  <script>
+    let rawData = [];
+    let headers = [];
+    let cleanedData = [];
+    let healthStats = { total: 0, dups: 0, blanks: 0, trimIssues: 0 };
+    let currentFileName = "data";
+
+    function switchView(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      if(tab === 'cleaner') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('cleanerPane').classList.add('active');
+      } else if(tab === 'converter') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('converterPane').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('barcodePane').classList.add('active');
+      }
+    }
+
+    // Handles both CSV and Excel (.xlsx, .xls) uploads
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      currentFileName = file.name.replace(/\.[^/.]+$/, "");
+      
+      if (file.name.endsWith('.csv')) {
+        Papa.parse(file, {
+          skipEmptyLines: false,
+          complete: function(results) {
+            handleParsedData(file, results.data);
+          }
+        });
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const sheetRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+          handleParsedData(file, sheetRows);
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert("Please upload a valid CSV or Excel file!");
+      }
+    });
+
+    function handleParsedData(file, rows) {
+      if (!rows || rows.length === 0) {
+        alert("Selected file is empty!");
+        return;
+      }
+
+      headers = rows[0];
+      rawData = rows.slice(1);
+
+      const metaBox = document.getElementById('fileMeta');
+      metaBox.style.display = 'block';
+      metaBox.innerHTML = `<strong>File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Rows:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
+
+      performHealthScan(rawData, headers);
+      renderTable('previewTable', headers, rawData.slice(0, 5));
+      document.getElementById('previewSection').style.display = 'block';
+    }
+
+    function performHealthScan(rows, headerList) {
+      let blanks = 0;
+      let trimIssues = 0;
+      let seen = new Set();
+      let dups = 0;
+
+      rows.forEach(r => {
+        const rowStr = JSON.stringify(r);
+        if (seen.has(rowStr)) dups++;
+        else seen.add(rowStr);
+
+        r.forEach(cell => {
+          if (!cell || cell.toString().trim() === '') blanks++;
+          else if (cell.toString() !== cell.toString().trim()) trimIssues++;
+        });
+      });
+
+      healthStats = { total: rows.length, dups, blanks, trimIssues };
+      document.getElementById('metricRows').textContent = rows.length;
+      document.getElementById('metricDups').textContent = dups;
+      document.getElementById('metricBlanks').textContent = blanks;
+      document.getElementById('metricSpaces').textContent = trimIssues;
+      document.getElementById('healthCard').style.display = 'block';
+    }
+
+    function executeSafeClean() {
+      if (rawData.length === 0) { alert("Please upload a file first!"); return; }
+
+      const doTrim = document.getElementById('optTrim').checked;
+      const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
+      const doRemoveDups = document.getElementById('optDups').checked;
+
+      let processed = rawData.map(row => row.map(cell => (doTrim && cell) ? cell.toString().trim() : cell));
+
+      if (doRemoveEmpty) {
+        processed = processed.filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
+      }
+
+      let removedDupsCount = 0;
+      if (doRemoveDups) {
+        const unique = [];
+        const seen = new Set();
+        processed.forEach(row => {
+          const key = JSON.stringify(row);
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(row);
+          } else {
+            removedDupsCount++;
+          }
+        });
+        processed = unique;
+      }
+
+      cleanedData = processed;
+
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
+      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Safely!</strong> Preserved: ${cleanedData.length} records | Removed Duplicates: ${removedDupsCount} | Original file remained untouched.`;
+      document.getElementById('cleanSummary').style.display = 'block';
+    }
+
+    function downloadCleanedFile() {
+      const sanitized = cleanedData.map(row => 
+        row.map(cell => {
+          let str = (cell === null || cell === undefined) ? '' : cell.toString();
+          if (/^[=+\-@]/.test(str)) return "'" + str;
+          return str;
+        })
+      );
+
+      const csv = Papa.unparse([headers, ...sanitized]);
+      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function downloadIssueReport() {
+      const reportRows = [
+        ["Audit Metric", "Count Found"],
+        ["Total Rows Scanned", healthStats.total],
+        ["Exact Duplicate Rows", healthStats.dups],
+        ["Empty / Missing Cells", healthStats.blanks],
+        ["Inconsistent Spaces", healthStats.trimIssues],
+        ["Scan Date", new Date().toLocaleString()]
+      ];
+      const csv = Papa.unparse(reportRows);
+      triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function renderTable(tableId, head, rows) {
+      const tbl = document.getElementById(tableId);
+      tbl.innerHTML = '';
+      const trH = document.createElement('tr');
+      head.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trH.appendChild(th);
+      });
+      tbl.appendChild(trH);
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        r.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
+    }
+
+    function processJSONConvert() {
+      const input = document.getElementById('convertFile');
+      if (!input.files.length) { alert("Select file!"); return; }
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        let json = [];
+        if (file.name.endsWith('.csv')) {
+          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
+          json = res.data;
+        } else {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+        const jsonStr = JSON.stringify(json, null, 2);
+        document.getElementById('convertLog').style.display = 'block';
+        document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
+        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+      };
+
+      if (file.name.endsWith('.csv')) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+    }
+
+    function createBarcodes() {
+      const val = document.getElementById('barcodeList').value.trim();
+      const area = document.getElementById('barcodePrintArea');
+      if (!val) { alert("Enter SKU codes!"); return; }
+      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      area.innerHTML = '';
+
+      items.forEach((sku, i) => {
+        const card = document.createElement('div');
+        card.className = 'barcode-card';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        card.appendChild(svg);
+        area.appendChild(card);
+        try {
+          JsBarcode(svg, sku, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+        } catch(err) {
+          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${sku}</span>`;
+        }
+      });
+      document.getElementById('printBtn').style.display = 'block';
+    }
+
+    function triggerDownload(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+  </script>
+</body>
+</html>
