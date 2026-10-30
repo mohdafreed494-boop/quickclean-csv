@@ -44,32 +44,54 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      position: relative;
     }
 
-    /* ================= SIDEBAR ================= */
+    /* ================= SLIDE-OUT MENU (DRAWER) ================= */
     aside.sidebar {
-      width: 270px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 280px;
       background-color: var(--sidebar-bg);
       color: var(--sidebar-text);
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
       border-right: 1px solid #1e293b;
-      transition: transform 0.3s ease, width 0.3s ease;
-      z-index: 1000;
+      transform: translateX(-100%); /* Default me band rahega */
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.5);
     }
-    aside.sidebar.collapsed {
-      transform: translateX(-100%);
-      width: 0;
-      overflow: hidden;
+    aside.sidebar.open {
+      transform: translateX(0); /* 3 line click par khulega */
+    }
+
+    /* Backdrop Overlay */
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1900;
+    }
+    .menu-overlay.active {
+      display: block;
     }
 
     .sidebar-header {
       padding: 18px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       border-bottom: 1px solid #162244;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .brand-icon {
       width: 36px;
@@ -83,10 +105,9 @@
       color: #fff;
     }
     .brand-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: #ffffff;
-      letter-spacing: -0.5px;
       line-height: 1.1;
     }
     .brand-title small {
@@ -95,6 +116,14 @@
       font-weight: 500;
       color: #38bdf8;
     }
+    .close-sidebar-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .close-sidebar-btn:hover { color: #ffffff; }
 
     .sidebar-nav {
       flex: 1;
@@ -107,13 +136,13 @@
       text-transform: uppercase;
       letter-spacing: 0.8px;
       color: var(--sidebar-heading);
-      padding: 10px 10px 6px 10px;
+      padding: 12px 10px 6px 10px;
     }
     .nav-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 9px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
       color: #cbd5e1;
       font-size: 13.5px;
@@ -146,14 +175,16 @@
       color: #93c5fd;
     }
 
-    /* Expandable Tools Submenu */
+    /* Submenu dropdown inside drawer */
     .tools-submenu {
-      display: block;
-      padding-left: 12px;
-      margin-bottom: 6px;
-    }
-    .tools-submenu.collapsed {
       display: none;
+      padding-left: 14px;
+      margin-bottom: 6px;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 8px;
+    }
+    .tools-submenu.open {
+      display: block;
     }
 
     .sidebar-footer {
@@ -177,17 +208,18 @@
     }
     .security-badge strong { display: block; color: #ffffff; }
 
-    /* ================= MAIN CONTAINER ================= */
+    /* ================= MAIN WORKSPACE ================= */
     .main-wrapper {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      width: 100%;
     }
 
     /* Top Header */
     header.top-header {
-      height: 60px;
+      height: 62px;
       background: var(--header-bg);
       border-bottom: 1px solid #1e293b;
       display: flex;
@@ -205,17 +237,25 @@
       background: #1e293b;
       border: 1px solid #334155;
       color: #ffffff;
-      font-size: 18px;
-      padding: 6px 10px;
+      font-size: 20px;
+      padding: 6px 12px;
       border-radius: 6px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .menu-toggle-btn:hover { background: #334155; }
-    .header-page-tag {
-      color: #94a3b8;
-      font-size: 13px;
-      font-weight: 500;
+    
+    .brand-top {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+    .brand-top span { color: #38bdf8; }
 
     .header-right {
       display: flex;
@@ -256,12 +296,10 @@
       display: none;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
-      position: relative;
     }
     .user-avatar {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: #0284c7;
       color: #ffffff;
@@ -269,7 +307,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 14px;
     }
     .user-display-name {
       font-size: 13.5px;
@@ -536,7 +574,7 @@
     }
     .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 12.5px; }
 
-    /* ================= INDIVIDUAL TOOL INTERFACES ================= */
+    /* ================= TOOL INTERFACES ================= */
     .tool-interface-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -669,7 +707,7 @@
       inset: 0;
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
-      z-index: 2000;
+      z-index: 3000;
       justify-content: center;
       align-items: center;
       padding: 16px;
@@ -708,17 +746,6 @@
     }
 
     @media (max-width: 900px) {
-      aside.sidebar {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        transform: translateX(-100%);
-      }
-      aside.sidebar.mobile-open {
-        transform: translateX(0);
-        width: 270px;
-      }
       .hero-banner { grid-template-columns: 1fr; }
       .dashboard-bottom-grid { grid-template-columns: 1fr; }
       .content-area { padding: 16px; }
@@ -727,14 +754,20 @@
 </head>
 <body>
 
-  <!-- ================= LEFT SIDEBAR ================= -->
+  <!-- Menu Backdrop -->
+  <div class="menu-overlay" id="menuOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ================= LEFT SLIDE-OUT MENU ================= -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <div class="brand-icon">⚡</div>
-      <div class="brand-title">
-        QuickClean
-        <small>Business Data Toolkit</small>
+      <div class="brand-group">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-title">
+          QuickClean
+          <small>Business Data Toolkit</small>
+        </div>
       </div>
+      <button class="close-sidebar-btn" onclick="closeSidebar()">&times;</button>
     </div>
 
     <nav class="sidebar-nav">
@@ -744,7 +777,7 @@
         <div>Home</div>
       </div>
 
-      <!-- 2. Tools (Expandable) -->
+      <!-- 2. Data Tools (Dropdown list click karne par khulegi) -->
       <div class="nav-item" onclick="toggleSubmenu()">
         <span class="nav-icon">🛠️</span>
         <div style="flex:1;">Data Tools</div>
@@ -754,50 +787,32 @@
       <div class="tools-submenu" id="toolsSubmenu">
         <div class="nav-item" onclick="navigate('cleaner')">
           <span class="nav-icon">⚙️</span>
-          <div>
-            CSV Cleaner
-            <small>Clean & organize data</small>
-          </div>
+          <div>CSV Cleaner</div>
         </div>
 
         <div class="nav-item" onclick="navigate('compare')">
           <span class="nav-icon">📄</span>
-          <div>
-            File Compare
-            <small>Find differences</small>
-          </div>
+          <div>File Compare</div>
         </div>
 
         <div class="nav-item" onclick="navigate('inventory')">
           <span class="nav-icon">📦</span>
-          <div>
-            Inventory Reconciliation
-            <small>Match stock & variance</small>
-          </div>
+          <div>Inventory Reconciliation</div>
         </div>
 
         <div class="nav-item" onclick="navigate('rules')">
           <span class="nav-icon">🔄</span>
-          <div>
-            Data Cleaning Rules
-            <small>Configure custom rules</small>
-          </div>
+          <div>Data Cleaning Rules</div>
         </div>
 
         <div class="nav-item" onclick="navigate('quality')">
           <span class="nav-icon">🛡️</span>
-          <div>
-            Data Quality Score
-            <small>Health audit diagnostics</small>
-          </div>
+          <div>Data Quality Score</div>
         </div>
 
         <div class="nav-item" onclick="navigate('barcode')">
           <span class="nav-icon">📊</span>
-          <div>
-            Barcode Generator
-            <small>Labels & Code128</small>
-          </div>
+          <div>Barcode Generator</div>
         </div>
       </div>
 
@@ -806,46 +821,31 @@
       <!-- Processing History -->
       <div class="nav-item" onclick="navigate('history')">
         <span class="nav-icon">⏱️</span>
-        <div>
-          Processing History
-          <small>Session activity logs</small>
-        </div>
+        <div>Processing History</div>
       </div>
 
       <!-- Reports Center -->
       <div class="nav-item" onclick="navigate('reports')">
         <span class="nav-icon">📑</span>
-        <div>
-          Reports Center
-          <small>Download past audits</small>
-        </div>
+        <div>Reports Center</div>
       </div>
 
       <!-- User Feedback -->
       <div class="nav-item" onclick="openFeedbackModal()">
         <span class="nav-icon">💬</span>
-        <div>
-          Feedback
-          <small>Suggest improvements</small>
-        </div>
+        <div>Feedback</div>
       </div>
 
       <!-- Help & Support -->
       <div class="nav-item" onclick="navigate('help')">
         <span class="nav-icon">❓</span>
-        <div>
-          Help & Support
-          <small>Documentation & FAQs</small>
-        </div>
+        <div>Help & Support</div>
       </div>
 
       <!-- Coffee Support -->
       <div class="nav-item" onclick="window.open('https://buymeacoffee.com/suhel786','_blank')">
         <span class="nav-icon">☕</span>
-        <div>
-          Buy me a coffee
-          <small>Support free hosting</small>
-        </div>
+        <div>Buy me a coffee</div>
       </div>
     </nav>
 
@@ -865,18 +865,21 @@
     <!-- Top Header -->
     <header class="top-header">
       <div class="header-left">
-        <button class="menu-toggle-btn" onclick="toggleSidebarMenu()" title="Toggle Sidebar">☰</button>
-        <span class="header-page-tag" id="headerPageTag">QuickClean Suite</span>
+        <!-- 3-line hamburger menu button -->
+        <button class="menu-toggle-btn" onclick="openSidebar()" title="Open Menu">☰</button>
+        <div class="brand-top">
+          ⚡ QuickClean <span>Toolkit</span>
+        </div>
       </div>
 
       <div class="header-right">
-        <!-- Auth Login / Sign Up buttons for other users -->
+        <!-- Auth Login / Sign Up buttons -->
         <div class="auth-btn-group" id="authBtnGroup">
           <button class="btn-login" onclick="openAuthModal('login')">Log In</button>
           <button class="btn-signup" onclick="openAuthModal('signup')">Sign Up</button>
         </div>
 
-        <!-- User Profile badge (shown after login or if active) -->
+        <!-- User Profile badge (login hone ke baad aayega) -->
         <div class="user-profile-badge" id="userProfileBadge">
           <div class="user-avatar" id="userInitial">S</div>
           <span class="user-display-name" id="userDisplayName">Suhel</span>
@@ -918,7 +921,7 @@
                 <div class="mockup-line" style="width: 70%;"></div>
               </div>
             </div>
-            <!-- Requested "Suhel by design" label -->
+            <!-- Suhel by design label -->
             <span style="font-size:12px; font-weight:600; color:var(--primary); display:inline-block; margin-top:8px;">
               Suhel by design
             </span>
@@ -1446,9 +1449,8 @@
     let sessionLogs = [];
     let generatedReports = [];
 
-    let currentAuthMode = 'login'; // 'login' or 'signup'
+    let currentAuthMode = 'login';
 
-    // Check Local Storage for Existing User Session
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('quickclean_user');
       if (savedUser) {
@@ -1456,21 +1458,23 @@
       }
     });
 
-    // Sidebar & Navigation
-    function toggleSidebarMenu() {
-      const sidebar = document.getElementById('sidebar');
-      if (window.innerWidth <= 900) {
-        sidebar.classList.toggle('mobile-open');
-      } else {
-        sidebar.classList.toggle('collapsed');
-      }
+    // 3-Line Menu Handlers (Drawer Slide)
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('menuOverlay').classList.add('active');
     }
 
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('menuOverlay').classList.remove('active');
+    }
+
+    // Tools Dropdown inside Menu
     function toggleSubmenu() {
       const submenu = document.getElementById('toolsSubmenu');
       const caret = document.getElementById('submenuCaret');
-      submenu.classList.toggle('collapsed');
-      caret.textContent = submenu.classList.contains('collapsed') ? '▶' : '▼';
+      submenu.classList.toggle('open');
+      caret.textContent = submenu.classList.contains('open') ? '▲' : '▼';
     }
 
     function navigate(viewId) {
@@ -1487,11 +1491,7 @@
         }
       });
 
-      document.getElementById('headerPageTag').textContent = viewId === 'home' ? 'QuickClean Suite' : viewId.toUpperCase();
-
-      if (window.innerWidth <= 900) {
-        document.getElementById('sidebar').classList.remove('mobile-open');
-      }
+      closeSidebar(); // Tool select karne ke baad menu close ho jayega
     }
 
     // Auth System
@@ -1562,6 +1562,7 @@
       document.getElementById('coffeeModal').classList.remove('active');
     }
     function openFeedbackModal() {
+      closeSidebar();
       document.getElementById('feedbackModal').classList.add('active');
     }
     function closeFeedbackModal() {
