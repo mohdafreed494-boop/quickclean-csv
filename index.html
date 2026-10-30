@@ -130,7 +130,6 @@
       border-radius: 10px;
       border: 1px solid #1f2937;
       text-align: center;
-      position: relative;
     }
     .metric-card strong {
       display: block;
@@ -206,42 +205,9 @@
     .barcode-card { border: 1px solid #334155; padding: 12px; text-align: center; background: #ffffff; border-radius: 8px; }
     .barcode-card svg { max-width: 100%; height: 50px; }
 
-    /* Feedback Modal/Card */
-    .feedback-box {
-      margin-top: 24px;
-      background: #161f30;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .feedback-box h4 { margin: 0 0 6px 0; color: #f8fafc; font-size: 15px; }
-    .feedback-box p { font-size: 12px; color: #94a3b8; margin: 0 0 12px 0; }
-    .feedback-box textarea {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #fff;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 13px;
-      height: 80px;
-      resize: vertical;
-      margin-bottom: 10px;
-    }
-    .feedback-box input[type="email"] {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #fff;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
     /* Footer Donate */
     .footer-support {
-      margin-top: 20px;
+      margin-top: 24px;
       padding: 14px;
       background: #1e293b;
       border: 1px solid #334155;
@@ -276,7 +242,7 @@
 
       <div id="fileMeta" class="meta-box"></div>
 
-      <!-- Upgraded High-Tech Health Scan Cards -->
+      <!-- Modern Health Scan Cards -->
       <div id="healthCard" class="health-card">
         <div class="health-header">
           <strong style="font-size:14px; color:#f8fafc;">📊 Live Data Health Diagnostics</strong>
@@ -349,16 +315,6 @@
       <button class="btn" onclick="createBarcodes()">Generate Labels</button>
       <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
       <div id="barcodePrintArea"></div>
-    </div>
-
-    <!-- User Feedback & Query Section -->
-    <div class="feedback-box">
-      <h4>💬 User Feedback & Feature Requests</h4>
-      <p>Have an issue, idea, or custom format requirement? Tell us directly:</p>
-      <input type="email" id="fbEmail" placeholder="Your email (optional, for reply)">
-      <textarea id="fbMessage" placeholder="Describe the problem, what could be improved, or what feature you want added..."></textarea>
-      <button class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="sendFeedback()">Send Feedback</button>
-      <div id="fbStatus" style="display:none; font-size:12px; color:#34d399; margin-top:8px;"></div>
     </div>
 
     <!-- Support Box -->
@@ -552,4 +508,66 @@
         r.forEach(c => {
           const td = document.createElement('td');
           td.textContent = c;
-        
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
+    }
+
+    function processJSONConvert() {
+      const input = document.getElementById('convertFile');
+      if (!input.files.length) { alert("Select file!"); return; }
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        let json = [];
+        if (file.name.endsWith('.csv')) {
+          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
+          json = res.data;
+        } else {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+        const jsonStr = JSON.stringify(json, null, 2);
+        document.getElementById('convertLog').style.display = 'block';
+        document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
+        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+      };
+
+      if (file.name.endsWith('.csv')) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+    }
+
+    function createBarcodes() {
+      const val = document.getElementById('barcodeList').value.trim();
+      const area = document.getElementById('barcodePrintArea');
+      if (!val) { alert("Enter SKU codes!"); return; }
+      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      area.innerHTML = '';
+
+      items.forEach((sku, i) => {
+        const card = document.createElement('div');
+        card.className = 'barcode-card';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        card.appendChild(svg);
+        area.appendChild(card);
+        try {
+          JsBarcode(svg, sku, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+        } catch(err) {
+          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${sku}</span>`;
+        }
+      });
+      document.getElementById('printBtn').style.display = 'block';
+    }
+
+    function triggerDownload(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+  </script>
+</body>
+</html>
