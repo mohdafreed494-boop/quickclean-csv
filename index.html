@@ -4,484 +4,656 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickClean Business Data Toolkit</title>
-  <meta name="description" content="Safe, private client-side business data cleaner, smart duplicate review, and diagnostic health report.">
+  <meta name="description" content="Clean, compare, and validate business data. Safe, private client-side CSV/Excel cleaner, file compare, and inventory checker.">
   
+  <!-- Third-party Client-Side Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
   <style>
+    :root {
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --teal: #0d9488;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0b0f19;
-      color: #f1f5f9;
+      background-color: var(--bg);
+      color: var(--text-main);
       margin: 0;
-      padding: 24px 14px;
+      padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    .container {
-      background: #111827;
-      max-width: 880px;
+
+    /* Top Navy Header */
+    header {
       width: 100%;
-      padding: 28px;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      border: 1px solid #1f2937;
+      background: var(--navy);
+      color: #ffffff;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--navy-light);
     }
-    .header-badge {
+    .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+    .brand span { color: #38bdf8; }
+    .nav-links { display: flex; gap: 14px; font-size: 13px; }
+    .nav-links a { color: #94a3b8; text-decoration: none; font-weight: 500; }
+    .nav-links a:hover { color: #ffffff; }
+
+    /* Hero Section */
+    .hero {
+      width: 100%;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 24px 16px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 24px; margin: 0 0 6px 0; color: var(--navy); }
+    .hero p { color: var(--text-muted); font-size: 14px; margin: 0 auto 16px auto; max-width: 600px; }
+    .privacy-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 5px 14px;
+      background: #ecfdf5;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
-      margin-bottom: 12px;
     }
-    h1 { font-size: 26px; margin: 0 0 6px 0; color: #ffffff; letter-spacing: -0.5px; }
-    p.subtitle { color: #94a3b8; font-size: 14px; margin: 0 0 24px 0; }
 
-    /* Tabs */
+    /* Main Container */
+    .main-wrapper {
+      width: 100%;
+      max-width: 950px;
+      padding: 20px 14px;
+    }
+
+    /* Navigation Tabs */
     .tab-bar {
       display: flex;
-      gap: 10px;
-      border-bottom: 1px solid #1f2937;
-      margin-bottom: 22px;
+      gap: 6px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 20px;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
     }
     .tab-btn {
-      padding: 12px 18px;
+      padding: 10px 14px;
       background: none;
       border: none;
       font-weight: 600;
-      font-size: 14px;
-      color: #94a3b8;
+      font-size: 13px;
+      color: var(--text-muted);
       cursor: pointer;
       border-bottom: 3px solid transparent;
       white-space: nowrap;
+      border-radius: 4px 4px 0 0;
     }
     .tab-btn.active {
-      color: #38bdf8;
-      border-bottom-color: #38bdf8;
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: #f1f5f9;
     }
 
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
-    .dropzone {
-      border: 2px dashed #374151;
-      background: #161f30;
+    /* Card Panels */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 26px;
-      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
       margin-bottom: 18px;
     }
-    .dropzone:hover { border-color: #38bdf8; }
-    input[type="file"] { color: #94a3b8; font-size: 13px; }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 24px 14px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    input[type="file"] { font-size: 13px; max-width: 100%; color: var(--text-muted); }
 
     .meta-box {
       display: none;
-      background: #1e293b;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 18px;
-      font-size: 13px;
-      color: #cbd5e1;
-      border-left: 4px solid #38bdf8;
+      background: #f1f5f9;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--navy-light);
+      border-left: 4px solid var(--primary);
+      word-break: break-word;
     }
 
-    /* Health Diagnostic Cards Grid */
-    .health-card {
-      display: none;
-      background: #161f30;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 18px;
-      margin-bottom: 20px;
-    }
-    .health-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
+    /* Diagnostics Grid */
     .health-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
+      margin: 14px 0;
     }
     .metric-card {
-      background: #0f172a;
-      padding: 12px 10px;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
+      background: #f8fafc;
+      padding: 12px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
       text-align: center;
     }
-    .metric-card strong {
-      display: block;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .metric-card span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+    .metric-card strong { display: block; font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .metric-card span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
     
-    .c-blue strong { color: #38bdf8; }
-    .c-red strong { color: #f87171; }
-    .c-amber strong { color: #fbbf24; }
-    .c-purple strong { color: #a78bfa; }
-    .c-pink strong { color: #f472b6; }
+    .metric-rows strong { color: var(--primary); }
+    .metric-dups strong { color: var(--danger); }
+    .metric-blanks strong { color: var(--warning); }
+    .metric-spaces strong { color: #8b5cf6; }
+    .metric-caps strong { color: #ec4899; }
 
-    /* Controls */
-    .options-group {
-      background: #161f30;
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 18px;
+    /* Form Controls */
+    .controls-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 16px;
     }
-    .options-group h4 { margin: 0 0 12px 0; font-size: 13px; color: #e2e8f0; }
+    .controls-box h4 { margin: 0 0 10px 0; font-size: 13px; color: var(--navy); }
     .checkbox-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 14px;
       font-size: 13px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-    .checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; }
-    
-    select {
-      background: #0f172a;
-      color: #f1f5f9;
-      border: 1px solid #374151;
-      padding: 8px 12px;
+    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--navy-light); }
+    select, input[type="text"] {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
       border-radius: 6px;
       font-size: 13px;
       width: 100%;
-      max-width: 320px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
+    /* Buttons */
     .btn {
-      background: #0284c7;
+      background: var(--primary);
       color: #ffffff;
       border: none;
-      padding: 13px 20px;
-      border-radius: 8px;
-      font-size: 15px;
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
+      transition: background 0.15s;
     }
-    .btn:hover { background: #0369a1; }
-    .btn-row { display: flex; gap: 12px; margin-top: 14px; }
-    .btn-secondary { background: #334155; }
-    .btn-secondary:hover { background: #475569; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    @media (min-width: 600px) { .btn-row { flex-direction: row; } }
+    .btn-secondary { background: #475569; }
+    .btn-secondary:hover { background: #334155; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-reset { background: #e2e8f0; color: #334155; font-size: 12px; padding: 6px 12px; width: auto; }
+    .btn-reset:hover { background: #cbd5e1; }
 
-    /* Tables */
-    .table-wrapper {
+    /* Tables (Strictly Scrollable Within Container) */
+    .table-container {
       max-height: 250px;
-      overflow: auto;
-      border: 1px solid #1f2937;
-      border-radius: 8px;
-      margin: 10px 0 16px 0;
-      background: #0f172a;
+      overflow-x: auto;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 10px 0;
+      -webkit-overflow-scrolling: touch;
+      background: #ffffff;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 9px 12px; border: 1px solid #1f2937; text-align: left; }
-    th { background: #161f30; color: #38bdf8; position: sticky; top: 0; }
-    td { color: #cbd5e1; }
-    .dup-row { background: rgba(248, 113, 113, 0.08); }
-    .row-badge { background: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #94a3b8; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
+    th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
+    th { background: #f1f5f9; color: var(--navy); position: sticky; top: 0; font-weight: 600; }
+    .dup-row { background: #fef2f2; }
+    .tag-row { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-weight: 600; font-size: 10px; }
 
-    /* Barcode Grid */
-    #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
-    .barcode-card { border: 1px solid #334155; padding: 12px; text-align: center; background: #ffffff; border-radius: 8px; }
-    .barcode-card svg { max-width: 100%; height: 50px; }
+    /* Compare Status Badges */
+    .badge-added { background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-removed { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-changed { background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-same { background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; }
 
-    .footer-support {
-      margin-top: 24px;
-      padding: 14px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 10px;
+    /* Barcode Layout */
+    #barcodeArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
+    .barcode-card { border: 1px solid var(--border); padding: 8px; text-align: center; background: #ffffff; border-radius: 6px; }
+    .barcode-card svg { max-width: 100%; height: 45px; }
+
+    /* Footer */
+    footer {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      background: #ffffff;
+      padding: 18px 14px;
       text-align: center;
       font-size: 13px;
+      color: var(--text-muted);
+      margin-top: auto;
     }
-    .footer-support a { color: #facc15; font-weight: 700; text-decoration: none; margin-left: 6px; }
+    footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header-badge">
-      🔒 100% In-Browser & Confidential (No Cloud Storage)
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      ⚡ QuickClean <span>Toolkit</span>
     </div>
-    <h1>QuickClean Business Data Toolkit</h1>
-    <p class="subtitle">Inspect data health, review flagged duplicates, and clean records safely.</p>
+    <div class="nav-links">
+      <a href="#tools">Tools</a>
+      <a href="#privacy">Privacy</a>
+    </div>
+  </header>
 
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="privacy-tag">🔒 100% In-Browser & Private (Zero Server Upload)</div>
+    <h1>Clean, Compare & Validate Your Business Data</h1>
+    <p>Client-side toolkit for spreadsheets, file audits, inventory reconciliation, and label printing without privacy exposure.</p>
+  </div>
+
+  <div class="main-wrapper" id="tools">
+    <!-- Tool Category Tabs -->
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchView('cleaner')">1. Smart Duplicate Review & Health</button>
-      <button class="tab-btn" onclick="switchView('converter')">2. Format Converter (JSON)</button>
-      <button class="tab-btn" onclick="switchView('barcode')">3. Barcode Labels</button>
+      <button class="tab-btn active" onclick="switchTab('cleaner')">1. Data Cleaner & Health</button>
+      <button class="tab-btn" onclick="switchTab('compare')">2. Smart File Compare</button>
+      <button class="tab-btn" onclick="switchTab('inventory')">3. Inventory Checker</button>
+      <button class="tab-btn" onclick="switchTab('barcode')">4. Barcode Labels</button>
+      <button class="tab-btn" onclick="switchTab('json')">5. JSON Tools</button>
     </div>
 
-    <!-- TAB 1: SMART CLEANER & DUPLICATE REVIEW -->
-    <div id="cleanerPane" class="tab-pane active">
-      <div class="dropzone">
-        <input type="file" id="dataFile" accept=".csv, .xlsx, .xls">
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
+    <!-- ==================== TAB 1: CSV/EXCEL CLEANER & HEALTH ==================== -->
+    <div id="cleanerPane" class="tab-pane active card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:16px;">Clean Data & Inspect Health</h3>
+        <button class="btn btn-reset" onclick="resetCleaner()">Reset / Start Over</button>
       </div>
 
-      <div id="fileMeta" class="meta-box"></div>
+      <div class="dropzone">
+        <input type="file" id="cleanerInput" accept=".csv, .xlsx, .xls">
+        <p style="margin: 6px 0 0 0; font-size: 12px; color: var(--text-muted);">Upload CSV or Excel sheet (Original file is never altered)</p>
+      </div>
 
-      <!-- Priority 3: Deep Health Diagnostic Scan -->
-      <div id="healthCard" class="health-card">
-        <div class="health-header">
-          <strong style="font-size:14px; color:#f8fafc;">📊 Advanced Data Health Report</strong>
-          <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Completed</span>
+      <div id="cleanerMeta" class="meta-box"></div>
+
+      <!-- Health Diagnostics Scan -->
+      <div id="healthCard" style="display:none; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:13px;">Data Health Audit:</strong>
+          <span style="font-size:11px; color:var(--text-muted);">Client-side verified</span>
         </div>
         <div class="health-grid">
-          <div class="metric-card c-blue"><strong id="metricRows">0</strong><span>Total Rows</span></div>
-          <div class="metric-card c-red"><strong id="metricDups">0</strong><span>Duplicates</span></div>
-          <div class="metric-card c-amber"><strong id="metricBlanks">0</strong><span>Missing Values</span></div>
-          <div class="metric-card c-purple"><strong id="metricSpaces">0</strong><span>Extra Spaces</span></div>
-          <div class="metric-card c-pink"><strong id="metricCaps">0</strong><span>Case Mismatch</span></div>
+          <div class="metric-card metric-rows"><strong id="mRows">0</strong><span>Total Rows</span></div>
+          <div class="metric-card metric-dups"><strong id="mDups">0</strong><span>Duplicates</span></div>
+          <div class="metric-card metric-blanks"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
+          <div class="metric-card metric-spaces"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
+          <div class="metric-card metric-caps"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
         </div>
       </div>
 
-      <!-- Priority 1: Flagged Duplicate Rows Preview -->
-      <div id="dupReviewSection" style="display:none;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:#f87171;">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
-        <div class="table-wrapper">
+      <!-- Flagged Duplicates Review Table -->
+      <div id="dupSection" style="display:none; margin-bottom:14px;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--danger);">⚠️ Review Flagged Duplicate Rows (Row Number & Preview):</h4>
+        <div class="table-container">
           <table id="dupTable"></table>
         </div>
       </div>
 
-      <!-- Initial Preview -->
-      <div id="previewSection" style="display:none;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original File Preview (First 5 Rows):</h4>
-        <div class="table-wrapper">
+      <!-- Initial File Preview -->
+      <div id="previewSection" style="display:none; margin-bottom:14px;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--text-muted);">Source File Preview (First 5 Rows):</h4>
+        <div class="table-container">
           <table id="previewTable"></table>
         </div>
       </div>
 
-      <!-- Priority 2: Smart Duplicate Rules -->
-      <div class="options-group">
-        <h4>Duplicate Detection & Cleaning Options</h4>
+      <!-- Cleaning Controls (Safe Defaults) -->
+      <div class="controls-box">
+        <h4>Safe Cleaning Options</h4>
         <div class="checkbox-row">
-          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
+          <label><input type="checkbox" id="optTrim" checked> Trim leading/trailing spaces</label>
           <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
-          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name/Text Capitalization</label>
+          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Title Case</label>
         </div>
         <div>
-          <label style="font-size:13px; color:#cbd5e1; display:block;">Match Duplicate Records By:</label>
-          <select id="dupMode" onchange="recalculateDuplicates()">
-            <option value="entire">Entire Row Match</option>
+          <label style="font-size:12px; font-weight:600; color:var(--navy);">Duplicate Match Rule (Default: Exact Whole Row):</label>
+          <select id="dupMode" onchange="runHealthAudit()">
+            <option value="entire">Exact Entire Row Match (Safe Default)</option>
           </select>
         </div>
       </div>
 
-      <button class="btn" onclick="executeSafeClean()">Clean & Export Data</button>
+      <button class="btn" onclick="executeClean()">Preview & Clean Data</button>
 
-      <!-- Clean Summary & Exports -->
-      <div id="cleanSummary" style="display:none; margin-top: 18px;">
-        <div id="summaryText" class="meta-box" style="display:block; border-left-color:#34d399;"></div>
-        
-        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Result Preview:</h4>
-        <div class="table-wrapper">
+      <!-- Action Confirmation & Export -->
+      <div id="cleanResult" style="display:none; margin-top:16px;">
+        <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success); background:#f0fdf4;"></div>
+        <h4 style="margin:10px 0 6px 0; font-size:13px;">Cleaned Output Preview:</h4>
+        <div class="table-container">
           <table id="cleanedTable"></table>
         </div>
-
         <div class="btn-row">
           <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
-          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Full Health Report</button>
+          <button class="btn btn-secondary" onclick="downloadAuditReport()">Download Health Report CSV</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: CONVERTER -->
-    <div id="converterPane" class="tab-pane">
-      <div class="dropzone">
-        <input type="file" id="convertFile" accept=".csv, .xlsx, .xls">
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Convert Excel (.xlsx) or CSV directly to JSON</p>
+    <!-- ==================== TAB 2: SMART FILE COMPARE ==================== -->
+    <div id="comparePane" class="tab-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px;">Smart File Compare</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Compare two CSV or Excel files (e.g. Old vs New stock report) by a common key column like SKU, ID, or Invoice Number.</p>
+      
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-bottom:14px;">
+        <div class="dropzone" style="margin-bottom:0;">
+          <strong style="font-size:13px; display:block; margin-bottom:4px;">File A (Old / Base):</strong>
+          <input type="file" id="compFileA" accept=".csv, .xlsx, .xls">
+        </div>
+        <div class="dropzone" style="margin-bottom:0;">
+          <strong style="font-size:13px; display:block; margin-bottom:4px;">File B (New / Current):</strong>
+          <input type="file" id="compFileB" accept=".csv, .xlsx, .xls">
+        </div>
       </div>
-      <button class="btn" onclick="processJSONConvert()">Convert & Download JSON</button>
-      <div id="convertLog" class="meta-box" style="margin-top:14px;"></div>
+
+      <div id="compareKeyBox" style="display:none; margin-bottom:14px;" class="controls-box">
+        <label style="font-size:13px; font-weight:600;">Select Unique Matching Key Column (e.g., SKU, ID):</label>
+        <select id="compareKeySelect"></select>
+        <div id="compareKeyWarning" style="color:var(--danger); font-size:12px; margin-top:4px; display:none;"></div>
+      </div>
+
+      <button class="btn" onclick="executeFileCompare()">Compare Both Files</button>
+
+      <div id="compareResult" style="display:none; margin-top:16px;">
+        <div class="health-grid">
+          <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added Rows</span></div>
+          <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed Rows</span></div>
+          <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed Rows</span></div>
+          <div class="metric-card"><strong id="cmpSame" style="color:var(--text-muted);">0</strong><span>Unchanged</span></div>
+        </div>
+
+        <h4 style="margin:10px 0 6px 0; font-size:13px;">Comparison Diff Preview:</h4>
+        <div class="table-container">
+          <table id="compareTable"></table>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadComparisonReport()">Download Full Comparison Report CSV</button>
+      </div>
     </div>
 
-    <!-- TAB 3: BARCODE LABELS -->
-    <div id="barcodePane" class="tab-pane">
+    <!-- ==================== TAB 3: INVENTORY CHECKER ==================== -->
+    <div id="inventoryPane" class="tab-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px;">Inventory & Stock Reconciliation</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Reconcile System Quantities vs Physical Count by SKU to detect shortages, excess items, and financial variance.</p>
+      
       <div class="dropzone">
-        <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#e2e8f0;">Item SKU / Barcode Numbers (one per line):</p>
-        <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #374151; color:#fff; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+        <input type="file" id="invFileInput" accept=".csv, .xlsx, .xls">
+        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload single sheet with SKU, Expected Qty, and Counted Qty</p>
       </div>
-      <button class="btn" onclick="createBarcodes()">Generate Labels</button>
-      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
-      <div id="barcodePrintArea"></div>
+
+      <div id="invColumnMap" style="display:none;" class="controls-box">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+          <div>
+            <label style="font-size:12px; font-weight:600;">SKU / Item Column:</label>
+            <select id="invColSku"></select>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:600;">System Qty Column:</label>
+            <select id="invColSystem"></select>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:600;">Counted Qty Column:</label>
+            <select id="invColPhysical"></select>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:600;">Unit Cost (Optional):</label>
+            <select id="invColCost"><option value="">-- None --</option></select>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="executeInventoryCheck()">Run Inventory Audit</button>
+
+      <div id="invResult" style="display:none; margin-top:16px;">
+        <div class="health-grid">
+          <div class="metric-card"><strong id="invTotalSkus">0</strong><span>Total SKUs</span></div>
+          <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage (Missing)</span></div>
+          <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess (Over)</span></div>
+          <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Exact Matches</span></div>
+        </div>
+
+        <h4 style="margin:10px 0 6px 0; font-size:13px;">Stock Variance Discrepancy Preview:</h4>
+        <div class="table-container">
+          <table id="invTable"></table>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Stock Discrepancy Report CSV</button>
+      </div>
     </div>
 
-    <!-- Support Box -->
-    <div class="footer-support">
-      Enjoying QuickClean Toolkit? 
-      <a href="https://buymeacoffee.com/suhel786" target="_blank">
-        ☕ Buy me a coffee
-      </a>
+    <!-- ==================== TAB 4: BARCODE & LABELS ==================== -->
+    <div id="barcodePane" class="tab-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px;">Bulk Barcode & Printable Labels</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Generate Code128 barcodes from SKUs or numbers. Print a sheet or save to PDF directly in your browser.</p>
+
+      <div class="dropzone">
+        <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;">Type or Paste SKU Codes (one per line):</label>
+        <textarea id="barcodeText" style="width:100%; height:90px; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-family:monospace; font-size:13px;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+      </div>
+      <button class="btn" onclick="generateBarcodeCards()">Generate Barcode Sheet</button>
+       <button class="btn btn-secondary" onclick="window.print()" id="barcodePrintBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save as PDF</button>
+      <div id="barcodeArea"></div>
     </div>
+
+    <!-- ==================== TAB 5: JSON TOOLS ==================== -->
+    <div id="jsonPane" class="tab-pane card">
+      <h3 style="margin:0 0 6px 0; font-size:16px;">JSON Converter & Formatter</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Convert spreadsheet files into formatted JSON or format/validate existing JSON.</p>
+      
+      <div class="dropzone">
+        <input type="file" id="jsonFileInput" accept=".csv, .xlsx, .xls">
+        <p style="margin:6px 0 0 0; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file to convert to JSON</p>
+      </div>
+      <button class="btn" onclick="convertFileToJson()">Convert to JSON & Download</button>
+      <div id="jsonMeta" class="meta-box" style="margin-top:12px;"></div>
+    </div>
+
   </div>
 
+  <!-- Footer & Privacy Notes -->
+  <footer id="privacy">
+    <p><strong>QuickClean Business Data Toolkit</strong> — Client-Side Local Execution.</p>
+    <p style="font-size:12px; max-width:600px; margin:4px auto 8px auto;">
+      Data security notice: All file calculations, deduplication, and formatting execute inside your browser memory using Web APIs. No spreadsheets or user records are uploaded, stored, or transmitted to external servers.
+    </p>
+    <p><a href="https://buymeacoffee.com/suhel786" target="_blank">☕ Support this free tool with a coffee</a></p>
+  </footer>
+
+  <!-- Complete Javascript Logic -->
   <script>
+    // Global State
     let rawData = [];
     let headers = [];
     let cleanedData = [];
     let flaggedDuplicates = [];
     let currentFileName = "data";
-    let healthMetrics = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
+    let healthStats = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
 
-    function switchView(tab) {
+    let compDataA = { headers: [], rows: [], name: 'File A' };
+    let compDataB = { headers: [], rows: [], name: 'File B' };
+    let diffResults = [];
+
+    let invRows = [];
+    let invHeaders = [];
+    let invAuditResults = [];
+
+    function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      if(tab === 'cleaner') {
+
+      if (tabId === 'cleaner') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
         document.getElementById('cleanerPane').classList.add('active');
-      } else if(tab === 'converter') {
+      } else if (tabId === 'compare') {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('converterPane').classList.add('active');
-      } else {
+        document.getElementById('comparePane').classList.add('active');
+      } else if (tabId === 'inventory') {
         document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('inventoryPane').classList.add('active');
+      } else if (tabId === 'barcode') {
+        document.querySelectorAll('.tab-btn')[3].classList.add('active');
         document.getElementById('barcodePane').classList.add('active');
+      } else if (tabId === 'json') {
+        document.querySelectorAll('.tab-btn')[4].classList.add('active');
+        document.getElementById('jsonPane').classList.add('active');
       }
     }
 
-    document.getElementById('dataFile').addEventListener('change', function(e) {
+    // ==========================================
+    // 1. DATA CLEANER & HEALTH REPORT
+    // ==========================================
+    document.getElementById('cleanerInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-
       currentFileName = file.name.replace(/\.[^/.]+$/, "");
-      
-      if (file.name.endsWith('.csv')) {
-        Papa.parse(file, {
-          skipEmptyLines: false,
-          complete: function(results) { handleParsedData(file, results.data); }
+
+      parseFile(file, function(parsedHeaders, parsedRows) {
+        headers = parsedHeaders;
+        rawData = parsedRows.filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
+
+        const metaBox = document.getElementById('cleanerMeta');
+        metaBox.style.display = 'block';
+        metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Rows:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
+
+        // Populate Match Dropdown (Safe default: Entire Row)
+        const dupSelect = document.getElementById('dupMode');
+        dupSelect.innerHTML = '<option value="entire">Exact Entire Row Match (Safe Default)</option>';
+        headers.forEach((h, idx) => {
+          if (h && h.toString().trim() !== '') {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.textContent = `Match by Column: ${h}`;
+            if (/email/i.test(h)) opt.textContent += " (Email)";
+            if (/sku|id|code/i.test(h)) opt.textContent += " (Identifier)";
+            dupSelect.appendChild(opt);
+          }
         });
-      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const sheetRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-          handleParsedData(file, sheetRows);
-        };
-        reader.readAsArrayBuffer(file);
-      }
+
+        runHealthAudit();
+        renderTable('previewTable', headers, rawData.slice(0, 5));
+        document.getElementById('previewSection').style.display = 'block';
+      });
     });
 
-    function handleParsedData(file, rows) {
-      if (!rows || rows.length === 0) { alert("File is empty!"); return; }
-
-      headers = rows[0];
-      rawData = rows.slice(1).filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
-
-      // Populate Duplicate Match Options
-      const dupSelect = document.getElementById('dupMode');
-      dupSelect.innerHTML = '<option value="entire">Entire Row Match</option>';
-      
-      headers.forEach((h, idx) => {
-        if (h && h.toString().trim() !== '') {
-          const name = h.toString().trim();
-          const opt = document.createElement('option');
-          opt.value = idx;
-          opt.textContent = `Match by ${name}`;
-          
-          // Auto-select smart columns (Email, Phone, SKU, ID)
-          if (/email/i.test(name)) opt.textContent += " (Smart: Email)";
-          if (/phone|mobile/i.test(name)) opt.textContent += " (Smart: Phone)";
-          if (/sku|item_id|person_id|id/i.test(name)) opt.textContent += " (Smart: Identifier)";
-          
-          dupSelect.appendChild(opt);
-        }
-      });
-
-      const metaBox = document.getElementById('fileMeta');
-      metaBox.style.display = 'block';
-      metaBox.innerHTML = `<strong>Loaded File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
-
-      recalculateDuplicates();
-      renderTable('previewTable', headers, rawData.slice(0, 5), false);
-      document.getElementById('previewSection').style.display = 'block';
-    }
-
-    function recalculateDuplicates() {
+    function runHealthAudit() {
       if (rawData.length === 0) return;
       const dupMode = document.getElementById('dupMode').value;
-      
+
       let blanks = 0;
       let spaces = 0;
-      let caps = 0;
       let seen = new Map();
       flaggedDuplicates = [];
+      const colCasing = headers.map(() => new Map());
 
       rawData.forEach((row, index) => {
-        const actualRowNumber = index + 2; // Row number in Excel/CSV
+        const rowNum = index + 2;
         let key;
         if (dupMode === 'entire') {
-          key = JSON.stringify(row);
+          key = JSON.stringify(row.map(c => (c === null || c === undefined) ? '' : c.toString().trim()));
         } else {
-          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
+          const val = row[parseInt(dupMode)];
+          key = (val === null || val === undefined) ? '' : val.toString().trim().toLowerCase();
         }
 
-        if (key !== '' && key !== '""') {
+        if (key && key !== '[]') {
           if (seen.has(key)) {
-            flaggedDuplicates.push({ rowNum: actualRowNumber, originalRow: row });
+            flaggedDuplicates.push({ rowNum, row });
           } else {
-            seen.set(key, actualRowNumber);
+            seen.set(key, rowNum);
           }
         }
 
-        // Diagnostic checks
-        row.forEach(cell => {
-          if (!cell || cell.toString().trim() === '') blanks++;
-          else {
+        row.forEach((cell, cIdx) => {
+          if (cell === null || cell === undefined || cell.toString().trim() === '') {
+            blanks++;
+          } else {
             const str = cell.toString();
             if (str !== str.trim()) spaces++;
-            if (/[a-z]/.test(str) && /[A-Z]/.test(str) && str === str.toLowerCase()) caps++;
-            if (str.length > 2 && str === str.toLowerCase() && isNaN(str)) caps++;
+
+            const trimmed = str.trim();
+            if (isNaN(trimmed) && trimmed.length > 1 && !trimmed.includes('@') && !trimmed.includes('http')) {
+              const lower = trimmed.toLowerCase();
+              const map = colCasing[cIdx];
+              if (!map.has(lower)) map.set(lower, new Set());
+              map.get(lower).add(trimmed);
+            }
           }
         });
       });
 
-      healthMetrics = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps };
-      document.getElementById('metricRows').textContent = healthMetrics.rows;
-      document.getElementById('metricDups').textContent = healthMetrics.dups;
-      document.getElementById('metricBlanks').textContent = healthMetrics.blanks;
-      document.getElementById('metricSpaces').textContent = healthMetrics.spaces;
-      document.getElementById('metricCaps').textContent = healthMetrics.caps;
+      let trueCaseConflicts = 0;
+      colCasing.forEach(map => {
+        map.forEach(variants => {
+          if (variants.size > 1) trueCaseConflicts += variants.size;
+        });
+      });
+
+      healthStats = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps: trueCaseConflicts };
+      document.getElementById('mRows').textContent = healthStats.rows;
+      document.getElementById('mDups').textContent = healthStats.dups;
+      document.getElementById('mBlanks').textContent = healthStats.blanks;
+      document.getElementById('mSpaces').textContent = healthStats.spaces;
+      document.getElementById('mCaps').textContent = healthStats.caps;
       document.getElementById('healthCard').style.display = 'block';
 
-      // Render Flagged Duplicate Details
       if (flaggedDuplicates.length > 0) {
         renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
-        document.getElementById('dupReviewSection').style.display = 'block';
+        document.getElementById('dupSection').style.display = 'block';
       } else {
-        document.getElementById('dupReviewSection').style.display = 'none';
+        document.getElementById('dupSection').style.display = 'none';
       }
     }
 
-    function renderDuplicateTable(tableId, head, dupList) {
+    function renderDuplicateTable(tableId, head, list) {
       const tbl = document.getElementById(tableId);
       tbl.innerHTML = '';
-      
       const trH = document.createElement('tr');
-      const thIndex = document.createElement('th');
-      thIndex.textContent = "Source Row #";
-      trH.appendChild(thIndex);
-
+      const thIdx = document.createElement('th');
+      thIdx.textContent = "Row #";
+      trH.appendChild(thIdx);
       head.forEach(h => {
         const th = document.createElement('th');
         th.textContent = h;
@@ -489,30 +661,23 @@
       });
       tbl.appendChild(trH);
 
-      dupList.forEach(item => {
+      list.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = 'dup-row';
         const tdIdx = document.createElement('td');
-        tdIdx.innerHTML = `<span class="row-badge">Row ${item.rowNum}</span>`;
+        tdIdx.innerHTML = `<span class="tag-row">Row ${item.rowNum}</span>`;
         tr.appendChild(tdIdx);
-
-        item.originalRow.forEach(c => {
+        item.row.forEach(c => {
           const td = document.createElement('td');
-          td.textContent = c;
+          td.textContent = (c === null || c === undefined) ? '' : c;
           tr.appendChild(td);
         });
         tbl.appendChild(tr);
       });
     }
 
-    function toTitleCase(str) {
-      return str.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
-    }
-
-    function executeSafeClean() {
-      if (rawData.length === 0) { alert("Please upload a file first!"); return; }
+    function executeClean() {
+      if (rawData.length === 0) { alert("Please upload a CSV or Excel file first!"); return; }
 
       const doTrim = document.getElementById('optTrim').checked;
       const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
@@ -521,45 +686,375 @@
 
       let processed = rawData.map(row => 
         row.map(cell => {
-          if (!cell) return '';
+          if (cell === null || cell === undefined) return '';
           let val = cell.toString();
           if (doTrim) val = val.trim();
-          if (doFixCaps && isNaN(val) && val.length > 1 && !val.includes('@')) {
-            val = toTitleCase(val);
+          if (doFixCaps && isNaN(val) && val.length > 1 && !val.includes('@') && !val.includes('http')) {
+            val = val.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
           }
           return val;
         })
       );
 
       if (doRemoveEmpty) {
-        processed = processed.filter(row => row.some(cell => cell.toString().trim() !== ''));
+        processed = processed.filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
       }
 
       let unique = [];
       let seen = new Set();
-      let removedCount = 0;
+      let removedDups = 0;
 
       processed.forEach(row => {
         let key;
         if (dupMode === 'entire') {
           key = JSON.stringify(row);
         } else {
- key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
+          const target = row[parseInt(dupMode)];
+          key = (target === null || target === undefined) ? '' : target.toString().trim().toLowerCase();
         }
 
-        if (key && seen.has(key)) {
-          removedCount++;
+        if (key !== '' && seen.has(key)) {
+          removedDups++;
         } else {
-          if (key) seen.add(key);
+          if (key !== '') seen.add(key);
           unique.push(row);
         }
       });
 
       cleanedData = unique;
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
+      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Retained <strong>${cleanedData.length}</strong> verified unique records | Removed <strong>${removedDups}</strong> duplicate rows. Original source remains untouched.`;
+      document.getElementById('cleanResult').style.display = 'block';
+    }
 
-      renderTable('cleanedTable', headers, cleanedData.slice(0, 5), false);
-      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedCount}</strong> duplicate records.`;
-      document.getElementById('cleanSummary').style.display = 'block';
+    function resetCleaner() {
+      rawData = [];
+      headers = [];
+      cleanedData = [];
+      flaggedDuplicates = [];
+      document.getElementById('cleanerInput').value = '';
+      document.getElementById('cleanerMeta').style.display = 'none';
+      document.getElementById('healthCard').style.display = 'none';
+      document.getElementById('dupSection').style.display = 'none';
+      document.getElementById('previewSection').style.display = 'none';
+      document.getElementById('cleanResult').style.display = 'none';
+    }
+
+    function downloadCleanedFile() {
+      const sanitized = cleanedData.map(row => 
+        row.map(cell => {
+          let str = (cell === null || cell === undefined) ? '' : cell.toString();
+          if (/^[=+\-@]/.test(str)) return "'" + str; // Protect against formula injection
+          return str;
+        })
+      );
+      const csv = Papa.unparse([headers, ...sanitized]);
+      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function downloadAuditReport() {
+      const reportRows = [
+        ["Audit Diagnostic Category", "Detected Count", "Action/Standard"],
+        ["Total Rows Processed", healthStats.rows, "Audited locally"],
+        ["Duplicate Records Found", healthStats.dups, "Flagged with exact source row #"],
+        ["Missing / Empty Values", healthStats.blanks, "Verified"],
+        ["Extra Inconsistent Spaces", healthStats.spaces, "Trimmed"],
+        ["Case Mismatches (Variants)", healthStats.caps, "Tracked per column"],
+        ["Audit Date", new Date().toLocaleString(), "100% Client-Side"]
+      ];
+      const csv = Papa.unparse(reportRows);
+      triggerDownload(csv, `${currentFileName}_data_health_report.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    // ==========================================
+    // 2. SMART FILE COMPARE (Priority 1)
+    // ==========================================
+    document.getElementById('compFileA').addEventListener('change', e => loadCompareFile(e.target.files[0], 'A'));
+    document.getElementById('compFileB').addEventListener('change', e => loadCompareFile(e.target.files[0], 'B'));
+
+    function loadCompareFile(file, type) {
+      if (!file) return;
+      parseFile(file, (h, r) => {
+        if (type === 'A') compDataA = { headers: h, rows: r, name: file.name };
+        else compDataB = { headers: h, rows: r, name: file.name };
+
+        if (compDataA.headers.length > 0 && compDataB.headers.length > 0) {
+          setupCompareKeys();
+        }
+      });
+    }
+
+    function setupCompareKeys() {
+      const select = document.getElementById('compareKeySelect');
+      select.innerHTML = '';
+      const common = compDataA.headers.filter(h => compDataB.headers.includes(h));
+
+      if (common.length === 0) {
+        alert("Warning: No matching column header found between File A and File B!");
+        return;
+      }
+
+      common.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = `Match by key: ${h}`;
+        if (/sku|id|code|invoice/i.test(h)) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('compareKeyBox').style.display = 'block';
+    }
+
+    function executeFileCompare() {
+      if (compDataA.rows.length === 0 || compDataB.rows.length === 0) {
+        alert("Please upload both File A and File B!");
+        return;
+      }
+
+      const keyCol = document.getElementById('compareKeySelect').value;
+      const idxA = compDataA.headers.indexOf(keyCol);
+      const idxB = compDataB.headers.indexOf(keyCol);
+
+      const mapA = new Map();
+      const mapB = new Map();
+
+      compDataA.rows.forEach(r => {
+        const k = (r[idxA] || '').toString().trim().toLowerCase();
+        if (k) mapA.set(k, r);
+      });
+
+      compDataB.rows.forEach(r => {
+        const k = (r[idxB] || '').toString().trim().toLowerCase();
+        if (k) mapB.set(k, r);
+      });
+
+      diffResults = [];
+      let added = 0, removed = 0, changed = 0, same = 0;
+
+      // Check for removed, changed, unchanged
+      mapA.forEach((rowA, k) => {
+        if (!mapB.has(k)) {
+          removed++;
+          diffResults.push({ key: k, status: 'REMOVED', details: 'Record removed in File B', row: rowA });
+        } else {
+          const rowB = mapB.get(k);
+          const changedCols = [];
+          compDataA.headers.forEach((h, i) => {
+            const j = compDataB.headers.indexOf(h);
+            if (j !== -1 && (rowA[i] || '').toString().trim() !== (rowB[j] || '').toString().trim()) {
+              changedCols.push(`${h}: "${rowA[i]}" -> "${rowB[j]}"`);
+            }
+          });
+
+          if (changedCols.length > 0) {
+            changed++;
+            diffResults.push({ key: k, status: 'CHANGED', details: changedCols.join(' | '), row: rowB });
+          } else {
+            same++;
+            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical record', row: rowB });
+          }
+        }
+      });
+
+      // Check for added
+      mapB.forEach((rowB, k) => {
+        if (!mapA.has(k)) {
+          added++;
+          diffResults.push({ key: k, status: 'ADDED', details: 'New record in File B', row: rowB });
+        }
+      });
+
+      document.getElementById('cmpAdded').textContent = added;
+      document.getElementById('cmpRemoved').textContent = removed;
+      document.getElementById('cmpChanged').textContent = changed;
+      document.getElementById('cmpSame').textContent = same;
+
+      // Render Diff Table
+      const tbl = document.getElementById('compareTable');
+      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Diff Summary</th></tr>`;
+      diffResults.slice(0, 15).forEach(res => {
+        const badgeClass = res.status === 'ADDED' ? 'badge-added' : (res.status === 'REMOVED' ? 'badge-removed' : (res.status === 'CHANGED' ? 'badge-changed' : 'badge-same'));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><span class="${badgeClass}">${res.status}</span></td><td><strong>${res.key}</strong></td><td style="font-size:11px;">${res.details}</td>`;
+        tbl.appendChild(tr);
+      });
+
+      document.getElementById('compareResult').style.display = 'block';
+    }
+
+    function downloadComparisonReport() {
+      const out = [["Status", "Matching Key", "Discrepancy Details"]];
+      diffResults.forEach(r => out.push([r.status, r.key, r.details]));
+      const csv = Papa.unparse(out);
+      triggerDownload(csv, `file_comparison_audit.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    // ==========================================
+    // 3. INVENTORY CHECKER (Priority 2)
+    // ==========================================
+    document.getElementById('invFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      parseFile(file, (h, r) => {
+        invHeaders = h;
+        invRows = r;
+        setupInventorySelectors();
+      });
+    });
+
+    function setupInventorySelectors() {
+      const sSku = document.getElementById('invColSku');
+      const sSys = document.getElementById('invColSystem');
+      const sPhy = document.getElementById('invColPhysical');
+      const sCost = document.getElementById('invColCost');
+
+      [sSku, sSys, sPhy].forEach(s => s.innerHTML = '');
+      sCost.innerHTML = '<option value="">-- None --</option>';
+
+      invHeaders.forEach((h, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = h;
+        sSku.appendChild(opt.cloneNode(true));
+        sSys.appendChild(opt.cloneNode(true));
+        sPhy.appendChild(opt.cloneNode(true));
+        sCost.appendChild(opt);
+
+        if (/sku|item|code/i.test(h)) sSku.value = i;
+        if (/system|expected|book|pos/i.test(h)) sSys.value = i;
+        if (/physical|actual|counted/i.test(h)) sPhy.value = i;
+        if (/cost|price|rate/i.test(h)) sCost.value = i;
+      });
+
+      document.getElementById('invColumnMap').style.display = 'block';
+    }
+
+    function executeInventoryCheck() {
+      if (invRows.length === 0) { alert("Please upload inventory sheet!"); return; }
+
+      const idxSku = parseInt(document.getElementById('invColSku').value);
+      const idxSys = parseInt(document.getElementById('invColSystem').value);
+      const idxPhy = parseInt(document.getElementById('invColPhysical').value);
+      const costVal = document.getElementById('invColCost').value;
+      const idxCost = costVal !== "" ? parseInt(costVal) : -1;
+
+      let shortage = 0, excess = 0, matched = 0;
+      invAuditResults = [];
+
+      invRows.forEach(r => {
+        const sku = (r[idxSku] || '').toString().trim();
+        const sysQty = parseFloat(r[idxSys]) || 0;
+        const phyQty = parseFloat(r[idxPhy]) || 0;
+        const cost = idxCost !== -1 ? (parseFloat(r[idxCost]) || 0) : 0;
+        const variance = phyQty - sysQty;
+        const impact = variance * cost;
+
+        let status = 'MATCHED';
+        if (variance < 0) { status = 'SHORTAGE'; shortage++; }
+        else if (variance > 0) { status = 'EXCESS'; excess++; }
+        else matched++;
+
+        invAuditResults.push({ sku, sysQty, phyQty, variance, impact, status });
+      });
+
+      document.getElementById('invTotalSkus').textContent = invRows.length;
+      document.getElementById('invShortage').textContent = shortage;
+      document.getElementById('invExcess').textContent = excess;
+      document.getElementById('invMatch').textContent = matched;
+
+      const tbl = document.getElementById('invTable');
+      tbl.innerHTML = `<tr><th>SKU</th><th>System Qty</th><th>Counted Qty</th><th>Variance</th><th>Impact</th><th>Status</th></tr>`;
+
+      invAuditResults.filter(a => a.status !== 'MATCHED').slice(0, 15).forEach(res => {
+        const tr = document.createElement('tr');
+        const color = res.variance < 0 ? 'color:var(--danger);' : 'color:var(--warning);';
+        tr.innerHTML = `<td><strong>${res.sku}</strong></td><td>${res.sysQty}</td><td>${res.phyQty}</td><td style="${color}font-weight:700;">${res.variance}</td><td>${res.impact !== 0 ? res.impact.toFixed(2) : '-'}</td><td><span class="${res.variance < 0 ? 'badge-removed' : 'badge-changed'}">${res.status}</span></td>`;
+        tbl.appendChild(tr);
+      });
+
+      document.getElementById('invResult').style.display = 'block';
+    }
+
+    function downloadInventoryReport() {
+      const out = [["SKU", "System Expected", "Physical Counted", "Variance Qty", "Estimated Value Impact", "Status"]];
+      invAuditResults.forEach(i => out.push([i.sku, i.sysQty, i.phyQty, i.variance, i.impact, i.status]));
+      const csv = Papa.unparse(out);
+      triggerDownload(csv, `inventory_discrepancy_report.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    // ==========================================
+    // 4. BULK BARCODES & LABELS (Priority 3)
+    // ==========================================
+    function generateBarcodeCards() {
+      const val = document.getElementById('barcodeText').value.trim();
+      const area = document.getElementById('barcodeArea');
+      if (!val) { alert("Please type or paste item SKU codes!"); return; }
+
+      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      area.innerHTML = '';
+
+      items.forEach((sku, i) => {
+        const card = document.createElement('div');
+        card.className = 'barcode-card';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        card.appendChild(svg);
+        area.appendChild(card);
+        try {
+          JsBarcode(svg, sku, { format: "CODE128", width: 1.4, height: 40, displayValue: true, fontSize: 11 });
+        } catch(err) {
+          card.innerHTML = `<span style="color:var(--danger);font-size:11px;">Invalid: ${sku}</span>`;
+        }
+      });
+      document.getElementById('barcodePrintBtn').style.display = 'inline-block';
+    }
+
+    // ==========================================
+    // 5. JSON TOOLBOX
+    // ==========================================
+    function convertFileToJson() {
+      const file = document.getElementById('jsonFileInput').files[0];
+      if (!file) { alert("Please select a file to convert!"); return; }
+
+      parseFile(file, (h, rows) => {
+        const json = rows.map(r => {
+          let obj = {};
+          h.forEach((headerName, idx) => obj[headerName] = r[idx] !== undefined ? r[idx] : '');
+          return obj;
+        });
+
+        const jsonStr = JSON.stringify(json, null, 2);
+        document.getElementById('jsonMeta').style.display = 'block';
+        document.getElementById('jsonMeta').textContent = `✓ Successfully converted ${json.length} records into JSON.`;
+        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+      });
+    }
+
+    // ==========================================
+    // HELPERS & FILE PARSING
+    // ==========================================
+    function parseFile(file, callback) {
+      if (file.name.endsWith('.csv')) {
+        Papa.parse(file, {
+          skipEmptyLines: false,
+          complete: res => {
+            if (!res.data || res.data.length === 0) { alert("Uploaded file is empty!"); return; }
+            callback(res.data[0], res.data.slice(1));
+          }
+        });
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const data = new Uint8Array(evt.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          if (!rows || rows.length === 0) { alert("Excel sheet is empty!"); return; }
+          callback(rows[0], rows.slice(1));
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert("Unsupported file format! Please upload .csv, .xlsx, or .xls.");
+      }
     }
 
     function renderTable(tableId, head, rows) {
@@ -577,84 +1072,11 @@
         const tr = document.createElement('tr');
         r.forEach(c => {
           const td = document.createElement('td');
-          td.textContent = c;
+          td.textContent = (c === null || c === undefined) ? '' : c;
           tr.appendChild(td);
         });
         tbl.appendChild(tr);
       });
-    }
-
-    function downloadCleanedFile() {
-      const sanitized = cleanedData.map(row => 
-        row.map(cell => {
-          let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str;
-          return str;
-        })
-      );
-      const csv = Papa.unparse([headers, ...sanitized]);
-      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
-    }
-
-    function downloadIssueReport() {
-      const reportRows = [
-        ["Health Diagnostic Category", "Detected Count", "Action Taken"],
-        ["Total Scanned Records", healthMetrics.rows, "Parsed Locally"],
-        ["Duplicate Rows Found", healthMetrics.dups, "Flagged with Row #"],
-        ["Missing / Empty Values", healthMetrics.blanks, "Audited"],
-        ["Extra Inconsistent Spaces", healthMetrics.spaces, "Trimmed"],
-        ["Case Mismatches (Names/Text)", healthMetrics.caps, "Normalized to Title Case"],
-        ["Audit Date", new Date().toLocaleString(), "Certified Safe"]
-      ];
-      const csv = Papa.unparse(reportRows);
-      triggerDownload(csv, `${currentFileName}_health_audit.csv`, 'text/csv;charset=utf-8;');
-    }
-
-    function processJSONConvert() {
-      const input = document.getElementById('convertFile');
-      if (!input.files.length) { alert("Select file!"); return; }
-      const file = input.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        let json = [];
-        if (file.name.endsWith('.csv')) {
-          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
-          json = res.data;
-        } else {
-          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-          json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        }
-        const jsonStr = JSON.stringify(json, null, 2);
-        document.getElementById('convertLog').style.display = 'block';
-        document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
-        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
-      };
-
-      if (file.name.endsWith('.csv')) reader.readAsText(file);
-      else reader.readAsArrayBuffer(file);
-    }
-
-    function createBarcodes() {
-      const val = document.getElementById('barcodeList').value.trim();
-      const area = document.getElementById('barcodePrintArea');
-      if (!val) { alert("Enter SKU codes!"); return; }
-      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-      area.innerHTML = '';
-
-      items.forEach((sku, i) => {
-        const card = document.createElement('div');
-        card.className = 'barcode-card';
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        card.appendChild(svg);
-        area.appendChild(card);
-        try {
-          JsBarcode(svg, sku, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
-        } catch(err) {
-          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${sku}</span>`;
-        }
-      });
-      document.getElementById('printBtn').style.display = 'block';
     }
 
     function triggerDownload(content, filename, type) {
