@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean Suite - Data Cleaner, Converter & Barcode Generator</title>
-  <meta name="description" content="All-in-one private browser data utility: Clean CSV duplicates, convert spreadsheets to JSON/CSV, and generate printable barcode labels. 100% Client-Side.">
+  <title>QuickClean Business Data Toolkit</title>
+  <meta name="description" content="Safe, private client-side business data cleaner, health audit report, and format toolkit.">
   
-  <!-- SheetJS for Excel & JsBarcode for Barcodes -->
+  <!-- SheetJS for Excel, JsBarcode, and PapaParse for robust CSV handling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
@@ -15,259 +16,506 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #f8fafc;
-      color: #1e293b;
+      color: #0f172a;
       margin: 0;
-      padding: 30px 15px;
+      padding: 20px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     .container {
       background: #ffffff;
-      max-width: 780px;
+      max-width: 850px;
       width: 100%;
-      padding: 32px;
+      padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
       border: 1px solid #e2e8f0;
     }
-    h1 { font-size: 26px; margin: 0 0 8px 0; color: #0f172a; text-align: center; }
-    p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; text-align: center; }
-    .badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #065f46;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    h1 { font-size: 24px; margin: 0 0 6px 0; color: #0f172a; }
+    p.subtitle { color: #64748b; font-size: 14px; margin: 0 0 20px 0; }
     
-    /* Tabs */
-    .tab-container { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
-    .tab-btn { flex: 1; padding: 12px 6px; background: none; border: none; font-weight: 600; font-size: 14px; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-    .tab-btn.active { color: #0284c7; border-bottom-color: #0284c7; }
+    /* Navigation Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: #0284c7;
+      border-bottom-color: #0284c7;
+    }
     
-    .upload-zone { border: 2px dashed #cbd5e1; padding: 25px; text-align: center; border-radius: 8px; background: #f1f5f9; margin-bottom: 16px; }
-    input[type="file"], textarea { display: block; margin: 0 auto 10px auto; }
-    textarea { width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 13px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
     
-    .btn { background-color: #0284c7; color: white; font-weight: 600; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 15px; }
-    .btn:hover { background-color: #0369a1; }
-    .btn-secondary { background-color: #475569; margin-top: 10px; }
-    .btn-secondary:hover { background-color: #334155; }
+    /* Upload Zone */
+    .dropzone {
+      border: 2px dashed #94a3b8;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
     
-    .stats { margin-top: 16px; padding: 12px; background: #ecfdf5; color: #065f46; border-radius: 6px; display: none; font-size: 14px; border: 1px solid #a7f3d0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-    th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
-    th { background: #f8fafc; font-weight: 600; }
+    /* File Summary Card */
+    .meta-box {
+      display: none;
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #334155;
+    }
     
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    /* Health Report Box */
+    .health-card {
+      display: none;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .metric-pill {
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .metric-pill strong { display: block; font-size: 18px; color: #0284c7; }
+    .metric-pill span { font-size: 12px; color: #64748b; }
+    
+    /* Controls & Checkboxes */
+    .options-group {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .options-group h4 { margin: 0 0 10px 0; font-size: 13px; color: #334155; }
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    
+    .btn {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn:hover { background: #0369a1; }
+    .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-secondary { background: #475569; }
+    .btn-secondary:hover { background: #334155; }
+    
+    /* Tables */
+    .table-wrapper {
+      max-height: 250px;
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin: 12px 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 8px 12px; border: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; position: sticky; top: 0; }
     
     /* Barcode Grid */
-    #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+    #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
     .barcode-card { border: 1px dashed #cbd5e1; padding: 10px; text-align: center; background: #fff; border-radius: 6px; }
-    .barcode-card svg { max-width: 100%; height: 60px; }
+    .barcode-card svg { max-width: 100%; height: 50px; }
     
-    /* Coffee Button */
-    .support-box { margin-top: 30px; text-align: center; padding: 14px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; }
-    .coffee-btn { display: inline-flex; align-items: center; gap: 8px; background-color: #FFDD00; color: #000; font-weight: 700; font-size: 13px; padding: 8px 18px; border-radius: 6px; text-decoration: none; margin-top: 6px; }
+    .footer-support {
+      margin-top: 24px;
+      padding: 12px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div style="text-align: center;">
-      <span class="badge">100% Client-Side Data Utility</span>
+    <div class="header-badge">
+      🔒 100% In-Browser & Safe (Zero Server Upload)
     </div>
-    <h1>QuickClean Suite</h1>
-    <p class="subtitle">Clean, convert formats, and generate printable labels instantly in your browser.</p>
+    <h1>QuickClean Business Data Toolkit</h1>
+    <p class="subtitle">Inspect, diagnose data health, clean duplicates safely, and export audit-ready records.</p>
 
-    <!-- 3 Tabs Navigation -->
-    <div class="tab-container">
-      <button class="tab-btn active" onclick="switchTab('cleaner')">1. Clean Duplicates</button>
-      <button class="tab-btn" onclick="switchTab('converter')">2. Format Converter (JSON)</button>
-      <button class="tab-btn" onclick="switchTab('barcode')">3. Barcode Generator</button>
-    </div>
-
-    <!-- Feature 1: CSV Cleaner -->
-    <div id="cleanerTab" class="tab-content active">
-      <div class="upload-zone">
-        <input type="file" id="csvFileInput" accept=".csv">
-        <small style="color:#64748b;">Drop CSV to trim extra spaces & delete duplicate rows</small>
-      </div>
-      <button class="btn" onclick="processCSV()">Clean & Download CSV</button>
-      <div id="csvStats" class="stats"></div>
-      <div id="csvPreviewArea" style="display:none; margin-top:15px;">
-        <h4 style="font-size:13px; margin-bottom:6px;">Cleaned Preview:</h4>
-        <table id="csvPreviewTable"></table>
-      </div>
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchView('cleaner')">1. Safe Cleaner & Health Report</button>
+      <button class="tab-btn" onclick="switchView('converter')">2. Format Converter (JSON)</button>
+      <button class="tab-btn" onclick="switchView('barcode')">3. Barcode Labels</button>
     </div>
 
-    <!-- Feature 2: Format Converter (CSV/Excel to JSON) -->
-    <div id="converterTab" class="tab-content">
-      <div class="upload-zone">
-        <input type="file" id="convertFileInput" accept=".csv, .xlsx, .xls">
-        <small style="color:#64748b;">Upload Excel or CSV file to convert into JSON format</small>
+    <!-- TAB 1: SAFE CLEANER & HEALTH REPORT -->
+    <div id="cleanerPane" class="tab-pane active">
+      <div class="dropzone">
+        <input type="file" id="csvFile" accept=".csv">
+        <p style="margin: 6px 0 0 0; font-size: 12px; color: #64748b;">Upload CSV (Original file is never modified or overwritten)</p>
       </div>
-      <button class="btn" onclick="processConversion()">Convert to JSON & Download</button>
-      <div id="convertStats" class="stats"></div>
-      <div id="convertPreviewArea" style="display:none; margin-top:15px;">
-        <h4 style="font-size:13px; margin-bottom:6px;">JSON Output Preview:</h4>
-        <textarea id="jsonPreviewBox" readonly></textarea>
+
+      <!-- File Metadata -->
+      <div id="fileMeta" class="meta-box"></div>
+
+      <!-- Step 2: Data Health Report -->
+      <div id="healthCard" class="health-card">
+        <h3 style="margin:0; font-size:15px; color:#0f172a;">📊 Data Health Scan</h3>
+        <div class="health-grid">
+          <div class="metric-pill"><strong id="metricRows">0</strong><span>Total Rows</span></div>
+          <div class="metric-pill"><strong id="metricDups">0</strong><span>Exact Duplicates</span></div>
+          <div class="metric-pill"><strong id="metricBlanks">0</strong><span>Empty Cells</span></div>
+          <div class="metric-pill"><strong id="metricSpaces">0</strong><span>Trim Issues</span></div>
+        </div>
+      </div>
+
+      <!-- Live Initial Preview -->
+      <div id="previewSection" style="display:none;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:#334155;">Original Data Preview (First 5 Rows):</h4>
+        <div class="table-wrapper">
+          <table id="previewTable"></table>
+        </div>
+      </div>
+
+      <!-- Step 1: User-Controlled Cleaning Checkboxes -->
+      <div class="options-group">
+        <h4>Safe Cleaning Options</h4>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
+          <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
+          <label><input type="checkbox" id="optDups" checked> Remove duplicate rows</label>
+        </div>
+        <div style="font-size: 12px; color: #64748b; margin-top: 6px;">
+          Duplicate Detection Mode: 
+          <select id="dupMode" style="font-size:12px; padding:2px 6px;">
+            <option value="entire">Entire Row Match</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" onclick="executeSafeClean()">Preview & Clean Data</button>
+
+      <!-- Action Confirmation & Exports -->
+      <div id="cleanSummary" style="display:none; margin-top: 16px;">
+        <div id="summaryText" class="meta-box" style="display:block; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;"></div>
+        
+        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#334155;">Cleaned Result Preview:</h4>
+        <div class="table-wrapper">
+          <table id="cleanedTable"></table>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
+          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Issue Report</button>
+        </div>
       </div>
     </div>
 
-    <!-- Feature 3: Barcode / Label Generator -->
-    <div id="barcodeTab" class="tab-content">
-      <div class="upload-zone">
-        <p style="margin:0 0 8px 0; font-size:13px; color:#475569; font-weight:600;">Type or paste Item Codes / Barcode Numbers (one per line):</p>
-        <textarea id="barcodeInput" placeholder="ITEM-001&#10;ITEM-002&#10;ITEM-003&#10;BOX-104"></textarea>
+    <!-- TAB 2: FORMAT CONVERTER -->
+    <div id="converterPane" class="tab-pane">
+      <div class="dropzone">
+        <input type="file" id="convertFile" accept=".csv, .xlsx, .xls">
+        <p style="margin: 6px 0 0 0; font-size: 12px; color: #64748b;">Convert Excel (.xlsx) or CSV to JSON format</p>
       </div>
-      <button class="btn" onclick="generateBarcodes()">Generate Barcode Sheet</button>
-      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none;">🖨️ Print Labels / Save PDF</button>
+      <button class="btn" onclick="processJSONConvert()">Convert & Download JSON</button>
+      <div id="convertLog" class="meta-box" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- TAB 3: BARCODE LABELS -->
+    <div id="barcodePane" class="tab-pane">
+      <div class="dropzone">
+        <p style="margin:0 0 8px 0; font-size:13px; font-weight:600;">Item SKU / Barcode Numbers (one per line):</p>
+        <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+      </div>
+      <button class="btn" onclick="createBarcodes()">Generate Labels</button>
+      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
       <div id="barcodePrintArea"></div>
     </div>
 
-    <!-- Donation Support Box -->
-    <div class="support-box">
-      <p style="margin: 0; font-size: 13px; color: #78350f;">Find these free utilities useful?</p>
-      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-btn">
+    <!-- Monetization Support -->
+    <div class="footer-support">
+      Enjoying QuickClean Toolkit? 
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" style="color:#b45309; font-weight:700; text-decoration:none; margin-left:6px;">
         ☕ Buy me a coffee
       </a>
     </div>
   </div>
 
   <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    // State preservation (PDF requirement: original data preserved in memory)
+    let rawData = [];
+    let headers = [];
+    let cleanedData = [];
+    let healthStats = { total: 0, dups: 0, blanks: 0, trimIssues: 0 };
+    let currentFileName = "data";
 
-      if (tab === 'cleaner') {
+    function switchView(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      if(tab === 'cleaner') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('cleanerTab').classList.add('active');
-      } else if (tab === 'converter') {
+        document.getElementById('cleanerPane').classList.add('active');
+      } else if(tab === 'converter') {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('converterTab').classList.add('active');
+        document.getElementById('converterPane').classList.add('active');
       } else {
         document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('barcodeTab').classList.add('active');
+        document.getElementById('barcodePane').classList.add('active');
       }
     }
 
-    // 1. Cleaner
-    function processCSV() {
-      const input = document.getElementById('csvFileInput');
-      const stats = document.getElementById('csvStats');
-      const previewArea = document.getElementById('csvPreviewArea');
-      const previewTable = document.getElementById('csvPreviewTable');
+    // CSV File Upload & Step 2 Health Scan
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-      if (!input.files.length) { alert("Please select a CSV file!"); return; }
-      const file = input.files[0];
-      const reader = new FileReader();
+      currentFileName = file.name.replace(/\.[^/.]+$/, "");
+      
+      Papa.parse(file, {
+        skipEmptyLines: false,
+        complete: function(results) {
+          if (!results.data || results.data.length === 0) {
+            alert("Empty or invalid file!");
+            return;
+          }
 
-      reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length === 0) { alert("File is empty!"); return; }
+          headers = results.data[0];
+          rawData = results.data.slice(1);
 
-        const header = lines[0];
-        const rows = lines.slice(1);
-        const uniqueRows = [...new Set(rows)];
-        const duplicatesRemoved = rows.length - uniqueRows.length;
+          // Meta Display
+          const metaBox = document.getElementById('fileMeta');
+          metaBox.style.display = 'block';
+          metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Rows:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
-        stats.style.display = 'block';
-        stats.innerHTML = `Original: ${rows.length} | Removed: ${duplicatesRemoved} | Final: ${uniqueRows.length}`;
+          // Scan Health Issues
+          performHealthScan(rawData, headers);
 
-        previewTable.innerHTML = '';
-        [header, ...uniqueRows.slice(0, 5)].forEach((rowStr, i) => {
-          const tr = document.createElement('tr');
-          rowStr.split(',').forEach(col => {
-            const cell = document.createElement(i === 0 ? 'th' : 'td');
-            cell.textContent = col;
-            tr.appendChild(cell);
-          });
-          previewTable.appendChild(tr);
-        });
-        previewArea.style.display = 'block';
-
-        const cleanedCSV = [header, ...uniqueRows].join('\n');
-        downloadFile(cleanedCSV, `cleaned_${file.name}`, 'text/csv;charset=utf-8;');
-      };
-      reader.readAsText(file);
-    }
-
-    // 2. Format Converter (Excel/CSV to JSON)
-    function processConversion() {
-      const input = document.getElementById('convertFileInput');
-      const stats = document.getElementById('convertStats');
-      const previewArea = document.getElementById('convertPreviewArea');
-      const jsonBox = document.getElementById('jsonPreviewBox');
-
-      if (!input.files.length) { alert("Please select a file to convert!"); return; }
-      const file = input.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        let jsonResult = [];
-        if (file.name.endsWith('.csv')) {
-          const lines = e.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-          const headers = lines[0].split(',');
-          jsonResult = lines.slice(1).map(row => {
-            const values = row.split(',');
-            let obj = {};
-            headers.forEach((h, i) => obj[h] = values[i] || '');
-            return obj;
-          });
-        } else {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          jsonResult = XLSX.utils.sheet_to_json(sheet);
+          // Render Raw Preview
+          renderTable('previewTable', headers, rawData.slice(0, 5));
+          document.getElementById('previewSection').style.display = 'block';
         }
+      });
+    });
 
-        const jsonString = JSON.stringify(jsonResult, null, 2);
-        stats.style.display = 'block';
-        stats.innerHTML = `Successfully converted ${jsonResult.length} records into JSON.`;
-        jsonBox.value = jsonString.slice(0, 500) + "\n... (remaining data)";
-        previewArea.style.display = 'block';
+    function performHealthScan(rows, headerList) {
+      let blanks = 0;
+      let trimIssues = 0;
+      let seen = new Set();
+      let dups = 0;
 
-        const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
-        downloadFile(jsonString, `${baseName}.json`, 'application/json');
-      };
+      rows.forEach(r => {
+        const rowStr = JSON.stringify(r);
+        if (seen.has(rowStr)) dups++;
+        else seen.add(rowStr);
 
-      if (file.name.endsWith('.csv')) { reader.readAsText(file); }
-      else { reader.readAsArrayBuffer(file); }
+        r.forEach(cell => {
+          if (!cell || cell.toString().trim() === '') blanks++;
+          else if (cell.toString() !== cell.toString().trim()) trimIssues++;
+        });
+      });
+
+      healthStats = { total: rows.length, dups, blanks, trimIssues };
+      document.getElementById('metricRows').textContent = rows.length;
+      document.getElementById('metricDups').textContent = dups;
+      document.getElementById('metricBlanks').textContent = blanks;
+      document.getElementById('metricSpaces').textContent = trimIssues;
+      document.getElementById('healthCard').style.display = 'block';
     }
 
-    // 3. Barcode Generator
-    function generateBarcodes() {
-      const input = document.getElementById('barcodeInput').value.trim();
-      const container = document.getElementById('barcodePrintArea');
-      const printBtn = document.getElementById('printBtn');
+    // Step 1: User-Controlled Safe Cleaning
+    function executeSafeClean() {
+      if (rawData.length === 0) { alert("Please upload a CSV first!"); return; }
 
-      if (!input) { alert("Please enter at least one item code!"); return; }
-      const codes = input.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+      const doTrim = document.getElementById('optTrim').checked;
+      const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
+      const doRemoveDups = document.getElementById('optDups').checked;
 
-      container.innerHTML = '';
-      codes.forEach((code, index) => {
+      let processed = rawData.map(row => row.map(cell => (doTrim && cell) ? cell.toString().trim() : cell));
+
+      if (doRemoveEmpty) {
+        processed = processed.filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
+      }
+
+      let removedDupsCount = 0;
+      if (doRemoveDups) {
+        const unique = [];
+        const seen = new Set();
+        processed.forEach(row => {
+          const key = JSON.stringify(row);
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(row);
+          } else {
+            removedDupsCount++;
+          }
+        });
+        processed = unique;
+      }
+
+      cleanedData = processed;
+
+      // Render Cleaned Preview & Summary
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
+      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Safely!</strong> Preserved: ${cleanedData.length} records | Removed Duplicates: ${removedDupsCount} | Original file remained untouched.`;
+      document.getElementById('cleanSummary').style.display = 'block';
+    }
+
+    // Export CSV with CSV Injection Escaping (=, +, -, @)
+    function downloadCleanedFile() {
+      const sanitized = cleanedData.map(row => 
+        row.map(cell => {
+          let str = (cell === null || cell === undefined) ? '' : cell.toString();
+          if (/^[=+\-@]/.test(str)) return "'" + str; // Safety escape
+          return str;
+        })
+      );
+
+      const csv = Papa.unparse([headers, ...sanitized]);
+      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function downloadIssueReport() {
+      const reportRows = [
+        ["Audit Metric", "Count Found"],
+        ["Total Rows Scanned", healthStats.total],
+        ["Exact Duplicate Rows", healthStats.dups],
+        ["Empty / Missing Cells", healthStats.blanks],
+        ["Inconsistent Spaces", healthStats.trimIssues],
+        ["Scan Date", new Date().toLocaleString()]
+      ];
+      const csv = Papa.unparse(reportRows);
+      triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function renderTable(tableId, head, rows) {
+      const tbl = document.getElementById(tableId);
+      tbl.innerHTML = '';
+      const trH = document.createElement('tr');
+      head.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trH.appendChild(th);
+      });
+      tbl.appendChild(trH);
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        r.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
+    }
+
+    // Converter
+    function processJSONConvert() {
+      const input = document.getElementById('convertFile');
+      if (!input.files.length) { alert("Select file!"); return; }
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        let json = [];
+        if (file.name.endsWith('.csv')) {
+          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
+          json = res.data;
+        } else {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+        const jsonStr = JSON.stringify(json, null, 2);
+        document.getElementById('convertLog').style.display = 'block';
+        document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
+        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+      };
+
+      if (file.name.endsWith('.csv')) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+    }
+
+    // Barcode Generator
+    function createBarcodes() {
+      const val = document.getElementById('barcodeList').value.trim();
+      const area = document.getElementById('barcodePrintArea');
+      if (!val) { alert("Enter SKU codes!"); return; }
+      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      area.innerHTML = '';
+
+      items.forEach((sku, i) => {
         const card = document.createElement('div');
         card.className = 'barcode-card';
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.id = `barcode-${index}`;
         card.appendChild(svg);
-        container.appendChild(card);
-
+        area.appendChild(card);
         try {
-          JsBarcode(svg, code, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+          JsBarcode(svg, sku, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
         } catch(err) {
-          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${code}</span>`;
+          card.innerHTML = `<span style="color:red;font-size:12px;">Invalid Code: ${sku}</span>`;
         }
       });
-      printBtn.style.display = 'block';
+      document.getElementById('printBtn').style.display = 'block';
     }
 
-    function downloadFile(content, fileName, mimeType) {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
+    function triggerDownload(content, filename, type) {
+      const blob = new Blob([content], { type });
       const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
       a.click();
     }
   </script>
-
 </body>
-</html>
+        </html>
+        
