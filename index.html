@@ -1,2208 +1,964 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickClean - Business Data Toolkit</title>
-  <meta name="description" content="Clean, compare, manage and grow with QuickClean Business Data Toolkit. 100% in-browser, secure and private.">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Utility Hub - Free Online Tools</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
-  <!-- Dependencies -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-
   <style>
-    :root {
-      --sidebar-bg: #0b1329;
-      --sidebar-hover: #162244;
-      --sidebar-active: #1e3a8a;
-      --sidebar-text: #94a3b8;
-      --sidebar-heading: #475569;
-      --header-bg: #0f172a;
-      --app-bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --teal: #0d9488;
-      --teal-light: #ccfbf1;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --success: #16a34a;
-      --success-bg: #dcfce7;
-      --warning: #d97706;
-      --warning-bg: #fef3c7;
-      --danger: #dc2626;
-      --danger-bg: #fee2e2;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--app-bg);
-      color: var(--text-main);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* ================= SLIDE-OUT MENU (DRAWER) ================= */
-    aside.sidebar {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: 280px;
-      background-color: var(--sidebar-bg);
-      color: var(--sidebar-text);
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #1e293b;
-      transform: translateX(-100%); /* Default me band rahega */
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 2000;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-    }
-    aside.sidebar.open {
-      transform: translateX(0); /* 3 line click par khulega */
-    }
-
-    /* Backdrop Overlay */
-    .menu-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(2px);
-      z-index: 1900;
-    }
-    .menu-overlay.active {
-      display: block;
-    }
-
-    .sidebar-header {
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #162244;
-    }
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, #0284c7, #0d9488);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: #fff;
-    }
-    .brand-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1.1;
-    }
-    .brand-title small {
-      display: block;
-      font-size: 11px;
-      font-weight: 500;
-      color: #38bdf8;
-    }
-    .close-sidebar-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .close-sidebar-btn:hover { color: #ffffff; }
-
-    .sidebar-nav {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 12px;
-    }
-    .nav-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--sidebar-heading);
-      padding: 12px 10px 6px 10px;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      color: #cbd5e1;
-      font-size: 13.5px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-bottom: 3px;
-      transition: all 0.15s ease;
-    }
-    .nav-item:hover {
-      background-color: var(--sidebar-hover);
-      color: #ffffff;
-    }
-    .nav-item.active {
-      background-color: var(--sidebar-active);
-      color: #ffffff;
-      font-weight: 600;
-    }
-    .nav-icon {
-      font-size: 16px;
-      width: 20px;
-      text-align: center;
-    }
-    .nav-item small {
-      display: block;
-      font-size: 11px;
-      color: #64748b;
-      font-weight: 400;
-    }
-    .nav-item.active small {
-      color: #93c5fd;
-    }
-
-    /* Submenu dropdown inside drawer */
-    .tools-submenu {
-      display: none;
-      padding-left: 14px;
-      margin-bottom: 6px;
-      background: rgba(15, 23, 42, 0.4);
-      border-radius: 8px;
-    }
-    .tools-submenu.open {
-      display: block;
-    }
-
-    .sidebar-footer {
-      padding: 14px;
-      border-top: 1px solid #162244;
-    }
-    .security-badge {
-      background: rgba(13, 148, 136, 0.12);
-      border: 1px solid rgba(13, 148, 136, 0.3);
-      padding: 10px 12px;
-      border-radius: 8px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .security-badge span { font-size: 18px; }
-    .security-badge p {
-      font-size: 11px;
-      color: #99f6e4;
-      line-height: 1.3;
-    }
-    .security-badge strong { display: block; color: #ffffff; }
-
-    /* ================= MAIN WORKSPACE ================= */
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      width: 100%;
-    }
-
-    /* Top Header */
-    header.top-header {
-      height: 62px;
-      background: var(--header-bg);
-      border-bottom: 1px solid #1e293b;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      flex-shrink: 0;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .menu-toggle-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #ffffff;
-      font-size: 20px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .menu-toggle-btn:hover { background: #334155; }
-    
-    .brand-top {
-      font-size: 17px;
-      font-weight: 700;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .brand-top span { color: #38bdf8; }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Auth Buttons & Profile */
-    .auth-btn-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-login {
-      background: transparent;
-      color: #ffffff;
-      border: 1px solid #334155;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-login:hover { background: #1e293b; }
-    .btn-signup {
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-signup:hover { background: var(--primary-hover); }
-
-    .user-profile-badge {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-    .user-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: #0284c7;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-    }
-    .user-display-name {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #ffffff;
-    }
-    .btn-logout {
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 11px;
-      cursor: pointer;
-      margin-left: 4px;
-      text-decoration: underline;
-    }
-
-    /* Content Area */
-    .content-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-    }
-
-    .view-panel { display: none; }
-    .view-panel.active { display: block; }
-
-    /* ================= HERO BANNER ================= */
-    .hero-banner {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 32px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.9fr 0.9fr;
-      gap: 24px;
-      align-items: center;
-      margin-bottom: 28px;
-      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--teal-light);
-      color: var(--teal);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-    .hero-title {
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing: -0.8px;
-      color: var(--text-main);
-      line-height: 1.2;
-      margin-bottom: 12px;
-    }
-    .hero-title span { color: var(--primary); }
-    .hero-desc {
-      color: var(--text-muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .hero-actions { display: flex; gap: 10px; align-items: center; }
-
-    .hero-preview-graphic {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-    .graphic-mockup {
-      width: 100%;
-      height: 130px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .mockup-bar {
-      height: 22px;
-      background: #0284c7;
-      display: flex;
-      align-items: center;
-      padding: 0 8px;
-      gap: 6px;
-    }
-    .mockup-circle { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; opacity: 0.6; }
-    .mockup-rows {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .mockup-line { height: 7px; background: #f1f5f9; border-radius: 4px; }
-
-    .hero-props {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .prop-item { display: flex; gap: 12px; align-items: center; }
-    .prop-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: #e0f2fe;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .prop-info strong { display: block; font-size: 13px; color: var(--text-main); }
-    .prop-info span { font-size: 11.5px; color: var(--text-muted); }
-
-    /* Tools Grid */
-    .section-head { margin-bottom: 16px; }
-    .section-head h2 { font-size: 19px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
-    .section-head p { font-size: 13px; color: var(--text-muted); }
-
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 18px;
-      margin-bottom: 30px;
-    }
-    .tool-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 22px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .tool-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
-    }
-    .tool-badge {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: var(--teal-light);
-      color: var(--teal);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 12px;
-    }
-    .tool-card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      margin-bottom: 14px;
-      color: #ffffff;
-    }
-    .t-blue { background: #0284c7; }
-    .t-purple { background: #8b5cf6; }
-    .t-orange { background: #f97316; }
-    .t-teal { background: #0d9488; }
-    .t-red { background: #ef4444; }
-    .t-emerald { background: #10b981; }
-    .t-indigo { background: #6366f1; }
-    .t-slate { background: #64748b; }
-
-    .tool-card h3 { font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
-    .tool-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; flex: 1; }
-    .btn-open-tool {
-      background: #f8fafc;
-      color: var(--primary);
-      border: 1px solid #cbd5e1;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.15s;
-    }
-    .btn-open-tool:hover {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    /* Live Session Activity & Stats */
-    .dashboard-bottom-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 18px;
-      margin-bottom: 30px;
-    }
-    .dash-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 20px;
-    }
-    .dash-box-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-    .dash-box-header h3 { font-size: 14.5px; font-weight: 700; }
-    .dash-box-header a { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; }
-
-    .live-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .live-stat-card {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .stat-ico {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-    }
-    .stat-val strong { display: block; font-size: 17px; font-weight: 800; }
-    .stat-val span { font-size: 11px; color: var(--text-muted); }
-
-    .activity-list { display: flex; flex-direction: column; gap: 8px; }
-    .activity-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 10px;
-      background: #f8fafc;
-      border-radius: 6px;
-      font-size: 12.5px;
-    }
-    .activity-file { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-    .activity-status {
-      background: var(--success-bg);
-      color: var(--success);
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 12.5px; }
-
-    /* ================= TOOL INTERFACES ================= */
-    .tool-interface-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 26px;
-      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);
-    }
-    .tool-page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .tool-page-title h2 { font-size: 19px; font-weight: 700; color: var(--text-main); }
-    .tool-page-title p { font-size: 12.5px; color: var(--text-muted); }
-
-    .dropzone {
-      border: 2px dashed #94a3b8;
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    .dropzone:hover { border-color: var(--primary); }
-    input[type="file"] { font-size: 13px; color: var(--text-muted); }
-
-    .meta-box {
-      display: none;
-      background: #f1f5f9;
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      font-size: 12.5px;
-      color: var(--text-main);
-      border-left: 4px solid var(--primary);
-    }
-
-    .health-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 10px;
-      margin: 14px 0;
-    }
-    .metric-card {
-      background: #f8fafc;
-      padding: 12px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      text-align: center;
-    }
-    .metric-card strong { display: block; font-size: 19px; font-weight: 800; margin-bottom: 2px; }
-    .metric-card span { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
-    .c-blue strong { color: var(--primary); }
-    .c-red strong { color: var(--danger); }
-    .c-amber strong { color: var(--warning); }
-    .c-purple strong { color: #8b5cf6; }
-    .c-pink strong { color: #ec4899; }
-
-    .controls-box {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    .controls-box h4 { margin-bottom: 10px; font-size: 13px; color: var(--text-main); }
-    .checkbox-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; margin-bottom: 12px; }
-    .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-    select, textarea, input[type="text"], input[type="email"], input[type="password"] {
-      background: #ffffff;
-      color: var(--text-main);
-      border: 1px solid #cbd5e1;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 13px;
-      width: 100%;
-      margin-top: 5px;
-    }
-
-    .btn {
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.15s;
-    }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #475569; }
-    .btn-secondary:hover { background: #334155; }
-    .btn-reset { background: #e2e8f0; color: #334155; padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-    .btn-row { display: flex; gap: 10px; margin-top: 14px; }
-
-    .table-container {
-      max-height: 260px;
-      overflow: auto;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin: 10px 0;
-      background: #ffffff;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 460px; }
-    th, td { padding: 8px 10px; border: 1px solid var(--border-color); text-align: left; }
-    th { background: #f1f5f9; color: var(--text-main); position: sticky; top: 0; font-weight: 600; }
-    .dup-row { background: var(--danger-bg); }
-    .tag-row { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-weight: 600; font-size: 10px; }
-
-    .badge-added { background: var(--success-bg); color: var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-removed { background: var(--danger-bg); color: var(--danger); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .badge-changed { background: var(--warning-bg); color: var(--warning); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-
-    #barcodeArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
-    .barcode-card { border: 1px solid var(--border-color); padding: 8px; text-align: center; background: #ffffff; border-radius: 6px; }
-    .barcode-card svg { max-width: 100%; height: 44px; }
-
-    /* Modals */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 3000;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-card {
-      background: #ffffff;
-      border-radius: 14px;
-      max-width: 400px;
-      width: 100%;
-      padding: 24px;
-      position: relative;
-    }
-    .modal-close {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      font-size: 20px;
-      color: #94a3b8;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-    .coffee-popup-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: #FFDD00;
-      color: #000;
-      font-weight: 700;
-      padding: 11px;
-      border-radius: 8px;
-      text-decoration: none;
-      margin-top: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .hero-banner { grid-template-columns: 1fr; }
-      .dashboard-bottom-grid { grid-template-columns: 1fr; }
-      .content-area { padding: 16px; }
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
-  <!-- Menu Backdrop -->
-  <div class="menu-overlay" id="menuOverlay" onclick="closeSidebar()"></div>
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Left: Hamburger + Undo / Redo Navigation + Logo -->
+      <div class="flex items-center gap-3">
+        <!-- 3 Line Hamburger Menu -->
+        <button id="menu-toggle-btn" onclick="toggleSidebar()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="Toggle Menu">
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
 
-  <!-- ================= LEFT SLIDE-OUT MENU ================= -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="brand-group">
-        <div class="brand-icon">⚡</div>
-        <div class="brand-title">
-          QuickClean
-          <small>Business Data Toolkit</small>
+        <!-- UNDO (Back) & REDO (Forward) ARROWS -->
+        <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+          <button id="nav-undo-btn" onclick="goBack()" disabled class="p-2 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition rounded" title="Undo / Go Back">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="w-px h-4 bg-slate-700"></div>
+          <button id="nav-redo-btn" onclick="goForward()" disabled class="p-2 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition rounded" title="Redo / Go Forward">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
         </div>
+
+        <!-- Logo / App Name -->
+        <a href="javascript:void(0)" onclick="navigateTo('dashboard')" class="flex items-center gap-2.5 ml-1 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+            <i class="fa-solid fa-layer-group text-sm"></i>
+          </div>
+          <span class="font-bold text-lg tracking-tight hidden sm:inline text-white group-hover:text-indigo-400 transition">DevUtility<span class="text-indigo-400">Hub</span></span>
+        </a>
       </div>
-      <button class="close-sidebar-btn" onclick="closeSidebar()">&times;</button>
+
+      <!-- Right: BUY ME A COFFEE CUP BUTTON (Replaced Login & Sign up) -->
+      <div class="flex items-center gap-3">
+        <a href="https://buymeacoffee.com/suhel786" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-[#ffea4d] text-slate-900 font-semibold px-4 py-2 rounded-xl text-sm shadow-md transition transform active:scale-95">
+          <i class="fa-solid fa-mug-hot text-base"></i>
+          <span class="hidden sm:inline">Buy Me a Coffee</span>
+          <span class="sm:hidden font-bold">Coffee</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR / DRAWER MENU -->
+  <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 z-50 backdrop-blur-sm hidden transition-opacity"></div>
+  <aside id="sidebar-drawer" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+          <i class="fa-solid fa-tools text-sm"></i>
+        </div>
+        <span class="font-bold text-white">All Tools Menu</span>
+      </div>
+      <button onclick="toggleSidebar()" class="p-2 text-slate-400 hover:text-white rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
     </div>
 
-    <nav class="sidebar-nav">
-      <!-- 1. Home -->
-      <div class="nav-item active" onclick="navigate('home')">
-        <span class="nav-icon">🏠</span>
-        <div>Home</div>
+    <!-- Quick Undo/Redo inside sidebar drawer too -->
+    <div class="px-4 py-2 bg-slate-950/40 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <span>History Navigation:</span>
+      <div class="flex gap-1">
+        <button onclick="goBack(); toggleSidebar();" class="px-2 py-1 bg-slate-800 rounded hover:text-white"><i class="fa-solid fa-arrow-left mr-1"></i>Back</button>
+        <button onclick="goForward(); toggleSidebar();" class="px-2 py-1 bg-slate-800 rounded hover:text-white">Next<i class="fa-solid fa-arrow-right ml-1"></i></button>
       </div>
+    </div>
 
-      <!-- 2. Data Tools (Dropdown list click karne par khulegi) -->
-      <div class="nav-item" onclick="toggleSubmenu()">
-        <span class="nav-icon">🛠️</span>
-        <div style="flex:1;">Data Tools</div>
-        <span id="submenuCaret" style="font-size:11px;">▼</span>
-      </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1.5 custom-scrollbar">
+      <button onclick="navigateTo('dashboard'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-grid-2 text-indigo-400 w-5"></i>
+        <span>Dashboard / All Tools</span>
+      </button>
+      <div class="pt-2 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider px-3">Available Tools</div>
+      
+      <button onclick="navigateTo('tool-csv'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-file-excel text-emerald-400 w-5"></i>
+        <span>CSV & Excel Cleaner</span>
+      </button>
+      <button onclick="navigateTo('tool-qr'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-qrcode text-sky-400 w-5"></i>
+        <span>QR Code Generator</span>
+      </button>
+      <button onclick="navigateTo('tool-text'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-spell-check text-purple-400 w-5"></i>
+        <span>Text & Case Analyzer</span>
+      </button>
+      <button onclick="navigateTo('tool-password'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-key text-amber-400 w-5"></i>
+        <span>Password Generator</span>
+      </button>
+      <button onclick="navigateTo('tool-unit'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-calculator text-rose-400 w-5"></i>
+        <span>Digital Storage Converter</span>
+      </button>
+      <button onclick="navigateTo('tool-base64'); toggleSidebar();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition text-sm">
+        <i class="fa-solid fa-image text-indigo-400 w-5"></i>
+        <span>Image to Base64</span>
+      </button>
+    </div>
 
-      <div class="tools-submenu" id="toolsSubmenu">
-        <div class="nav-item" onclick="navigate('cleaner')">
-          <span class="nav-icon">⚙️</span>
-          <div>CSV Cleaner</div>
-        </div>
-
-        <div class="nav-item" onclick="navigate('compare')">
-          <span class="nav-icon">📄</span>
-          <div>File Compare</div>
-        </div>
-
-        <div class="nav-item" onclick="navigate('inventory')">
-          <span class="nav-icon">📦</span>
-          <div>Inventory Reconciliation</div>
-        </div>
-
-        <div class="nav-item" onclick="navigate('rules')">
-          <span class="nav-icon">🔄</span>
-          <div>Data Cleaning Rules</div>
-        </div>
-
-        <div class="nav-item" onclick="navigate('quality')">
-          <span class="nav-icon">🛡️</span>
-          <div>Data Quality Score</div>
-        </div>
-
-        <div class="nav-item" onclick="navigate('barcode')">
-          <span class="nav-icon">📊</span>
-          <div>Barcode Generator</div>
-        </div>
-      </div>
-
-      <div class="nav-section-title">Workspace & Actions</div>
-
-      <!-- Processing History -->
-      <div class="nav-item" onclick="navigate('history')">
-        <span class="nav-icon">⏱️</span>
-        <div>Processing History</div>
-      </div>
-
-      <!-- Reports Center -->
-      <div class="nav-item" onclick="navigate('reports')">
-        <span class="nav-icon">📑</span>
-        <div>Reports Center</div>
-      </div>
-
-      <!-- User Feedback -->
-      <div class="nav-item" onclick="openFeedbackModal()">
-        <span class="nav-icon">💬</span>
-        <div>Feedback</div>
-      </div>
-
-      <!-- Help & Support -->
-      <div class="nav-item" onclick="navigate('help')">
-        <span class="nav-icon">❓</span>
-        <div>Help & Support</div>
-      </div>
-
-      <!-- Coffee Support -->
-      <div class="nav-item" onclick="window.open('https://buymeacoffee.com/suhel786','_blank')">
-        <span class="nav-icon">☕</span>
-        <div>Buy me a coffee</div>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="security-badge">
-        <span>🔒</span>
-        <p>
-          <strong>Your Data is Safe</strong>
-          Files are processed locally and are never stored or uploaded.
-        </p>
-      </div>
+    <!-- Sidebar footer -->
+    <div class="p-4 border-t border-slate-800">
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="w-full flex items-center justify-center gap-2 bg-[#FFDD00] text-slate-900 font-semibold py-2 rounded-lg text-sm">
+        <i class="fa-solid fa-mug-hot"></i> Support Developer
+      </a>
     </div>
   </aside>
 
-  <!-- ================= MAIN WORKSPACE ================= -->
-  <div class="main-wrapper">
-    <!-- Top Header -->
-    <header class="top-header">
-      <div class="header-left">
-        <!-- 3-line hamburger menu button -->
-        <button class="menu-toggle-btn" onclick="openSidebar()" title="Open Menu">☰</button>
-        <div class="brand-top">
-          ⚡ QuickClean <span>Toolkit</span>
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    
+    <!-- ==================== 1. DASHBOARD VIEW ==================== -->
+    <section id="view-dashboard" class="space-y-8">
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 relative overflow-hidden">
+        <div class="max-w-2xl relative z-10">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
+            <i class="fa-solid fa-sparkles"></i> 100% Free & Client-Side Secure
+          </span>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Fast, Private & Simple <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Online Utility Tools</span>
+          </h1>
+          <p class="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+            Clean messy spreadsheets, generate custom QR codes, convert text case, create cryptographically secure passwords, and more directly in your browser.
+          </p>
         </div>
       </div>
 
-      <div class="header-right">
-        <!-- Auth Login / Sign Up buttons -->
-        <div class="auth-btn-group" id="authBtnGroup">
-          <button class="btn-login" onclick="openAuthModal('login')">Log In</button>
-          <button class="btn-signup" onclick="openAuthModal('signup')">Sign Up</button>
-        </div>
+      <!-- Tools Grid -->
+      <div>
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> Explore Tools
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          <!-- Card: CSV & Excel Cleaner -->
+          <div onclick="navigateTo('tool-csv')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">CSV & Excel Cleaner</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Remove empty rows, trim whitespace, deduplicate entries, and export clean CSV instantly.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
 
-        <!-- User Profile badge (login hone ke baad aayega) -->
-        <div class="user-profile-badge" id="userProfileBadge">
-          <div class="user-avatar" id="userInitial">S</div>
-          <span class="user-display-name" id="userDisplayName">Suhel</span>
-          <button class="btn-logout" onclick="logoutUser()">(Logout)</button>
+          <!-- Card: QR Code Generator -->
+          <div onclick="navigateTo('tool-qr')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">QR Code Generator</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Create instant QR codes for URLs, WiFi credentials, plain text, and download high-res PNG.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-sky-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
+
+          <!-- Card: Text Analyzer & Converter -->
+          <div onclick="navigateTo('tool-text')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-spell-check"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Text & Case Converter</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Instant word, character, and sentence counting with uppercase, lowercase, title, and slug conversion.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-purple-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
+
+          <!-- Card: Password Generator -->
+          <div onclick="navigateTo('tool-password')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Password & Key Generator</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Generate random, secure strings and passwords with custom length, symbols, and strength rating.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
+
+          <!-- Card: Digital Storage Converter -->
+          <div onclick="navigateTo('tool-unit')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-calculator"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Digital Storage Converter</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Convert data sizes between Bytes, KB, MB, GB, and TB with live instant calculation.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-rose-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
+
+          <!-- Card: Image to Base64 -->
+          <div onclick="navigateTo('tool-base64')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition transform hover:-translate-y-1 hover:shadow-xl group">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+              <i class="fa-solid fa-image"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">Image to Base64</h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">Convert local PNG, JPEG, SVG or WebP images into Data URIs ready for web code.</p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-indigo-400">
+              <span>Open Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          </div>
+
         </div>
       </div>
-    </header>
+    </section>
 
-    <!-- Content Area -->
-    <main class="content-area">
+    <!-- ==================== 2. CSV & EXCEL CLEANER TOOL ==================== -->
+    <section id="view-tool-csv" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+          </button>
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-excel text-emerald-400"></i> CSV & Data Cleaner
+          </h2>
+          <p class="text-sm text-slate-400">Clean dirty rows, remove duplicates, strip whitespace, and format tabular data.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="loadSampleCSV()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300">
+            Load Sample Data
+          </button>
+          <button onclick="clearCSVInput()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-red-900/50 text-xs font-medium text-red-400">
+            Clear
+          </button>
+        </div>
+      </div>
 
-      <!-- ================= 1. HOME VIEW ================= -->
-      <section id="view-home" class="view-panel active">
-        <!-- Hero Banner -->
-        <div class="hero-banner">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Input & Options Panel -->
+        <div class="space-y-4">
           <div>
-            <div class="hero-badge">✨ Your All-in-One Business Data Toolkit</div>
-            <h1 class="hero-title">Clean, Compare, Manage and Grow with <span>QuickClean</span></h1>
-            <p class="hero-desc">Powerful tools to clean your data, find duplicates, compare files, manage inventory, and generate barcodes — all in one private place.</p>
-            <div class="hero-actions">
-              <button class="btn" onclick="navigate('cleaner')">Start Cleaning Now →</button>
-              <button class="btn btn-secondary" onclick="navigate('quality')">Audit Quality</button>
-            </div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload CSV or Paste Data</label>
+            <input type="file" id="csv-file-input" accept=".csv, .txt" onchange="handleCSVFileUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 mb-2 cursor-pointer" />
+            <textarea id="csv-raw-input" rows="8" placeholder="name, email, age&#10; Rahul Sharma , rahul@test.com , 28&#10;Rahul Sharma, rahul@test.com, 28&#10; , , &#10; Priya Verma , priya@test.com , 24" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 custom-scrollbar"></textarea>
           </div>
 
-          <!-- Graphic with "Suhel by design" -->
-          <div class="hero-preview-graphic">
-            <div class="graphic-mockup">
-              <div class="mockup-bar">
-                <div class="mockup-circle"></div>
-                <div class="mockup-circle"></div>
-                <div class="mockup-circle"></div>
-              </div>
-              <div class="mockup-rows">
-                <div class="mockup-line" style="width: 80%;"></div>
-                <div class="mockup-line" style="width: 95%;"></div>
-                <div class="mockup-line" style="width: 60%; background:#bae6fd;"></div>
-                <div class="mockup-line" style="width: 85%;"></div>
-                <div class="mockup-line" style="width: 70%;"></div>
-              </div>
-            </div>
-            <!-- Suhel by design label -->
-            <span style="font-size:12px; font-weight:600; color:var(--primary); display:inline-block; margin-top:8px;">
-              Suhel by design
-            </span>
-          </div>
-
-          <div class="hero-props">
-            <div class="prop-item">
-              <div class="prop-icon">⚡</div>
-              <div class="prop-info">
-                <strong>Fast & Accurate</strong>
-                <span>Instant In-Memory Results</span>
-              </div>
-            </div>
-            <div class="prop-item">
-              <div class="prop-icon">✨</div>
-              <div class="prop-info">
-                <strong>Easy to Use</strong>
-                <span>Clean & Intuitive Interface</span>
-              </div>
-            </div>
-            <div class="prop-item">
-              <div class="prop-icon">🔒</div>
-              <div class="prop-info">
-                <strong>Secure & Private</strong>
-                <span>Your Data Never Leaves Device</span>
-              </div>
-            </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Cleaning Options</h4>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="clean-trim" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
+              <span>Trim extra spaces from cells</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="clean-empty" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
+              <span>Remove completely empty rows</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="clean-duplicates" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" />
+              <span>Remove duplicate rows</span>
+            </label>
+            
+            <button onclick="processCleanCSV()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition">
+              <i class="fa-solid fa-broom"></i> Clean & Filter Now
+            </button>
           </div>
         </div>
 
-        <!-- Tools Grid -->
-        <div class="section-head">
-          <h2>Our Tools</h2>
-          <p>Choose a tool below to get started. Each tool is designed to make your daily data tasks faster.</p>
-        </div>
-
-        <div class="tools-grid">
-          <div class="tool-card">
-            <span class="tool-badge">Popular</span>
-            <div class="tool-card-icon t-blue">📄</div>
-            <h3>CSV Cleaner</h3>
-            <p>Remove duplicates, fix data issues, and clean your CSV/Excel files safely.</p>
-            <button class="btn-open-tool" onclick="navigate('cleaner')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-purple">🔄</div>
-            <h3>File Compare</h3>
-            <p>Compare two files and find additions, deletions, and changed values.</p>
-            <button class="btn-open-tool" onclick="navigate('compare')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-orange">📦</div>
-            <h3>Inventory Reconciliation</h3>
-            <p>Match system vs physical stock, find mismatches and financial variance.</p>
-            <button class="btn-open-tool" onclick="navigate('inventory')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-teal">⚙️</div>
-            <h3>Data Cleaning Rules</h3>
-            <p>Set custom rules for cleaning (duplicates, trim spaces, title case, empty rows).</p>
-            <button class="btn-open-tool" onclick="navigate('rules')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-indigo">🛡️</div>
-            <h3>Data Quality Score</h3>
-            <p>Get a live quality diagnostic report with detailed issue breakdown.</p>
-            <button class="btn-open-tool" onclick="navigate('quality')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-red">📊</div>
-            <h3>Barcode Generator</h3>
-            <p>Generate bulk Code128 barcodes and printable A4 label sheets.</p>
-            <button class="btn-open-tool" onclick="navigate('barcode')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-emerald">📑</div>
-            <h3>Reports Center</h3>
-            <p>Download cleaned data, audit reports, and discrepancy summaries.</p>
-            <button class="btn-open-tool" onclick="navigate('reports')">Open Tool <span>→</span></button>
-          </div>
-
-          <div class="tool-card">
-            <div class="tool-card-icon t-slate">⏱️</div>
-            <h3>Processing History</h3>
-            <p>View your real session file processing activity and logs.</p>
-            <button class="btn-open-tool" onclick="navigate('history')">Open Tool <span>→</span></button>
-          </div>
-        </div>
-
-        <!-- Session Activity & Stats -->
-        <div class="dashboard-bottom-grid">
-          <div class="dash-box">
-            <div class="dash-box-header">
-              <h3>Recent Activity (This Session)</h3>
-              <a onclick="navigate('history')">View Log</a>
+        <!-- Output & Preview Panel -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Clean Data Preview</h4>
+                <span id="csv-stats-badge" class="text-[11px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full font-medium">0 Rows</span>
+              </div>
+              <button onclick="downloadCleanCSV()" id="csv-download-btn" disabled class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-download"></i> Export CSV
+              </button>
             </div>
-            <div id="sessionActivityList" class="activity-list">
-              <div class="empty-state">No files processed in this session yet. Upload a file in CSV Cleaner to see live activity.</div>
-            </div>
-          </div>
 
-          <div class="dash-box">
-            <div class="dash-box-header">
-              <h3>Session Stats</h3>
-              <a onclick="navigate('quality')">Details</a>
-            </div>
-            <div class="live-stats-row">
-              <div class="live-stat-card">
-                <div class="stat-ico" style="background:#e0f2fe; color:#0284c7;">📄</div>
-                <div class="stat-val">
-                  <strong id="statProcessedFiles">0</strong>
-                  <span>Files Processed</span>
-                </div>
-              </div>
-              <div class="live-stat-card">
-                <div class="stat-ico" style="background:#fee2e2; color:#dc2626;">✂️</div>
-                <div class="stat-val">
-                  <strong id="statDupsRemoved">0</strong>
-                  <span>Dups Removed</span>
-                </div>
-              </div>
-              <div class="live-stat-card">
-                <div class="stat-ico" style="background:#dcfce7; color:#16a34a;">🛡️</div>
-                <div class="stat-val">
-                  <strong id="statHealthQuality">100%</strong>
-                  <span>Avg Quality Score</span>
-                </div>
-              </div>
-              <div class="live-stat-card">
-                <div class="stat-ico" style="background:#fef3c7; color:#d97706;">⏱️</div>
-                <div class="stat-val">
-                  <strong id="statTimeSaved">0 min</strong>
-                  <span>Est. Time Saved</span>
-                </div>
-              </div>
+            <!-- Table Preview -->
+            <div class="overflow-x-auto max-h-96 border border-slate-800 rounded-lg custom-scrollbar">
+              <table id="csv-preview-table" class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 sticky top-0 uppercase text-[10px] tracking-wider">
+                  <tr id="csv-table-header">
+                    <th class="p-3">Data will appear here after cleaning</th>
+                  </tr>
+                </thead>
+                <tbody id="csv-table-body" class="divide-y divide-slate-800 bg-slate-900/60 font-mono">
+                  <tr><td class="p-4 text-center text-slate-500">Paste or load sample data to test.</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ================= 2. CSV CLEANER VIEW ================= -->
-      <section id="view-cleaner" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>CSV & Excel Cleaner</h2>
-              <p>Safe in-browser cleaning with original file protection and preview verification.</p>
-            </div>
-            <button class="btn btn-reset" onclick="resetCleaner()">Reset / Start Over</button>
+    <!-- ==================== 3. QR CODE GENERATOR TOOL ==================== -->
+    <section id="view-tool-qr" class="hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-qrcode text-sky-400"></i> QR Code Generator
+        </h2>
+        <p class="text-sm text-slate-400">Generate customizable QR codes for links, text, contacts, or payments.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Enter URL or Content</label>
+            <input type="text" id="qr-input-text" value="https://buymeacoffee.com/suhel786" placeholder="https://example.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
           </div>
 
-          <div class="dropzone">
-            <input type="file" id="cleanerInput" accept=".csv, .xlsx, .xls">
-            <p style="margin-top:6px; font-size:12px; color:var(--text-muted);">Upload CSV or Excel file (.csv, .xlsx, .xls)</p>
-          </div>
-
-          <div id="cleanerMeta" class="meta-box"></div>
-
-          <div id="cleanerHealthSnippet" style="display:none; margin-bottom:16px;">
-            <div class="health-grid">
-              <div class="metric-card c-blue"><strong id="mRows">0</strong><span>Total Rows</span></div>
-              <div class="metric-card c-red"><strong id="mDups">0</strong><span>Duplicates</span></div>
-              <div class="metric-card c-amber"><strong id="mBlanks">0</strong><span>Missing Values</span></div>
-              <div class="metric-card c-purple"><strong id="mSpaces">0</strong><span>Extra Spaces</span></div>
-              <div class="metric-card c-pink"><strong id="mCaps">0</strong><span>Case Conflicts</span></div>
-            </div>
-          </div>
-
-          <div id="dupSection" style="display:none; margin-bottom:16px;">
-            <h4 style="margin-bottom:6px; font-size:13px; color:var(--danger);">⚠️ Review Flagged Duplicate Rows:</h4>
-            <div class="table-container">
-              <table id="dupTable"></table>
-            </div>
-          </div>
-
-          <div id="previewSection" style="display:none; margin-bottom:16px;">
-            <h4 style="margin-bottom:6px; font-size:13px; color:var(--text-muted);">Source File Preview (First 5 Rows):</h4>
-            <div class="table-container">
-              <table id="previewTable"></table>
-            </div>
-          </div>
-
-          <div class="controls-box">
-            <h4>Safe Cleaning Rules</h4>
-            <div class="checkbox-row">
-              <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
-              <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
-              <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Title Case</label>
-            </div>
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <label style="font-size:12.5px; font-weight:600;">Duplicate Matching Rule (Default: Exact Whole Row):</label>
-              <select id="dupMode" onchange="runHealthAudit()">
-                <option value="entire">Exact Entire Row Match (Safe Default)</option>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Size (px)</label>
+              <select id="qr-size-select" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                <option value="180">180 x 180</option>
+                <option value="256" selected>256 x 256</option>
+                <option value="380">380 x 380</option>
               </select>
             </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Color</label>
+              <input type="color" id="qr-color-picker" value="#0f172a" class="w-full h-9 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer p-0.5" />
+            </div>
           </div>
 
-          <button class="btn" style="width:100%;" onclick="executeClean()">Preview & Clean Data</button>
+          <button onclick="generateQRCode()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-600/30 transition">
+            <i class="fa-solid fa-arrows-rotate"></i> Update QR Code
+          </button>
+        </div>
 
-          <div id="cleanResult" style="display:none; margin-top:20px;">
-            <div id="cleanSummaryText" class="meta-box" style="display:block; border-left-color:var(--success);"></div>
-            <h4 style="margin-bottom:6px; font-size:13px;">Cleaned Output Preview:</h4>
-            <div class="table-container">
-              <table id="cleanedTable"></table>
-            </div>
-            <div class="btn-row">
-              <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
-              <button class="btn btn-secondary" onclick="downloadAuditReport()">Download Health Report CSV</button>
-            </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+          <div class="p-4 bg-white rounded-2xl shadow-xl flex items-center justify-center" id="qrcode-container"></div>
+          <div class="flex gap-2 w-full max-w-xs">
+            <button onclick="downloadQRCode()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 border border-slate-700">
+              <i class="fa-solid fa-download"></i> Download PNG
+            </button>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ================= 3. FILE COMPARE VIEW ================= -->
-      <section id="view-compare" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Smart File Compare</h2>
-              <p>Compare two CSV or Excel files by a unique key column to detect additions, deletions, and changed values.</p>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:16px;">
-            <div class="dropzone" style="margin-bottom:0;">
-              <strong style="font-size:13px; display:block; margin-bottom:6px;">File A (Old / Reference):</strong>
-              <input type="file" id="compFileA" accept=".csv, .xlsx, .xls">
-            </div>
-            <div class="dropzone" style="margin-bottom:0;">
-              <strong style="font-size:13px; display:block; margin-bottom:6px;">File B (New / Current):</strong>
-              <input type="file" id="compFileB" accept=".csv, .xlsx, .xls">
-            </div>
-          </div>
-
-          <div id="compareKeyBox" style="display:none;" class="controls-box">
-            <label style="font-size:13px; font-weight:600;">Select Unique Matching Key Column (e.g. SKU, ID, Invoice):</label>
-            <select id="compareKeySelect"></select>
-          </div>
-
-          <button class="btn" style="width:100%;" onclick="executeFileCompare()">Compare Both Files</button>
-
-          <div id="compareResult" style="display:none; margin-top:20px;">
-            <div class="health-grid">
-              <div class="metric-card"><strong id="cmpAdded" style="color:var(--success);">0</strong><span>Added</span></div>
-              <div class="metric-card"><strong id="cmpRemoved" style="color:var(--danger);">0</strong><span>Removed</span></div>
-              <div class="metric-card"><strong id="cmpChanged" style="color:var(--warning);">0</strong><span>Changed</span></div>
-              <div class="metric-card"><strong id="cmpSame" style="color:var(--text-muted);">0</strong><span>Unchanged</span></div>
-            </div>
-
-            <h4 style="margin-bottom:6px; font-size:13px;">Comparison Diff Preview:</h4>
-            <div class="table-container">
-              <table id="compareTable"></table>
-            </div>
-            <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadComparisonReport()">Download Comparison Report CSV</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 4. INVENTORY RECONCILIATION VIEW ================= -->
-      <section id="view-inventory" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Inventory Reconciliation</h2>
-              <p>Reconcile expected system stock against physical count by SKU.</p>
-            </div>
-          </div>
-
-          <div class="dropzone">
-            <input type="file" id="invFileInput" accept=".csv, .xlsx, .xls">
-            <p style="margin-top:6px; font-size:12px; color:var(--text-muted);">Upload spreadsheet containing SKU, System Qty, and Counted Qty</p>
-          </div>
-
-          <div id="invColumnMap" style="display:none;" class="controls-box">
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
-              <div>
-                <label style="font-size:12px; font-weight:600;">SKU Column:</label>
-                <select id="invColSku"></select>
-              </div>
-              <div>
-                <label style="font-size:12px; font-weight:600;">System Expected Qty:</label>
-                <select id="invColSystem"></select>
-              </div>
-              <div>
-                <label style="font-size:12px; font-weight:600;">Physical Counted Qty:</label>
-                <select id="invColPhysical"></select>
-              </div>
-              <div>
-                <label style="font-size:12px; font-weight:600;">Unit Cost (Optional):</label>
-                <select id="invColCost"><option value="">-- None --</option></select>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn" style="width:100%;" onclick="executeInventoryCheck()">Run Inventory Audit</button>
-
-          <div id="invResult" style="display:none; margin-top:20px;">
-            <div class="health-grid">
-              <div class="metric-card"><strong id="invTotalSkus">0</strong><span>Total SKUs</span></div>
-              <div class="metric-card"><strong id="invShortage" style="color:var(--danger);">0</strong><span>Shortage</span></div>
-              <div class="metric-card"><strong id="invExcess" style="color:var(--warning);">0</strong><span>Excess</span></div>
-              <div class="metric-card"><strong id="invMatch" style="color:var(--success);">0</strong><span>Matched</span></div>
-            </div>
-
-            <h4 style="margin-bottom:6px; font-size:13px;">Stock Variance Discrepancy Preview:</h4>
-            <div class="table-container">
-              <table id="invTable"></table>
-            </div>
-            <button class="btn btn-secondary" style="margin-top:10px;" onclick="downloadInventoryReport()">Download Discrepancy CSV</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 5. RULES VIEW ================= -->
-      <section id="view-rules" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Data Cleaning Rules Configuration</h2>
-              <p>Active deduplication, casing and sanitization standards.</p>
-            </div>
-          </div>
-          <div class="controls-box">
-            <h4>Active System Standards:</h4>
-            <ul style="font-size:13.5px; line-height:1.8; color:var(--text-main); padding-left:20px;">
-              <li><strong>Exact Whole-Row Match:</strong> Safe deduplication comparing every column value.</li>
-              <li><strong>Trim Whitespace:</strong> Strips leading/trailing spaces safely.</li>
-              <li><strong>Formula Injection Shield:</strong> Escapes <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code> with <code>'</code>.</li>
-              <li><strong>File Immutability:</strong> Original file remains unchanged in browser memory.</li>
-            </ul>
-          </div>
-          <button class="btn" onclick="navigate('cleaner')">Open CSV Cleaner</button>
-        </div>
-      </section>
-
-      <!-- ================= 6. QUALITY SCORE VIEW ================= -->
-      <section id="view-quality" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Data Quality & Health Audit</h2>
-              <p>Comprehensive health diagnostics and issue counts.</p>
-            </div>
-          </div>
-
-          <div id="qualityScoreBox" class="meta-box" style="display:block;">
-            Upload a file in the CSV Cleaner to view the live health audit metrics.
-          </div>
-
-          <div class="health-grid">
-            <div class="metric-card c-blue"><strong id="qRows">0</strong><span>Total Rows</span></div>
-            <div class="metric-card c-red"><strong id="qDups">0</strong><span>Exact Duplicates</span></div>
-            <div class="metric-card c-amber"><strong id="qBlanks">0</strong><span>Missing Values</span></div>
-            <div class="metric-card c-purple"><strong id="qSpaces">0</strong><span>Space Issues</span></div>
-            <div class="metric-card c-pink"><strong id="qCaps">0</strong><span>Casing Conflicts</span></div>
-          </div>
-          <div style="margin-top:16px;">
-            <button class="btn" onclick="navigate('cleaner')">Audit a File Now</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 7. BARCODE GENERATOR VIEW ================= -->
-      <section id="view-barcode" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Barcode & Label Generator</h2>
-              <p>Generate Code128 printable barcode labels in bulk.</p>
-            </div>
-          </div>
-
-          <div class="dropzone">
-            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:8px;">Enter SKU or Product Codes (one per line):</label>
-            <textarea id="barcodeText" style="height:100px; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
-          </div>
-
-          <button class="btn" style="width:100%;" onclick="generateBarcodeCards()">Generate Barcode Sheet</button>
-          <button class="btn btn-secondary" onclick="printBarcodesAndTriggerPopup()" id="barcodePrintBtn" style="display:none; margin-top:12px; width:100%;">🖨️ Print Labels / Save PDF</button>
-
-          <div id="barcodeArea"></div>
-        </div>
-      </section>
-
-      <!-- ================= 8. REPORTS CENTER VIEW ================= -->
-      <section id="view-reports" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Reports Center</h2>
-              <p>Quickly access all reports downloaded during this session.</p>
-            </div>
-          </div>
-          <div id="reportsList" class="activity-list">
-            <div class="empty-state">No reports generated in this session yet.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 9. PROCESSING HISTORY VIEW ================= -->
-      <section id="view-history" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Session Processing History</h2>
-              <p>Audit log of files processed locally in your session.</p>
-            </div>
-          </div>
-          <div id="fullHistoryList" class="activity-list">
-            <div class="empty-state">No processing events recorded yet.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 10. HELP & SUPPORT VIEW ================= -->
-      <section id="view-help" class="view-panel">
-        <div class="tool-interface-card">
-          <div class="tool-page-header">
-            <div class="tool-page-title">
-              <h2>Help & Support</h2>
-              <p>Privacy verification, feedback, and tips.</p>
-            </div>
-          </div>
-          <div class="controls-box">
-            <h4>Frequently Asked Questions</h4>
-            <div style="font-size:13px; line-height:1.6;">
-              <p><strong>Q: Does QuickClean store my sensitive data?</strong><br>
-              No. All operations run 100% inside your browser memory using SheetJS and PapaParse.</p>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; margin-top:16px;">
-            <button class="btn" onclick="openFeedbackModal()">💬 Send Feedback</button>
-            <a href="https://buymeacoffee.com/suhel786" target="_blank" class="btn btn-secondary" style="text-decoration:none;">☕ Buy me a coffee</a>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- ================= AUTH MODAL (Login / Signup) ================= -->
-  <div id="authModal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
-      <h3 style="font-size:18px; margin-bottom:6px;" id="authModalTitle">Log In to QuickClean</h3>
-      <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:14px;">Access your personal data workspace</p>
-      
-      <div id="nameFieldGroup" style="display:none; margin-bottom:8px;">
-        <label style="font-size:12px; font-weight:600;">Full Name:</label>
-        <input type="text" id="authNameInput" placeholder="Enter your name">
+    <!-- ==================== 4. TEXT & CASE ANALYZER TOOL ==================== -->
+    <section id="view-tool-text" class="hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-spell-check text-purple-400"></i> Text & Case Converter
+        </h2>
+        <p class="text-sm text-slate-400">Analyze character stats, word density, and change cases quickly.</p>
       </div>
 
-      <div style="margin-bottom:8px;">
-        <label style="font-size:12px; font-weight:600;">Email Address:</label>
-        <input type="email" id="authEmailInput" placeholder="name@example.com">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div id="stat-words" class="text-2xl font-bold text-purple-400">0</div>
+          <div class="text-xs text-slate-500 uppercase mt-1">Words</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div id="stat-chars" class="text-2xl font-bold text-indigo-400">0</div>
+          <div class="text-xs text-slate-500 uppercase mt-1">Characters</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div id="stat-lines" class="text-2xl font-bold text-sky-400">0</div>
+          <div class="text-xs text-slate-500 uppercase mt-1">Lines</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <div id="stat-read" class="text-2xl font-bold text-emerald-400">0m</div>
+          <div class="text-xs text-slate-500 uppercase mt-1">Reading Time</div>
+        </div>
       </div>
 
-      <div style="margin-bottom:14px;">
-        <label style="font-size:12px; font-weight:600;">Password:</label>
-        <input type="password" id="authPasswordInput" placeholder="••••••••">
+      <div class="space-y-4">
+        <textarea id="text-tool-input" oninput="updateTextStats()" rows="8" placeholder="Type or paste your text here..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-purple-500 custom-scrollbar"></textarea>
+        
+        <div class="flex flex-wrap gap-2">
+          <button onclick="convertText('upper')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">UPPERCASE</button>
+          <button onclick="convertText('lower')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">lowercase</button>
+          <button onclick="convertText('title')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">Title Case</button>
+          <button onclick="convertText('slug')" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/40 text-purple-300 text-xs font-semibold rounded-lg">url-slug-case</button>
+          <button onclick="copyTextOutput()" class="ml-auto px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5">
+            <i class="fa-solid fa-copy"></i> Copy Text
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. PASSWORD GENERATOR TOOL ==================== -->
+    <section id="view-tool-password" class="hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-400"></i> Password & Secret Generator
+        </h2>
+        <p class="text-sm text-slate-400">Generate high-entropy cryptographically safe passwords.</p>
       </div>
 
-      <button class="btn" style="width:100%;" onclick="submitAuth()">Continue</button>
-      <div id="authSwitchText" style="font-size:12px; text-align:center; margin-top:12px; color:var(--text-muted); cursor:pointer;" onclick="toggleAuthMode()">
-        Don't have an account? Sign Up
+      <div class="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="relative">
+          <input type="text" id="pass-output" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-base font-mono text-amber-300 tracking-wider pr-24 focus:outline-none" />
+          <button onclick="copyGeneratedPassword()" class="absolute right-2 top-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
+            Copy
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs text-slate-400 font-semibold mb-1">
+              <span>Password Length</span>
+              <span id="pass-length-val" class="text-amber-400 font-bold">16</span>
+            </div>
+            <input type="range" id="pass-length" min="6" max="64" value="16" oninput="document.getElementById('pass-length-val').innerText = this.value; generateNewPassword();" class="w-full accent-amber-500 cursor-pointer" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs text-slate-300">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="pass-upper" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
+              <span>Uppercase (A-Z)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="pass-lower" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
+              <span>Lowercase (a-z)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="pass-numbers" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
+              <span>Numbers (0-9)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="pass-symbols" checked onchange="generateNewPassword()" class="rounded bg-slate-800 text-amber-500 focus:ring-0" />
+              <span>Symbols (!@#$%^&*)</span>
+            </label>
+          </div>
+
+          <button onclick="generateNewPassword()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition">
+            <i class="fa-solid fa-arrows-rotate"></i> Regenerate Password
+          </button>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- ================= FEEDBACK MODAL ================= -->
-  <div id="feedbackModal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeFeedbackModal()">&times;</button>
-      <h3 style="font-size:17px; margin-bottom:6px;">💬 Send User Feedback</h3>
-      <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:12px;">Share suggestions, report an issue, or ask a question:</p>
-      <input type="email" id="fbEmail" placeholder="Your Email (Optional, for replies)">
-      <textarea id="fbMessage" style="height:100px;" placeholder="Write your message here..."></textarea>
-      <button class="btn" style="width:100%; margin-top:12px;" onclick="submitFeedback()">Send Feedback</button>
-      <div id="fbNote" style="font-size:12px; color:var(--success); margin-top:8px; display:none;"></div>
-    </div>
-  </div>
+    <!-- ==================== 6. DIGITAL STORAGE CONVERTER TOOL ==================== -->
+    <section id="view-tool-unit" class="hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-rose-400"></i> Digital Storage Converter
+        </h2>
+        <p class="text-sm text-slate-400">Convert between Bytes, Kilobytes, Megabytes, Gigabytes, and Terabytes.</p>
+      </div>
 
-  <!-- ================= COFFEE POPUP MODAL ================= -->
-  <div id="coffeeModal" class="modal-overlay">
-    <div class="modal-card" style="text-align:center;">
-      <button class="modal-close" onclick="closeCoffeeModal()">&times;</button>
-      <div style="font-size:36px; margin-bottom:8px;">🎉</div>
-      <h3 style="font-size:18px; margin-bottom:8px;">Task Completed Successfully!</h3>
-      <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">
-        Your file has been safely processed client-side. If this tool saved you time today, consider supporting its upkeep with a coffee!
-      </p>
-      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="coffee-popup-btn" onclick="closeCoffeeModal()">
-        ☕ Buy me a coffee ($3)
+      <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Value</label>
+            <input type="number" id="unit-val-input" value="1024" oninput="runUnitConvert()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">From Unit</label>
+            <select id="unit-from-select" onchange="runUnitConvert()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+              <option value="B">Bytes (B)</option>
+              <option value="KB">Kilobytes (KB)</option>
+              <option value="MB" selected>Megabytes (MB)</option>
+              <option value="GB">Gigabytes (GB)</option>
+              <option value="TB">Terabytes (TB)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+            <span class="text-xs text-slate-500 block">Bytes</span>
+            <span id="res-b" class="text-sm font-mono font-bold text-white">0</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+            <span class="text-xs text-slate-500 block">Kilobytes (KB)</span>
+            <span id="res-kb" class="text-sm font-mono font-bold text-white">0</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+            <span class="text-xs text-slate-500 block">Megabytes (MB)</span>
+            <span id="res-mb" class="text-sm font-mono font-bold text-indigo-400">0</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+            <span class="text-xs text-slate-500 block">Gigabytes (GB)</span>
+            <span id="res-gb" class="text-sm font-mono font-bold text-emerald-400">0</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center col-span-2 sm:col-span-1">
+            <span class="text-xs text-slate-500 block">Terabytes (TB)</span>
+            <span id="res-tb" class="text-sm font-mono font-bold text-rose-400">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. IMAGE TO BASE64 TOOL ==================== -->
+    <section id="view-tool-base64" class="hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <button onclick="navigateTo('dashboard')" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-image text-indigo-400"></i> Image to Base64 Encoder
+        </h2>
+        <p class="text-sm text-slate-400">Convert local image files into clean HTML/CSS Base64 Data Strings.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <label class="block text-xs font-semibold text-slate-300">Choose Image</label>
+          <input type="file" id="base64-file" accept="image/*" onchange="handleImageBase64(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" />
+          <div class="w-full h-48 border-2 border-dashed border-slate-800 rounded-xl flex items-center justify-center p-2 bg-slate-950 overflow-hidden">
+            <img id="base64-preview-img" src="" alt="Preview" class="max-h-full max-w-full rounded hidden object-contain" />
+            <span id="base64-placeholder-txt" class="text-xs text-slate-600">No image selected yet</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Base64 Data String</label>
+            <textarea id="base64-output-area" readonly rows="8" placeholder="Data URI will appear here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none custom-scrollbar"></textarea>
+          </div>
+          <button onclick="copyBase64String()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-copy"></i> Copy Base64 String
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 bg-slate-900/60 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© 2026 Smart Utility Hub. All tools run 100% locally in your browser.</p>
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="text-amber-400 hover:underline flex items-center gap-1 font-medium">
+        <i class="fa-solid fa-mug-hot"></i> buymeacoffee.com/suhel786
       </a>
-      <button class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px;" onclick="closeCoffeeModal()">Close</button>
     </div>
-  </div>
+  </footer>
 
-  <!-- ================= SCRIPTS ================= -->
+  <!-- SCRIPT LOGIC -->
   <script>
-    // State
-    let rawData = [];
-    let headers = [];
-    let cleanedData = [];
-    let flaggedDuplicates = [];
-    let currentFileName = "data";
-    let healthStats = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
+    /* ==========================================================================
+       NAVIGATION & HISTORY STATE ENGINE (UNDO / REDO / DRAWER)
+       ========================================================================== */
+    let navHistory = ['dashboard'];
+    let currentNavIndex = 0;
 
-    let compDataA = { headers: [], rows: [] };
-    let compDataB = { headers: [], rows: [] };
-    let diffResults = [];
+    function updateNavButtonsState() {
+      const undoBtn = document.getElementById('nav-undo-btn');
+      const redoBtn = document.getElementById('nav-redo-btn');
+      
+      if (undoBtn) undoBtn.disabled = (currentNavIndex <= 0);
+      if (redoBtn) redoBtn.disabled = (currentNavIndex >= navHistory.length - 1);
+    }
 
-    let invRows = [];
-    let invHeaders = [];
-    let invAuditResults = [];
+    function renderActiveView(viewId) {
+      const views = ['dashboard', 'tool-csv', 'tool-qr', 'tool-text', 'tool-password', 'tool-unit', 'tool-base64'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) {
+          if (v === viewId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-    let sessionFilesProcessed = 0;
-    let sessionDupsRemoved = 0;
-    let sessionLogs = [];
-    let generatedReports = [];
+    function navigateTo(viewId) {
+      if (navHistory[currentNavIndex] === viewId) return;
+      // Slice any redo history forward
+      navHistory = navHistory.slice(0, currentNavIndex + 1);
+      navHistory.push(viewId);
+      currentNavIndex++;
+      
+      renderActiveView(viewId);
+      updateNavButtonsState();
+    }
 
-    let currentAuthMode = 'login';
+    function goBack() {
+      if (currentNavIndex > 0) {
+        currentNavIndex--;
+        renderActiveView(navHistory[currentNavIndex]);
+        updateNavButtonsState();
+      }
+    }
 
+    function goForward() {
+      if (currentNavIndex < navHistory.length - 1) {
+        currentNavIndex++;
+        renderActiveView(navHistory[currentNavIndex]);
+        updateNavButtonsState();
+      }
+    }
+
+    function toggleSidebar() {
+      const drawer = document.getElementById('sidebar-drawer');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (drawer.classList.contains('-translate-x-full')) {
+        drawer.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        drawer.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    /* ==========================================================================
+       TOOL 1: CSV & EXCEL CLEANER LOGIC
+       ========================================================================== */
+    let currentCleanedCSVData = [];
+
+    function loadSampleCSV() {
+      const sample = `Name, Email, Department, Salary
+  Rahul Sharma , rahul@test.com , Logistics , 2500  
+Rahul Sharma, rahul@test.com, Logistics, 2500
+  , , , 
+Priya Verma , priya@test.com, Data Entry, 2200
+Amit Kumar, amit@test.com , Operations, 3000
+Amit Kumar, amit@test.com , Operations, 3000
+Sunil Rao, sunil@test.com, Inventory, 2100`;
+      document.getElementById('csv-raw-input').value = sample;
+      processCleanCSV();
+    }
+
+    function clearCSVInput() {
+      document.getElementById('csv-raw-input').value = '';
+      document.getElementById('csv-table-header').innerHTML = '<th class="p-3">Cleaned Data Header</th>';
+      document.getElementById('csv-table-body').innerHTML = '<tr><td class="p-4 text-center text-slate-500">No data loaded</td></tr>';
+      document.getElementById('csv-stats-badge').innerText = '0 Rows';
+      document.getElementById('csv-download-btn').disabled = true;
+      currentCleanedCSVData = [];
+    }
+
+    function handleCSVFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('csv-raw-input').value = evt.target.result;
+        processCleanCSV();
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCSVLine(text) {
+      let p = '', row = [''], i = 0, r = 0, q = false;
+      for (let c of text) {
+        if (c === '"') {
+          if (q && p === '"') { row[i] += '"'; }
+          q = !q;
+        } else if (c === ',' && !q) {
+          row[++i] = '';
+        } else if (c === '\n' && !q) {
+          if (p === '\r') row[i] = row[i].slice(0, -1);
+          break;
+        } else {
+          row[i] += c;
+        }
+        p = c;
+      }
+      return row;
+    }
+
+    function processCleanCSV() {
+      const rawText = document.getElementById('csv-raw-input').value.trim();
+      if (!rawText) return;
+
+      const doTrim = document.getElementById('clean-trim').checked;
+      const doEmpty = document.getElementById('clean-empty').checked;
+      const doDuplicates = document.getElementById('clean-duplicates').checked;
+
+      const lines = rawText.split(/\r\n|\n/);
+      let parsedRows = [];
+
+      lines.forEach(line => {
+        let row = parseCSVLine(line);
+        if (doTrim) {
+          row = row.map(cell => cell.trim());
+        }
+        if (doEmpty) {
+          const isEmpty = row.every(cell => cell === '');
+          if (isEmpty) return;
+        }
+        parsedRows.push(row);
+      });
+
+      if (doDuplicates && parsedRows.length > 1) {
+        const header = parsedRows[0];
+        const dataRows = parsedRows.slice(1);
+        const seen = new Set();
+        const unique = [];
+
+        dataRows.forEach(r => {
+          const key = JSON.stringify(r);
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(r);
+          }
+        });
+        parsedRows = [header, ...unique];
+      }
+
+      currentCleanedCSVData = parsedRows;
+      renderCSVTable(parsedRows);
+    }
+
+    function renderCSVTable(rows) {
+      const thead = document.getElementById('csv-table-header');
+      const tbody = document.getElementById('csv-table-body');
+      const statsBadge = document.getElementById('csv-stats-badge');
+      const downloadBtn = document.getElementById('csv-download-btn');
+
+      if (!rows || rows.length === 0) {
+        clearCSVInput();
+        return;
+      }
+
+      const headers = rows[0];
+      const dataRows = rows.slice(1);
+
+      thead.innerHTML = headers.map(h => `<th class="p-3 border-b border-slate-800 text-slate-300 font-semibold">${escapeHtml(h)}</th>`).join('');
+      
+      if (dataRows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + headers.length + '" class="p-4 text-center text-slate-500">No records found after filtering</td></tr>';
+      } else {
+        tbody.innerHTML = dataRows.map(row => {
+          const cells = row.map(c => `<td class="p-3 border-b border-slate-800/60">${escapeHtml(c)}</td>`).join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+      }
+
+      statsBadge.innerText = `${dataRows.length} Rows Cleaned`;
+      downloadBtn.disabled = false;
+    }
+
+    function downloadCleanCSV() {
+      if (!currentCleanedCSVData || currentCleanedCSVData.length === 0) return;
+      const csvContent = currentCleanedCSVData.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'cleaned_data.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ==========================================================================
+       TOOL 2: QR CODE GENERATOR LOGIC
+       ========================================================================== */
+    let qrInstance = null;
+
+    function generateQRCode() {
+      const container = document.getElementById('qrcode-container');
+      const text = document.getElementById('qr-input-text').value.trim() || 'https://buymeacoffee.com/suhel786';
+      const size = parseInt(document.getElementById('qr-size-select').value) || 256;
+      const color = document.getElementById('qr-color-picker').value || '#000000';
+
+      container.innerHTML = '';
+      qrInstance = new QRCode(container, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark: color,
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function downloadQRCode() {
+      const img = document.querySelector('#qrcode-container img');
+      if (img && img.src) {
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
+        link.href = img.src;
+        link.click();
+      } else {
+        const canvas = document.querySelector('#qrcode-container canvas');
+        if (canvas) {
+          const link = document.createElement('a');
+          link.download = 'qrcode.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      }
+    }
+
+    /* ==========================================================================
+       TOOL 3: TEXT ANALYZER LOGIC
+       ========================================================================== */
+    function updateTextStats() {
+      const text = document.getElementById('text-tool-input').value;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const chars = text.length;
+      const lines = text.trim() ? text.split(/\r\n|\n/).length : 0;
+      const readTime = Math.ceil(words / 200);
+
+      document.getElementById('stat-words').innerText = words;
+      document.getElementById('stat-chars').innerText = chars;
+      document.getElementById('stat-lines').innerText = lines;
+      document.getElementById('stat-read').innerText = `${readTime}m`;
+    }
+
+    function convertText(mode) {
+      const el = document.getElementById('text-tool-input');
+      let val = el.value;
+      if (!val) return;
+
+      if (mode === 'upper') {
+        val = val.toUpperCase();
+      } else if (mode === 'lower') {
+        val = val.toLowerCase();
+      } else if (mode === 'title') {
+        val = val.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+      } else if (mode === 'slug') {
+        val = val.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+      }
+      el.value = val;
+      updateTextStats();
+    }
+
+    function copyTextOutput() {
+      const val = document.getElementById('text-tool-input').value;
+      if (val) navigator.clipboard.writeText(val);
+    }
+
+    /* ==========================================================================
+       TOOL 4: PASSWORD GENERATOR LOGIC
+       ========================================================================== */
+    function generateNewPassword() {
+      const len = parseInt(document.getElementById('pass-length').value) || 16;
+      const useUpper = document.getElementById('pass-upper').checked;
+      const useLower = document.getElementById('pass-lower').checked;
+      const useNum = document.getElementById('pass-numbers').checked;
+      const useSym = document.getElementById('pass-symbols').checked;
+
+      let charset = '';
+      if (useUpper) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      if (useLower) charset += 'abcdefghijklmnopqrstuvwxyz';
+      if (useNum) charset += '0123456789';
+      if (useSym) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+
+      if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+      const array = new Uint32Array(len);
+      window.crypto.getRandomValues(array);
+      let pass = '';
+      for (let i = 0; i < len; i++) {
+        pass += charset[array[i] % charset.length];
+      }
+      document.getElementById('pass-output').value = pass;
+    }
+
+    function copyGeneratedPassword() {
+      const pass = document.getElementById('pass-output').value;
+      if (pass) navigator.clipboard.writeText(pass);
+    }
+
+    /* ==========================================================================
+       TOOL 5: UNIT CONVERTER LOGIC
+       ========================================================================== */
+    function runUnitConvert() {
+      const val = parseFloat(document.getElementById('unit-val-input').value) || 0;
+      const from = document.getElementById('unit-from-select').value;
+      
+      const toBytesMultiplier = {
+        'B': 1,
+        'KB': 1024,
+        'MB': 1024 * 1024,
+        'GB': 1024 * 1024 * 1024,
+        'TB': 1024 * 1024 * 1024 * 1024
+      };
+
+      const totalBytes = val * toBytesMultiplier[from];
+
+      document.getElementById('res-b').innerText = Number(totalBytes.toFixed(2)).toLocaleString();
+      document.getElementById('res-kb').innerText = Number((totalBytes / 1024).toFixed(4)).toLocaleString();
+      document.getElementById('res-mb').innerText = Number((totalBytes / (1024 * 1024)).toFixed(4)).toLocaleString();
+      document.getElementById('res-gb').innerText = Number((totalBytes / (1024 * 1024 * 1024)).toFixed(6)).toLocaleString();
+      document.getElementById('res-tb').innerText = Number((totalBytes / (1024 * 1024 * 1024 * 1024)).toFixed(8)).toLocaleString();
+    }
+
+    /* ==========================================================================
+       TOOL 6: IMAGE BASE64 ENCODER LOGIC
+       ========================================================================== */
+    function handleImageBase64(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const result = evt.target.result;
+        document.getElementById('base64-output-area').value = result;
+        const preview = document.getElementById('base64-preview-img');
+        const placeholder = document.getElementById('base64-placeholder-txt');
+        preview.src = result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function copyBase64String() {
+      const str = document.getElementById('base64-output-area').value;
+      if (str) navigator.clipboard.writeText(str);
+    }
+
+    /* INIT ON LOAD */
     window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = localStorage.getItem('quickclean_user');
-      if (savedUser) {
-        setUserProfile(savedUser);
-      }
+      generateQRCode();
+      generateNewPassword();
+      runUnitConvert();
+      updateNavButtonsState();
     });
-
-    // 3-Line Menu Handlers (Drawer Slide)
-    function openSidebar() {
-      document.getElementById('sidebar').classList.add('open');
-      document.getElementById('menuOverlay').classList.add('active');
-    }
-
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('menuOverlay').classList.remove('active');
-    }
-
-    // Tools Dropdown inside Menu
-    function toggleSubmenu() {
-      const submenu = document.getElementById('toolsSubmenu');
-      const caret = document.getElementById('submenuCaret');
-      submenu.classList.toggle('open');
-      caret.textContent = submenu.classList.contains('open') ? '▲' : '▼';
-    }
-
-    function navigate(viewId) {
-      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-
-      const targetView = document.getElementById(`view-${viewId}`);
-      if (targetView) targetView.classList.add('active');
-
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`navigate('${viewId}')`)) {
-          item.classList.add('active');
-        }
-      });
-
-      closeSidebar(); // Tool select karne ke baad menu close ho jayega
-    }
-
-    // Auth System
-    function openAuthModal(mode) {
-      currentAuthMode = mode;
-      const title = document.getElementById('authModalTitle');
-      const nameGroup = document.getElementById('nameFieldGroup');
-      const switchText = document.getElementById('authSwitchText');
-
-      if (mode === 'signup') {
-        title.textContent = "Create an Account";
-        nameGroup.style.display = "block";
-        switchText.textContent = "Already have an account? Log In";
-      } else {
-        title.textContent = "Log In to QuickClean";
-        nameGroup.style.display = "none";
-        switchText.textContent = "Don't have an account? Sign Up";
-      }
-      document.getElementById('authModal').classList.add('active');
-    }
-
-    function toggleAuthMode() {
-      openAuthModal(currentAuthMode === 'login' ? 'signup' : 'login');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('authModal').classList.remove('active');
-    }
-
-    function submitAuth() {
-      const email = document.getElementById('authEmailInput').value.trim();
-      let name = document.getElementById('authNameInput').value.trim();
-
-      if (!email) { alert("Please enter your email!"); return; }
-      if (currentAuthMode === 'signup' && !name) { alert("Please enter your name!"); return; }
-
-      if (!name) {
-        name = email.split('@')[0];
-        name = name.charAt(0).toUpperCase() + name.slice(1);
-      }
-
-      localStorage.setItem('quickclean_user', name);
-      setUserProfile(name);
-      closeAuthModal();
-    }
-
-    function setUserProfile(name) {
-      document.getElementById('authBtnGroup').style.display = 'none';
-      const badge = document.getElementById('userProfileBadge');
-      badge.style.display = 'flex';
-      document.getElementById('userDisplayName').textContent = name;
-      document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
-    }
-
-    function logoutUser() {
-      localStorage.removeItem('quickclean_user');
-      document.getElementById('userProfileBadge').style.display = 'none';
-      document.getElementById('authBtnGroup').style.display = 'flex';
-    }
-
-    // Modal Helpers
-    function triggerSuccessCoffeePopup() {
-      setTimeout(() => {
-        document.getElementById('coffeeModal').classList.add('active');
-      }, 700);
-    }
-    function closeCoffeeModal() {
-      document.getElementById('coffeeModal').classList.remove('active');
-    }
-    function openFeedbackModal() {
-      closeSidebar();
-      document.getElementById('feedbackModal').classList.add('active');
-    }
-    function closeFeedbackModal() {
-      document.getElementById('feedbackModal').classList.remove('active');
-    }
-
-    function submitFeedback() {
-      const email = document.getElementById('fbEmail').value.trim();
-      const msg = document.getElementById('fbMessage').value.trim();
-      const note = document.getElementById('fbNote');
-      if (!msg) { alert("Please type your message!"); return; }
-
-      const subject = encodeURIComponent("QuickClean User Feedback");
-      const body = encodeURIComponent(`From: ${email || 'Anonymous'}\n\nMessage:\n${msg}`);
-      window.open(`mailto:suhelwork@gmail.com?subject=${subject}&body=${body}`, '_blank');
-
-      note.textContent = "✓ Opening email client to send message. Thank you!";
-      note.style.display = 'block';
-      setTimeout(() => {
-        closeFeedbackModal();
-        note.style.display = 'none';
-        document.getElementById('fbMessage').value = '';
-      }, 2000);
-    }
-
-    // ================= 1. CSV CLEANER & HEALTH =================
-    document.getElementById('cleanerInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      currentFileName = file.name.replace(/\.[^/.]+$/, "");
-
-      parseFile(file, function(parsedHeaders, parsedRows) {
-        headers = parsedHeaders;
-        rawData = parsedRows.filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
-
-        const metaBox = document.getElementById('cleanerMeta');
-        metaBox.style.display = 'block';
-        metaBox.innerHTML = `<strong>File Loaded:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
-
-        const dupSelect = document.getElementById('dupMode');
-        dupSelect.innerHTML = '<option value="entire">Exact Entire Row Match (Safe Default)</option>';
-        headers.forEach((h, idx) => {
-          if (h && h.toString().trim() !== '') {
-            const opt = document.createElement('option');
-            opt.value = idx;
-            opt.textContent = `Match by Column: ${h}`;
-            if (/email/i.test(h)) opt.textContent += " (Email)";
-            if (/sku|id|code/i.test(h)) opt.textContent += " (Identifier)";
-            dupSelect.appendChild(opt);
-          }
-        });
-
-        runHealthAudit();
-        renderTable('previewTable', headers, rawData.slice(0, 5));
-        document.getElementById('previewSection').style.display = 'block';
-        document.getElementById('cleanerHealthSnippet').style.display = 'block';
-      });
-    });
-
-    function runHealthAudit() {
-      if (rawData.length === 0) return;
-      const dupMode = document.getElementById('dupMode').value;
-
-      let blanks = 0;
-      let spaces = 0;
-      let seen = new Map();
-      flaggedDuplicates = [];
-      const colCasing = headers.map(() => new Map());
-
-      rawData.forEach((row, index) => {
-        const rowNum = index + 2;
-        let key;
-        if (dupMode === 'entire') {
-          key = JSON.stringify(row.map(c => (c === null || c === undefined) ? '' : c.toString().trim()));
-        } else {
-          const val = row[parseInt(dupMode)];
-          key = (val === null || val === undefined) ? '' : val.toString().trim().toLowerCase();
-        }
-
-        if (key && key !== '[]') {
-          if (seen.has(key)) {
-            flaggedDuplicates.push({ rowNum, row });
-          } else {
-            seen.set(key, rowNum);
-          }
-        }
-
-        row.forEach((cell, cIdx) => {
-          if (cell === null || cell === undefined || cell.toString().trim() === '') {
-            blanks++;
-          } else {
-            const str = cell.toString();
-            if (str !== str.trim()) spaces++;
-
-            const trimmed = str.trim();
-            if (isNaN(trimmed) && trimmed.length > 1 && !trimmed.includes('@') && !trimmed.includes('http')) {
-              const lower = trimmed.toLowerCase();
-              const map = colCasing[cIdx];
-              if (!map.has(lower)) map.set(lower, new Set());
-              map.get(lower).add(trimmed);
-            }
-          }
-        });
-      });
-
-      let trueCaseConflicts = 0;
-      colCasing.forEach(map => {
-        map.forEach(variants => {
-          if (variants.size > 1) trueCaseConflicts += variants.size;
-        });
-      });
-
-      healthStats = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps: trueCaseConflicts };
-      
-      document.getElementById('mRows').textContent = healthStats.rows;
-      document.getElementById('mDups').textContent = healthStats.dups;
-      document.getElementById('mBlanks').textContent = healthStats.blanks;
-      document.getElementById('mSpaces').textContent = healthStats.spaces;
-      document.getElementById('mCaps').textContent = healthStats.caps;
-
-      document.getElementById('qRows').textContent = healthStats.rows;
-      document.getElementById('qDups').textContent = healthStats.dups;
-      document.getElementById('qBlanks').textContent = healthStats.blanks;
-      document.getElementById('qSpaces').textContent = healthStats.spaces;
-      document.getElementById('qCaps').textContent = healthStats.caps;
-      document.getElementById('qualityScoreBox').innerHTML = `File <strong>${currentFileName}</strong>: ${healthStats.rows} rows, ${healthStats.dups} duplicates found.`;
-
-      if (flaggedDuplicates.length > 0) {
-        renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
-        document.getElementById('dupSection').style.display = 'block';
-      } else {
-        document.getElementById('dupSection').style.display = 'none';
-      }
-    }
-
-    function renderDuplicateTable(tableId, head, list) {
-      const tbl = document.getElementById(tableId);
-      tbl.innerHTML = '';
-      const trH = document.createElement('tr');
-      const thIdx = document.createElement('th');
-      thIdx.textContent = "Row #";
-      trH.appendChild(thIdx);
-      head.forEach(h => {
-        const th = document.createElement('th');
-        th.textContent = h;
-        trH.appendChild(th);
-      });
-      tbl.appendChild(trH);
-
-      list.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'dup-row';
-        const tdIdx = document.createElement('td');
-        tdIdx.innerHTML = `<span class="tag-row">Row ${item.rowNum}</span>`;
-        tr.appendChild(tdIdx);
-        item.row.forEach(c => {
-          const td = document.createElement('td');
-          td.textContent = (c === null || c === undefined) ? '' : c;
-          tr.appendChild(td);
-        });
-        tbl.appendChild(tr);
-      });
-    }
-
-    function executeClean() {
-      if (rawData.length === 0) { alert("Please upload a file first!"); return; }
-
-      const doTrim = document.getElementById('optTrim').checked;
-      const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
-      const doFixCaps = document.getElementById('optFixCaps').checked;
-      const dupMode = document.getElementById('dupMode').value;
-
-      let processed = rawData.map(row => 
-        row.map(cell => {
-          if (cell === null || cell === undefined) return '';
-          let val = cell.toString();
-          if (doTrim) val = val.trim();
-          if (doFixCaps && isNaN(val) && val.length > 1 && !val.includes('@') && !val.includes('http')) {
-            val = val.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-          }
-          return val;
-        })
-      );
-
-      if (doRemoveEmpty) {
-        processed = processed.filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
-      }
-
-      let unique = [];
-      let seen = new Set();
-      let removedDups = 0;
-
-      processed.forEach(row => {
-        let key;
-        if (dupMode === 'entire') {
-          key = JSON.stringify(row);
-        } else {
-          const target = row[parseInt(dupMode)];
-          key = (target === null || target === undefined) ? '' : target.toString().trim().toLowerCase();
-        }
-
-        if (key !== '' && seen.has(key)) {
-          removedDups++;
-        } else {
-          if (key !== '') seen.add(key);
-          unique.push(row);
-        }
-      });
-
-      cleanedData = unique;
-      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
-      document.getElementById('cleanSummaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedDups}</strong> duplicates. Original file untouched.`;
-      document.getElementById('cleanResult').style.display = 'block';
-
-      sessionFilesProcessed++;
-      sessionDupsRemoved += removedDups;
-      logSessionEvent(currentFileName, "CSV Cleaner", `${removedDups} duplicates removed`);
-      updateDashboardStats();
-    }
-
-    function resetCleaner() {
-      rawData = [];
-      headers = [];
-      cleanedData = [];
-      flaggedDuplicates = [];
-      document.getElementById('cleanerInput').value = '';
-      document.getElementById('cleanerMeta').style.display = 'none';
-      document.getElementById('cleanerHealthSnippet').style.display = 'none';
-      document.getElementById('dupSection').style.display = 'none';
-      document.getElementById('previewSection').style.display = 'none';
-      document.getElementById('cleanResult').style.display = 'none';
-    }
-
-    function downloadCleanedFile() {
-      const sanitized = cleanedData.map(row => 
-        row.map(cell => {
-          let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str;
-          return str;
-        })
-      );
-      const csv = Papa.unparse([headers, ...sanitized]);
-      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
-      addReportToCenter(`${currentFileName}_cleaned.csv`, "Cleaned CSV File");
-      triggerSuccessCoffeePopup();
-    }
-
-    function downloadAuditReport() {
-      const reportRows = [
-        ["Health Audit Category", "Detected Count"],
-        ["Total Rows Scanned", healthStats.rows],
-        ["Duplicates Identified", healthStats.dups],
-        ["Missing / Empty Cells", healthStats.blanks],
-        ["Inconsistent Spaces", healthStats.spaces],
-        ["Case Mismatches", healthStats.caps],
-        ["Audit Date", new Date().toLocaleString()]
-      ];
-      const csv = Papa.unparse(reportRows);
-      triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
-      addReportToCenter(`${currentFileName}_health_report.csv`, "Data Health Audit");
-      triggerSuccessCoffeePopup();
-    }
-
-    // ================= 2. FILE COMPARE =================
-    document.getElementById('compFileA').addEventListener('change', e => loadCompareFile(e.target.files[0], 'A'));
-    document.getElementById('compFileB').addEventListener('change', e => loadCompareFile(e.target.files[0], 'B'));
-
-    function loadCompareFile(file, type) {
-      if (!file) return;
-      parseFile(file, (h, r) => {
-        if (type === 'A') compDataA = { headers: h, rows: r, name: file.name };
-        else compDataB = { headers: h, rows: r, name: file.name };
-
-        if (compDataA.headers.length > 0 && compDataB.headers.length > 0) {
-          setupCompareKeys();
-        }
-      });
-    }
-
-    function setupCompareKeys() {
-      const select = document.getElementById('compareKeySelect');
-      select.innerHTML = '';
-      const common = compDataA.headers.filter(h => compDataB.headers.includes(h));
-
-      if (common.length === 0) {
-        alert("Warning: No matching column header between File A and File B!");
-        return;
-      }
-
-      common.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = `Match by key: ${h}`;
-        if (/sku|id|code|invoice/i.test(h)) opt.selected = true;
-        select.appendChild(opt);
-      });
-
-      document.getElementById('compareKeyBox').style.display = 'block';
-    }
-
-    function executeFileCompare() {
-      if (compDataA.rows.length === 0 || compDataB.rows.length === 0) {
-        alert("Please upload both File A and File B!");
-        return;
-      }
-
-      const keyCol = document.getElementById('compareKeySelect').value;
-      const idxA = compDataA.headers.indexOf(keyCol);
-      const idxB = compDataB.headers.indexOf(keyCol);
-
-      const mapA = new Map();
-      const mapB = new Map();
-
-      compDataA.rows.forEach(r => {
-        const k = (r[idxA] || '').toString().trim().toLowerCase();
-        if (k) mapA.set(k, r);
-      });
-
-      compDataB.rows.forEach(r => {
-        const k = (r[idxB] || '').toString().trim().toLowerCase();
-        if (k) mapB.set(k, r);
-      });
-
-      diffResults = [];
-      let added = 0, removed = 0, changed = 0, same = 0;
-
-      mapA.forEach((rowA, k) => {
-        if (!mapB.has(k)) {
-          removed++;
-          diffResults.push({ key: k, status: 'REMOVED', details: 'Record removed in File B' });
-        } else {
-          const rowB = mapB.get(k);
-          const changedCols = [];
-          compDataA.headers.forEach((h, i) => {
-            const j = compDataB.headers.indexOf(h);
-            if (j !== -1 && (rowA[i] || '').toString().trim() !== (rowB[j] || '').toString().trim()) {
-              changedCols.push(`${h}: "${rowA[i]}" -> "${rowB[j]}"`);
-            }
-          });
-
-          if (changedCols.length > 0) {
-            changed++;
-            diffResults.push({ key: k, status: 'CHANGED', details: changedCols.join(' | ') });
-          } else {
-            same++;
-            diffResults.push({ key: k, status: 'UNCHANGED', details: 'Identical record' });
-          }
-        }
-      });
-
-      mapB.forEach((rowB, k) => {
-        if (!mapA.has(k)) {
-          added++;
-          diffResults.push({ key: k, status: 'ADDED', details: 'New record in File B' });
-        }
-      });
-
-      document.getElementById('cmpAdded').textContent = added;
-      document.getElementById('cmpRemoved').textContent = removed;
-      document.getElementById('cmpChanged').textContent = changed;
-      document.getElementById('cmpSame').textContent = same;
-
-      const tbl = document.getElementById('compareTable');
-      tbl.innerHTML = `<tr><th>Status</th><th>Key (${keyCol})</th><th>Diff Summary</th></tr>`;
-      diffResults.slice(0, 15).forEach(res => {
-        const badgeClass = res.status === 'ADDED' ? 'badge-added' : (res.status === 'REMOVED' ? 'badge-removed' : (res.status === 'CHANGED' ? 'badge-changed' : ''));
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><span class="${badgeClass}">${res.status}</span></td><td><strong>${res.key}</strong></td><td style="font-size:11.5px;">${res.details}</td>`;
-        tbl.appendChild(tr);
-      });
-
-      document.getElementById('compareResult').style.display = 'block';
-
-      sessionFilesProcessed += 2;
-      logSessionEvent("File Compare", "Diff Checker", `${added} Added, ${removed} Removed, ${changed} Changed`);
-      updateDashboardStats();
-    }
-
-    function downloadComparisonReport() {
-      const out = [["Status", "Key", "Details"]];
-      diffResults.forEach(r => out.push([r.status, r.key, r.details]));
-      const csv = Papa.unparse(out);
-      triggerDownload(csv, `file_comparison_diff.csv`, 'text/csv;charset=utf-8;');
-      addReportToCenter("file_comparison_diff.csv", "File Compare Diff Report");
-      triggerSuccessCoffeePopup();
-    }
-
-    // ================= 3. INVENTORY RECONCILIATION =================
-    document.getElementById('invFileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      parseFile(file, (h, r) => {
-        invHeaders = h;
-        invRows = r;
-        setupInventorySelectors();
-      });
-    });
-
-    function setupInventorySelectors() {
-      const sSku = document.getElementById('invColSku');
-      const sSys = document.getElementById('invColSystem');
-      const sPhy = document.getElementById('invColPhysical');
-      const sCost = document.getElementById('invColCost');
-
-      [sSku, sSys, sPhy].forEach(s => s.innerHTML = '');
-      sCost.innerHTML = '<option value="">-- None --</option>';
-
-      invHeaders.forEach((h, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = h;
-        sSku.appendChild(opt.cloneNode(true));
-        sSys.appendChild(opt.cloneNode(true));
-        sPhy.appendChild(opt.cloneNode(true));
-        sCost.appendChild(opt);
-
-        if (/sku|item|code/i.test(h)) sSku.value = i;
-        if (/system|expected|book|pos/i.test(h)) sSys.value = i;
-        if (/physical|actual|counted/i.test(h)) sPhy.value = i;
-        if (/cost|price|rate/i.test(h)) sCost.value = i;
-      });
-
-      document.getElementById('invColumnMap').style.display = 'block';
-    }
-
-    function executeInventoryCheck() {
-      if (invRows.length === 0) { alert("Please upload inventory sheet!"); return; }
-
-      const idxSku = parseInt(document.getElementById('invColSku').value);
-      const idxSys = parseInt(document.getElementById('invColSystem').value);
-      const idxPhy = parseInt(document.getElementById('invColPhysical').value);
-      const costVal = document.getElementById('invColCost').value;
-      const idxCost = costVal !== "" ? parseInt(costVal) : -1;
-
-      let shortage = 0, excess = 0, matched = 0;
-      invAuditResults = [];
-
-      invRows.forEach(r => {
-        const sku = (r[idxSku] || '').toString().trim();
-        const sysQty = parseFloat(r[idxSys]) || 0;
-        const phyQty = parseFloat(r[idxPhy]) || 0;
-        const cost = idxCost !== -1 ? (parseFloat(r[idxCost]) || 0) : 0;
-        const variance = phyQty - sysQty;
-        const impact = variance * cost;
-
-        let status = 'MATCHED';
-        if (variance < 0) { status = 'SHORTAGE'; shortage++; }
-        else if (variance > 0) { status = 'EXCESS'; excess++; }
-        else matched++;
-
-        invAuditResults.push({ sku, sysQty, phyQty, variance, impact, status });
-      });
-
-      document.getElementById('invTotalSkus').textContent = invRows.length;
-      document.getElementById('invShortage').textContent = shortage;
-      document.getElementById('invExcess').textContent = excess;
-      document.getElementById('invMatch').textContent = matched;
-
-      const tbl = document.getElementById('invTable');
-      tbl.innerHTML = `<tr><th>SKU</th><th>System</th><th>Counted</th><th>Variance</th><th>Impact</th><th>Status</th></tr>`;
-
-      invAuditResults.filter(a => a.status !== 'MATCHED').slice(0, 15).forEach(res => {
-        const tr = document.createElement('tr');
-        const color = res.variance < 0 ? 'color:var(--danger);' : 'color:var(--warning);';
-        tr.innerHTML = `<td><strong>${res.sku}</strong></td><td>${res.sysQty}</td><td>${res.phyQty}</td><td style="${color}font-weight:700;">${res.variance}</td><td>${res.impact !== 0 ? res.impact.toFixed(2) : '-'}</td><td><span class="${res.variance < 0 ? 'badge-removed' : 'badge-changed'}">${res.status}</span></td>`;
-        tbl.appendChild(tr);
-      });
-
-      document.getElementById('invResult').style.display = 'block';
-
-      sessionFilesProcessed++;
-      logSessionEvent("Inventory Audit", "Stock Checker", `${shortage} Shortages, ${excess} Excess items`);
-      updateDashboardStats();
-    }
-
-    function downloadInventoryReport() {
-      const out = [["SKU", "System Expected", "Physical Counted", "Variance Qty", "Financial Impact", "Status"]];
-      invAuditResults.forEach(i => out.push([i.sku, i.sysQty, i.phyQty, i.variance, i.impact, i.status]));
-      const csv = Papa.unparse(out);
-      triggerDownload(csv, `inventory_reconciliation_report.csv`, 'text/csv;charset=utf-8;');
-      addReportToCenter("inventory_reconciliation_report.csv", "Inventory Variance Report");
-      triggerSuccessCoffeePopup();
-    }
-
-    // ================= 4. BARCODE LABELS =================
-    function generateBarcodeCards() {
-      const val = document.getElementById('barcodeText').value.trim();
-      const area = document.getElementById('barcodeArea');
-      if (!val) { alert("Please type or paste item SKU codes!"); return; }
-
-      const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-      area.innerHTML = '';
-
-      items.forEach((sku) => {
-        const card = document.createElement('div');
-        card.className = 'barcode-card';
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        card.appendChild(svg);
-        area.appendChild(card);
-        try {
-          JsBarcode(svg, sku, { format: "CODE128", width: 1.4, height: 40, displayValue: true, fontSize: 11 });
-        } catch(err) {
-          card.innerHTML = `<span style="color:var(--danger);font-size:11px;">Invalid: ${sku}</span>`;
-        }
-      });
-      document.getElementById('barcodePrintBtn').style.display = 'block';
-      logSessionEvent("Bulk Barcodes", "Barcode Generator", `${items.length} barcodes rendered`);
-      updateDashboardStats();
-    }
-
-    function printBarcodesAndTriggerPopup() {
-      window.print();
-      triggerSuccessCoffeePopup();
-    }
-
-    // ================= REAL-TIME SESSION LOGS & REPORTS =================
-    function logSessionEvent(fileName, toolType, outcome) {
-      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      sessionLogs.unshift({ file: fileName, tool: toolType, status: 'Completed', time: timeStr, note: outcome });
-
-      const homeList = document.getElementById('sessionActivityList');
-      const fullList = document.getElementById('fullHistoryList');
-      
-      const renderHtml = sessionLogs.slice(0, 5).map(item => `
-        <div class="activity-item">
-          <div class="activity-file">
-            <span>📄</span>
-            <div>
-              <div>${item.file}</div>
-              <small style="color:var(--text-muted); font-size:11px;">${item.tool} • ${item.time}</small>
-            </div>
-          </div>
-          <span class="activity-status">${item.status}</span>
-        </div>
-      `).join('');
-
-      homeList.innerHTML = renderHtml;
-      fullList.innerHTML = sessionLogs.map(item => `
-        <div class="activity-item" style="padding:12px;">
-          <div class="activity-file">
-            <span>📄</span>
-            <div>
-              <div style="font-size:13px;">${item.file}</div>
-              <small style="color:var(--text-muted);">${item.tool} • ${item.time} • ${item.note}</small>
-            </div>
-          </div>
-          <span class="activity-status">${item.status}</span>
-        </div>
-      `).join('');
-    }
-
-    function addReportToCenter(fileName, reportType) {
-      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      generatedReports.unshift({ name: fileName, type: reportType, time: timeStr });
-
-      const repList = document.getElementById('reportsList');
-      repList.innerHTML = generatedReports.map(rep => `
-        <div class="activity-item" style="padding:12px;">
-          <div class="activity-file">
-            <span>📑</span>
-            <div>
-              <div style="font-size:13px;">${rep.name}</div>
-              <small style="color:var(--text-muted);">${rep.type} • Generated at ${rep.time}</small>
-            </div>
-          </div>
-          <span class="activity-status">Downloaded</span>
-        </div>
-      `).join('');
-    }
-
-    function updateDashboardStats() {
-      document.getElementById('statProcessedFiles').textContent = sessionFilesProcessed;
-      document.getElementById('statDupsRemoved').textContent = sessionDupsRemoved;
-      
-      if (healthStats.rows > 0) {
-        const errorCells = healthStats.dups + healthStats.blanks + healthStats.spaces + healthStats.caps;
-        const totalEstimatedCells = healthStats.rows * (headers.length || 5);
-        const score = Math.max(70, Math.min(100, Math.round(100 - (errorCells / (totalEstimatedCells || 100)) * 100)));
-        document.getElementById('statHealthQuality').textContent = `${score}%`;
-      }
-      
-      const timeEst = Math.max(2, Math.round(sessionFilesProcessed * 4 + sessionDupsRemoved * 0.05));
-      document.getElementById('statTimeSaved').textContent = `~ ${timeEst} min`;
-    }
-
-    // ================= FILE PARSING & DOWNLOAD =================
-    function parseFile(file, callback) {
-      if (file.name.endsWith('.csv')) {
-        Papa.parse(file, {
-          skipEmptyLines: false,
-          complete: res => {
-            if (!res.data || res.data.length === 0) { alert("Uploaded file is empty!"); return; }
-            callback(res.data[0], res.data.slice(1));
-          }
-        });
-      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        const reader = new FileReader();
-        reader.onload = evt => {
-          const data = new Uint8Array(evt.target.result);
-          const wb = XLSX.read(data, { type: 'array' });
-          const sheet = wb.Sheets[wb.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-          if (!rows || rows.length === 0) { alert("Excel sheet is empty!"); return; }
-          callback(rows[0], rows.slice(1));
-        };
-        reader.readAsArrayBuffer(file);
-      } else {
-        alert("Upload .csv, .xlsx, or .xls file!");
-      }
-    }
-
-    function renderTable(tableId, head, rows) {
-      const tbl = document.getElementById(tableId);
-      tbl.innerHTML = '';
-      const trH = document.createElement('tr');
-      head.forEach(h => {
-        const th = document.createElement('th');
-        th.textContent = h;
-        trH.appendChild(th);
-      });
-      tbl.appendChild(trH);
-
-      rows.forEach(r => {
-        const tr = document.createElement('tr');
-        r.forEach(c => {
-          const td = document.createElement('td');
-          td.textContent = (c === null || c === undefined) ? '' : c;
-          tr.appendChild(td);
-        });
-        tbl.appendChild(tr);
-      });
-    }
-
-    function triggerDownload(content, filename, type) {
-      const blob = new Blob([content], { type });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    }
   </script>
 </body>
 </html>
