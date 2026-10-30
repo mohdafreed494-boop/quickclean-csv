@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickClean Business Data Toolkit</title>
-  <meta name="description" content="Safe, private client-side business data cleaner, health audit report, and format toolkit.">
+  <meta name="description" content="Safe, private client-side business data cleaner, smart duplicate review, and diagnostic health report.">
   
-  <!-- SheetJS for Excel, JsBarcode, and PapaParse for CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -25,7 +24,7 @@
     }
     .container {
       background: #111827;
-      max-width: 860px;
+      max-width: 880px;
       width: 100%;
       padding: 28px;
       border-radius: 16px;
@@ -66,7 +65,6 @@
       cursor: pointer;
       border-bottom: 3px solid transparent;
       white-space: nowrap;
-      transition: all 0.2s;
     }
     .tab-btn.active {
       color: #38bdf8;
@@ -76,7 +74,6 @@
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
-    /* Upload Area */
     .dropzone {
       border: 2px dashed #374151;
       background: #161f30;
@@ -84,15 +81,10 @@
       padding: 26px;
       text-align: center;
       margin-bottom: 18px;
-      transition: border-color 0.2s;
     }
     .dropzone:hover { border-color: #38bdf8; }
-    input[type="file"] {
-      color: #94a3b8;
-      font-size: 13px;
-    }
+    input[type="file"] { color: #94a3b8; font-size: 13px; }
 
-    /* Meta Info */
     .meta-box {
       display: none;
       background: #1e293b;
@@ -104,7 +96,7 @@
       border-left: 4px solid #38bdf8;
     }
 
-    /* Modern Dark Health Scan Cards */
+    /* Health Diagnostic Cards Grid */
     .health-card {
       display: none;
       background: #161f30;
@@ -122,26 +114,28 @@
     .health-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
     .metric-card {
       background: #0f172a;
-      padding: 14px 10px;
+      padding: 12px 10px;
       border-radius: 10px;
       border: 1px solid #1f2937;
       text-align: center;
     }
     .metric-card strong {
       display: block;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       margin-bottom: 4px;
     }
     .metric-card span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
-    .metric-rows strong { color: #38bdf8; }
-    .metric-dups strong { color: #f87171; }
-    .metric-blanks strong { color: #fbbf24; }
-    .metric-spaces strong { color: #a78bfa; }
+    
+    .c-blue strong { color: #38bdf8; }
+    .c-red strong { color: #f87171; }
+    .c-amber strong { color: #fbbf24; }
+    .c-purple strong { color: #a78bfa; }
+    .c-pink strong { color: #f472b6; }
 
     /* Controls */
     .options-group {
@@ -155,18 +149,22 @@
     .checkbox-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
+      gap: 16px;
       font-size: 13px;
       margin-bottom: 14px;
     }
     .checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; }
+    
     select {
       background: #0f172a;
       color: #f1f5f9;
       border: 1px solid #374151;
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-radius: 6px;
       font-size: 13px;
+      width: 100%;
+      max-width: 320px;
+      margin-top: 6px;
     }
 
     .btn {
@@ -179,7 +177,6 @@
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      transition: background 0.2s;
     }
     .btn:hover { background: #0369a1; }
     .btn-row { display: flex; gap: 12px; margin-top: 14px; }
@@ -192,20 +189,21 @@
       overflow: auto;
       border: 1px solid #1f2937;
       border-radius: 8px;
-      margin: 12px 0;
+      margin: 10px 0 16px 0;
       background: #0f172a;
     }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     th, td { padding: 9px 12px; border: 1px solid #1f2937; text-align: left; }
     th { background: #161f30; color: #38bdf8; position: sticky; top: 0; }
     td { color: #cbd5e1; }
+    .dup-row { background: rgba(248, 113, 113, 0.08); }
+    .row-badge { background: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #94a3b8; }
 
     /* Barcode Grid */
     #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
     .barcode-card { border: 1px solid #334155; padding: 12px; text-align: center; background: #ffffff; border-radius: 8px; }
     .barcode-card svg { max-width: 100%; height: 50px; }
 
-    /* Footer Donate */
     .footer-support {
       margin-top: 24px;
       padding: 14px;
@@ -225,73 +223,84 @@
       🔒 100% In-Browser & Confidential (No Cloud Storage)
     </div>
     <h1>QuickClean Business Data Toolkit</h1>
-    <p class="subtitle">Diagnose data health, filter duplicates by key, and clean records without server exposure.</p>
+    <p class="subtitle">Inspect data health, review flagged duplicates, and clean records safely.</p>
 
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchView('cleaner')">1. Safe Cleaner & Health Report</button>
+      <button class="tab-btn active" onclick="switchView('cleaner')">1. Smart Duplicate Review & Health</button>
       <button class="tab-btn" onclick="switchView('converter')">2. Format Converter (JSON)</button>
       <button class="tab-btn" onclick="switchView('barcode')">3. Barcode Labels</button>
     </div>
 
-    <!-- TAB 1: CLEANER & HEALTH REPORT -->
+    <!-- TAB 1: SMART CLEANER & DUPLICATE REVIEW -->
     <div id="cleanerPane" class="tab-pane active">
       <div class="dropzone">
-        <input type="file" id="csvFile" accept=".csv, .xlsx, .xls">
+        <input type="file" id="dataFile" accept=".csv, .xlsx, .xls">
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
       </div>
 
       <div id="fileMeta" class="meta-box"></div>
 
-      <!-- Modern Health Scan Cards -->
+      <!-- Priority 3: Deep Health Diagnostic Scan -->
       <div id="healthCard" class="health-card">
         <div class="health-header">
-          <strong style="font-size:14px; color:#f8fafc;">📊 Live Data Health Diagnostics</strong>
-          <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Verified</span>
+          <strong style="font-size:14px; color:#f8fafc;">📊 Advanced Data Health Report</strong>
+          <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Completed</span>
         </div>
         <div class="health-grid">
-          <div class="metric-card metric-rows"><strong id="metricRows">0</strong><span>Total Records</span></div>
-          <div class="metric-card metric-dups"><strong id="metricDups">0</strong><span>Duplicates</span></div>
-          <div class="metric-card metric-blanks"><strong id="metricBlanks">0</strong><span>Blank Cells</span></div>
-          <div class="metric-card metric-spaces"><strong id="metricSpaces">0</strong><span>Space Errors</span></div>
+          <div class="metric-card c-blue"><strong id="metricRows">0</strong><span>Total Rows</span></div>
+          <div class="metric-card c-red"><strong id="metricDups">0</strong><span>Duplicates</span></div>
+          <div class="metric-card c-amber"><strong id="metricBlanks">0</strong><span>Missing Values</span></div>
+          <div class="metric-card c-purple"><strong id="metricSpaces">0</strong><span>Extra Spaces</span></div>
+          <div class="metric-card c-pink"><strong id="metricCaps">0</strong><span>Case Mismatch</span></div>
         </div>
       </div>
 
+      <!-- Priority 1: Flagged Duplicate Rows Preview -->
+      <div id="dupReviewSection" style="display:none;">
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:#f87171;">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
+        <div class="table-wrapper">
+          <table id="dupTable"></table>
+        </div>
+      </div>
+
+      <!-- Initial Preview -->
       <div id="previewSection" style="display:none;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original Data Preview (First 5 Rows):</h4>
+        <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original File Preview (First 5 Rows):</h4>
         <div class="table-wrapper">
           <table id="previewTable"></table>
         </div>
       </div>
 
-      <!-- Controls with Dropdown for Matching Key -->
+      <!-- Priority 2: Smart Duplicate Rules -->
       <div class="options-group">
-        <h4>Safe Cleaning Options</h4>
+        <h4>Duplicate Detection & Cleaning Options</h4>
         <div class="checkbox-row">
           <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
           <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
-          <label><input type="checkbox" id="optDups" checked> Remove duplicate records</label>
+          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name/Text Capitalization</label>
         </div>
-        <div style="font-size: 13px; color: #cbd5e1; display:flex; align-items:center; gap:8px;">
-          <span>Duplicate Match Rule:</span>
-          <select id="dupMode">
-            <option value="entire">Entire Row (All Columns)</option>
+        <div>
+          <label style="font-size:13px; color:#cbd5e1; display:block;">Match Duplicate Records By:</label>
+          <select id="dupMode" onchange="recalculateDuplicates()">
+            <option value="entire">Entire Row Match</option>
           </select>
         </div>
       </div>
 
-      <button class="btn" onclick="executeSafeClean()">Preview & Clean Data</button>
+      <button class="btn" onclick="executeSafeClean()">Clean & Export Data</button>
 
+      <!-- Clean Summary & Exports -->
       <div id="cleanSummary" style="display:none; margin-top: 18px;">
         <div id="summaryText" class="meta-box" style="display:block; border-left-color:#34d399;"></div>
         
-        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Preview:</h4>
+        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Result Preview:</h4>
         <div class="table-wrapper">
           <table id="cleanedTable"></table>
         </div>
 
         <div class="btn-row">
           <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
-          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Issue Report</button>
+          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Full Health Report</button>
         </div>
       </div>
     </div>
@@ -330,8 +339,9 @@
     let rawData = [];
     let headers = [];
     let cleanedData = [];
-    let healthStats = { total: 0, dups: 0, blanks: 0, trimIssues: 0 };
+    let flaggedDuplicates = [];
     let currentFileName = "data";
+    let healthMetrics = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
 
     function switchView(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -348,7 +358,7 @@
       }
     }
 
-    document.getElementById('csvFile').addEventListener('change', function(e) {
+    document.getElementById('dataFile').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -376,120 +386,180 @@
       if (!rows || rows.length === 0) { alert("File is empty!"); return; }
 
       headers = rows[0];
-      rawData = rows.slice(1);
+      rawData = rows.slice(1).filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
 
-      // Populate Dropdown for specific columns
+      // Populate Duplicate Match Options
       const dupSelect = document.getElementById('dupMode');
-      dupSelect.innerHTML = '<option value="entire">Entire Row (All Columns)</option>';
+      dupSelect.innerHTML = '<option value="entire">Entire Row Match</option>';
+      
       headers.forEach((h, idx) => {
         if (h && h.toString().trim() !== '') {
+          const name = h.toString().trim();
           const opt = document.createElement('option');
           opt.value = idx;
-          opt.textContent = `Match Column: ${h}`;
+          opt.textContent = `Match by ${name}`;
+          
+          // Auto-select smart columns (Email, Phone, SKU, ID)
+          if (/email/i.test(name)) opt.textContent += " (Smart: Email)";
+          if (/phone|mobile/i.test(name)) opt.textContent += " (Smart: Phone)";
+          if (/sku|item_id|person_id|id/i.test(name)) opt.textContent += " (Smart: Identifier)";
+          
           dupSelect.appendChild(opt);
         }
       });
 
       const metaBox = document.getElementById('fileMeta');
       metaBox.style.display = 'block';
-      metaBox.innerHTML = `<strong>Active File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
+      metaBox.innerHTML = `<strong>Loaded File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
-      performHealthScan(rawData, headers);
-      renderTable('previewTable', headers, rawData.slice(0, 5));
+      recalculateDuplicates();
+      renderTable('previewTable', headers, rawData.slice(0, 5), false);
       document.getElementById('previewSection').style.display = 'block';
     }
 
-    function performHealthScan(rows, headerList) {
+    function recalculateDuplicates() {
+      if (rawData.length === 0) return;
+      const dupMode = document.getElementById('dupMode').value;
+      
       let blanks = 0;
-      let trimIssues = 0;
-      let seen = new Set();
-      let dups = 0;
+      let spaces = 0;
+      let caps = 0;
+      let seen = new Map();
+      flaggedDuplicates = [];
 
-      rows.forEach(r => {
-        const rowStr = JSON.stringify(r);
-        if (seen.has(rowStr)) dups++;
-        else seen.add(rowStr);
+      rawData.forEach((row, index) => {
+        const actualRowNumber = index + 2; // Row number in Excel/CSV
+        let key;
+        if (dupMode === 'entire') {
+          key = JSON.stringify(row);
+        } else {
+          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
+        }
 
-        r.forEach(cell => {
+        if (key !== '' && key !== '""') {
+          if (seen.has(key)) {
+            flaggedDuplicates.push({ rowNum: actualRowNumber, originalRow: row });
+          } else {
+            seen.set(key, actualRowNumber);
+          }
+        }
+
+        // Diagnostic checks
+        row.forEach(cell => {
           if (!cell || cell.toString().trim() === '') blanks++;
-          else if (cell.toString() !== cell.toString().trim()) trimIssues++;
+          else {
+            const str = cell.toString();
+            if (str !== str.trim()) spaces++;
+            if (/[a-z]/.test(str) && /[A-Z]/.test(str) && str === str.toLowerCase()) caps++;
+            if (str.length > 2 && str === str.toLowerCase() && isNaN(str)) caps++;
+          }
         });
       });
 
-      healthStats = { total: rows.length, dups, blanks, trimIssues };
-      document.getElementById('metricRows').textContent = rows.length;
-      document.getElementById('metricDups').textContent = dups;
-      document.getElementById('metricBlanks').textContent = blanks;
-      document.getElementById('metricSpaces').textContent = trimIssues;
+      healthMetrics = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps };
+      document.getElementById('metricRows').textContent = healthMetrics.rows;
+      document.getElementById('metricDups').textContent = healthMetrics.dups;
+      document.getElementById('metricBlanks').textContent = healthMetrics.blanks;
+      document.getElementById('metricSpaces').textContent = healthMetrics.spaces;
+      document.getElementById('metricCaps').textContent = healthMetrics.caps;
       document.getElementById('healthCard').style.display = 'block';
+
+      // Render Flagged Duplicate Details
+      if (flaggedDuplicates.length > 0) {
+        renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
+        document.getElementById('dupReviewSection').style.display = 'block';
+      } else {
+        document.getElementById('dupReviewSection').style.display = 'none';
+      }
+    }
+
+    function renderDuplicateTable(tableId, head, dupList) {
+      const tbl = document.getElementById(tableId);
+      tbl.innerHTML = '';
+      
+      const trH = document.createElement('tr');
+      const thIndex = document.createElement('th');
+      thIndex.textContent = "Source Row #";
+      trH.appendChild(thIndex);
+
+      head.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trH.appendChild(th);
+      });
+      tbl.appendChild(trH);
+
+      dupList.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'dup-row';
+        const tdIdx = document.createElement('td');
+        tdIdx.innerHTML = `<span class="row-badge">Row ${item.rowNum}</span>`;
+        tr.appendChild(tdIdx);
+
+        item.originalRow.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
+    }
+
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
     }
 
     function executeSafeClean() {
-      if (rawData.length === 0) { alert("Please upload a CSV or Excel file first!"); return; }
+      if (rawData.length === 0) { alert("Please upload a file first!"); return; }
 
       const doTrim = document.getElementById('optTrim').checked;
       const doRemoveEmpty = document.getElementById('optEmptyRows').checked;
-      const doRemoveDups = document.getElementById('optDups').checked;
+      const doFixCaps = document.getElementById('optFixCaps').checked;
       const dupMode = document.getElementById('dupMode').value;
 
-      let processed = rawData.map(row => row.map(cell => (doTrim && cell) ? cell.toString().trim() : cell));
-
-      if (doRemoveEmpty) {
-        processed = processed.filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
-      }
-
-      let removedDupsCount = 0;
-      if (doRemoveDups) {
-        const unique = [];
-        const seen = new Set();
-        processed.forEach(row => {
-          let key;
-          if (dupMode === 'entire') {
-            key = JSON.stringify(row);
-          } else {
-            key = row[parseInt(dupMode)] || '';
-          }
-
-          if (!seen.has(key)) {
-            seen.add(key);
-            unique.push(row);
-          } else {
-            removedDupsCount++;
-          }
-        });
-        processed = unique;
-      }
-
-      cleanedData = processed;
-
-      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
-      document.getElementById('summaryText').innerHTML = `<strong>Cleaning Complete:</strong> Kept ${cleanedData.length} clean records | Removed ${removedDupsCount} duplicates.`;
-      document.getElementById('cleanSummary').style.display = 'block';
-    }
-
-    function downloadCleanedFile() {
-      const sanitized = cleanedData.map(row => 
+      let processed = rawData.map(row => 
         row.map(cell => {
-          let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str;
-          return str;
+          if (!cell) return '';
+          let val = cell.toString();
+          if (doTrim) val = val.trim();
+          if (doFixCaps && isNaN(val) && val.length > 1 && !val.includes('@')) {
+            val = toTitleCase(val);
+          }
+          return val;
         })
       );
-      const csv = Papa.unparse([headers, ...sanitized]);
-      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
-    }
 
-    function downloadIssueReport() {
-      const reportRows = [
-        ["Audit Metric", "Count Found"],
-        ["Total Rows Scanned", healthStats.total],
-        ["Duplicates Identified", healthStats.dups],
-        ["Empty / Missing Cells", healthStats.blanks],
-        ["Space Inconsistencies", healthStats.trimIssues],
-        ["Audit Date", new Date().toLocaleString()]
-      ];
-      const csv = Papa.unparse(reportRows);
-      triggerDownload(csv, `${currentFileName}_health_report.csv`, 'text/csv;charset=utf-8;');
+      if (doRemoveEmpty) {
+        processed = processed.filter(row => row.some(cell => cell.toString().trim() !== ''));
+      }
+
+      let unique = [];
+      let seen = new Set();
+      let removedCount = 0;
+
+      processed.forEach(row => {
+        let key;
+        if (dupMode === 'entire') {
+          key = JSON.stringify(row);
+        } else {
+ key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
+        }
+
+        if (key && seen.has(key)) {
+          removedCount++;
+        } else {
+          if (key) seen.add(key);
+          unique.push(row);
+        }
+      });
+
+      cleanedData = unique;
+
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5), false);
+      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedCount}</strong> duplicate records.`;
+      document.getElementById('cleanSummary').style.display = 'block';
     }
 
     function renderTable(tableId, head, rows) {
@@ -512,6 +582,32 @@
         });
         tbl.appendChild(tr);
       });
+    }
+
+    function downloadCleanedFile() {
+      const sanitized = cleanedData.map(row => 
+        row.map(cell => {
+          let str = (cell === null || cell === undefined) ? '' : cell.toString();
+          if (/^[=+\-@]/.test(str)) return "'" + str;
+          return str;
+        })
+      );
+      const csv = Papa.unparse([headers, ...sanitized]);
+      triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function downloadIssueReport() {
+      const reportRows = [
+        ["Health Diagnostic Category", "Detected Count", "Action Taken"],
+        ["Total Scanned Records", healthMetrics.rows, "Parsed Locally"],
+        ["Duplicate Rows Found", healthMetrics.dups, "Flagged with Row #"],
+        ["Missing / Empty Values", healthMetrics.blanks, "Audited"],
+        ["Extra Inconsistent Spaces", healthMetrics.spaces, "Trimmed"],
+        ["Case Mismatches (Names/Text)", healthMetrics.caps, "Normalized to Title Case"],
+        ["Audit Date", new Date().toLocaleString(), "Certified Safe"]
+      ];
+      const csv = Papa.unparse(reportRows);
+      triggerDownload(csv, `${currentFileName}_health_audit.csv`, 'text/csv;charset=utf-8;');
     }
 
     function processJSONConvert() {
