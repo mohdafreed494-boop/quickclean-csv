@@ -1,6 +1,3 @@
-
-admin.html
-100%
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,6 +97,16 @@ admin.html
       transition: background 0.2s;
     }
     .btn:hover { background: #0369a1; }
+    .btn-danger {
+      background: #ef4444;
+      padding: 5px 9px;
+      font-size: 11.5px;
+      border-radius: 4px;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-danger:hover { background: #dc2626; }
     .badge {
       padding: 3px 8px;
       border-radius: 4px;
@@ -109,6 +116,11 @@ admin.html
     .badge-new { background: #fee2e2; color: #b91c1c; }
     .badge-in_review { background: #fef3c7; color: #b45309; }
     .badge-resolved { background: #dcfce7; color: #15803d; }
+    .action-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     @media (max-width: 768px) {
       .stats-row { grid-template-columns: 1fr; }
     }
@@ -300,11 +312,16 @@ admin.html
           <td>${item.contact_email ? `<a href="mailto:${item.contact_email}" style="color:#0284c7;">${item.contact_email}</a>` : '<span style="color:#94a3b8;">None</span>'}</td>
           <td><span class="badge badge-${item.status.toLowerCase().replace(' ', '_')}">${item.status}</span></td>
           <td>
-            <select onchange="changeStatus('${item.id}', this.value)" style="padding:4px 6px; font-size:12px;">
-              <option value="New" ${item.status === 'New' ? 'selected' : ''}>New</option>
-              <option value="In Review" ${item.status === 'In Review' ? 'selected' : ''}>In Review</option>
-              <option value="Resolved" ${item.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-            </select>
+            <div class="action-cell">
+              <select onchange="changeStatus('${item.id}', this.value)" style="padding:4px 6px; font-size:12px;">
+                <option value="New" ${item.status === 'New' ? 'selected' : ''}>New</option>
+                <option value="In Review" ${item.status === 'In Review' ? 'selected' : ''}>In Review</option>
+                <option value="Resolved" ${item.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              </select>
+              <button class="btn-danger" onclick="deleteFeedback('${item.id}')" title="Delete record">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -327,8 +344,26 @@ admin.html
       }
     }
 
+    async function deleteFeedback(id) {
+      if (!confirm("Are you sure you want to permanently delete this feedback?")) {
+        return;
+      }
+
+      const { error } = await client
+        .from('feedbacks')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert("Failed to delete feedback: " + error.message);
+      } else {
+        rawRecords = rawRecords.filter(r => r.id !== id);
+        calculateStats();
+        applyFilters();
+      }
+    }
+
     initAdmin();
   </script>
 </body>
 </html>
-Displaying admin.html.
