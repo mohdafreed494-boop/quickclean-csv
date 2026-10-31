@@ -4,27 +4,234 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickClean Business Data Toolkit</title>
-  <meta name="description" content="Safe, private client-side business data cleaner, smart duplicate review, and diagnostic health report.">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #0b0f19;
       color: #f1f5f9;
-      margin: 0;
-      padding: 24px 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      height: 64px;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+    }
+    .brand-icon {
+      background: #0284c7;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      display: block;
+      font-weight: 400;
+    }
+
+    /* 3-Line Menu Button (Right Corner) */
+    .menu-btn {
+      background: #1e293b;
+      border: 1px solid #374151;
+      color: #f1f5f9;
+      font-size: 20px;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .menu-btn:hover {
+      background: #334155;
+      color: #38bdf8;
+    }
+
+    /* Right Sliding Drawer Panel */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .drawer-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      right: -340px;
+      width: 320px;
+      height: 100vh;
+      background: #111827;
+      border-left: 1px solid #1f2937;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+    .side-drawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1f2937;
+    }
+    .drawer-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .close-btn:hover { color: #f87171; }
+
+    .drawer-body {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: background 0.2s;
+    }
+    .nav-item:hover {
+      background: #1e293b;
+      color: #38bdf8;
+    }
+    .nav-item.active {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Accordion for Data Tools */
+    .accordion-toggle {
+      justify-content: space-between;
+      font-weight: 600;
+    }
+    .accordion-toggle .arrow {
+      font-size: 11px;
+      transition: transform 0.2s ease;
+    }
+    .accordion-toggle.expanded .arrow {
+      transform: rotate(180deg);
+    }
+    .sub-menu {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 14px;
+      margin: 4px 0;
+      border-left: 2px solid #1f2937;
+    }
+    .sub-menu.show {
+      display: flex;
+    }
+    .sub-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sub-item:hover {
+      color: #38bdf8;
+      background: #161f30;
+    }
+
+    .divider {
+      height: 1px;
+      background: #1f2937;
+      margin: 10px 0;
+    }
+
+    .nav-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #64748b;
+      padding: 6px 14px 2px 14px;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      padding: 28px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     .container {
       background: #111827;
-      max-width: 880px;
+      max-width: 900px;
       width: 100%;
       padding: 28px;
       border-radius: 16px;
@@ -44,33 +251,10 @@
       font-weight: 600;
       margin-bottom: 12px;
     }
-    h1 { font-size: 26px; margin: 0 0 6px 0; color: #ffffff; letter-spacing: -0.5px; }
-    p.subtitle { color: #94a3b8; font-size: 14px; margin: 0 0 24px 0; }
+    h1 { font-size: 24px; margin-bottom: 6px; color: #ffffff; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 22px; }
 
-    /* Tabs */
-    .tab-bar {
-      display: flex;
-      gap: 10px;
-      border-bottom: 1px solid #1f2937;
-      margin-bottom: 22px;
-      overflow-x: auto;
-    }
-    .tab-btn {
-      padding: 12px 18px;
-      background: none;
-      border: none;
-      font-weight: 600;
-      font-size: 14px;
-      color: #94a3b8;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-    }
-    .tab-btn.active {
-      color: #38bdf8;
-      border-bottom-color: #38bdf8;
-    }
-
+    /* Tool Panes */
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
@@ -96,7 +280,6 @@
       border-left: 4px solid #38bdf8;
     }
 
-    /* Health Diagnostic Cards Grid */
     .health-card {
       display: none;
       background: #161f30;
@@ -137,7 +320,6 @@
     .c-purple strong { color: #a78bfa; }
     .c-pink strong { color: #f472b6; }
 
-    /* Controls */
     .options-group {
       background: #161f30;
       border: 1px solid #1f2937;
@@ -183,7 +365,6 @@
     .btn-secondary { background: #334155; }
     .btn-secondary:hover { background: #475569; }
 
-    /* Tables */
     .table-wrapper {
       max-height: 250px;
       overflow: auto;
@@ -199,164 +380,230 @@
     .dup-row { background: rgba(248, 113, 113, 0.08); }
     .row-badge { background: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #94a3b8; }
 
-    /* Barcode Grid */
     #barcodePrintArea { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
     .barcode-card { border: 1px solid #334155; padding: 12px; text-align: center; background: #ffffff; border-radius: 8px; }
     .barcode-card svg { max-width: 100%; height: 50px; }
-
-    .footer-support {
-      margin-top: 24px;
-      padding: 14px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 13px;
-    }
-    .footer-support a { color: #facc15; font-weight: 700; text-decoration: none; margin-left: 6px; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header-badge">
-      🔒 100% In-Browser & Confidential (No Cloud Storage)
-    </div>
-    <h1>QuickClean Business Data Toolkit</h1>
-    <p class="subtitle">Inspect data health, review flagged duplicates, and clean records safely.</p>
-
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchView('cleaner')">1. Smart Duplicate Review & Health</button>
-      <button class="tab-btn" onclick="switchView('converter')">2. Format Converter (JSON)</button>
-      <button class="tab-btn" onclick="switchView('barcode')">3. Barcode Labels</button>
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="brand-logo">
+      <div class="brand-icon">⚡</div>
+      <div>
+        QuickClean
+        <span class="brand-subtitle">Business Data Toolkit</span>
+      </div>
     </div>
 
-    <!-- TAB 1: SMART CLEANER & DUPLICATE REVIEW -->
-    <div id="cleanerPane" class="tab-pane active">
-      <div class="dropzone">
-        <input type="file" id="dataFile" accept=".csv, .xlsx, .xls">
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
-      </div>
+    <!-- 3-Line Menu Icon on the Right -->
+    <button class="menu-btn" onclick="toggleDrawer()" title="Menu">☰</button>
+  </header>
 
-      <div id="fileMeta" class="meta-box"></div>
-
-      <!-- Priority 3: Deep Health Diagnostic Scan -->
-      <div id="healthCard" class="health-card">
-        <div class="health-header">
-          <strong style="font-size:14px; color:#f8fafc;">📊 Advanced Data Health Report</strong>
-          <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Completed</span>
-        </div>
-        <div class="health-grid">
-          <div class="metric-card c-blue"><strong id="metricRows">0</strong><span>Total Rows</span></div>
-          <div class="metric-card c-red"><strong id="metricDups">0</strong><span>Duplicates</span></div>
-          <div class="metric-card c-amber"><strong id="metricBlanks">0</strong><span>Missing Values</span></div>
-          <div class="metric-card c-purple"><strong id="metricSpaces">0</strong><span>Extra Spaces</span></div>
-          <div class="metric-card c-pink"><strong id="metricCaps">0</strong><span>Case Mismatch</span></div>
-        </div>
-      </div>
-
-      <!-- Priority 1: Flagged Duplicate Rows Preview -->
-      <div id="dupReviewSection" style="display:none;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:#f87171;">⚠️ Flagged Duplicate Rows (Row Number & Preview):</h4>
-        <div class="table-wrapper">
-          <table id="dupTable"></table>
-        </div>
-      </div>
-
-      <!-- Initial Preview -->
-      <div id="previewSection" style="display:none;">
-        <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original File Preview (First 5 Rows):</h4>
-        <div class="table-wrapper">
-          <table id="previewTable"></table>
-        </div>
-      </div>
-
-      <!-- Priority 2: Smart Duplicate Rules -->
-      <div class="options-group">
-        <h4>Duplicate Detection & Cleaning Options</h4>
-        <div class="checkbox-row">
-          <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
-          <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
-          <label><input type="checkbox" id="optFixCaps"> Auto-fix Name/Text Capitalization</label>
-        </div>
-        <div>
-          <label style="font-size:13px; color:#cbd5e1; display:block;">Match Duplicate Records By:</label>
-          <select id="dupMode" onchange="recalculateDuplicates()">
-            <option value="entire">Entire Row Match</option>
-          </select>
-        </div>
-      </div>
-
-      <button class="btn" onclick="executeSafeClean()">Clean & Export Data</button>
-
-      <!-- Clean Summary & Exports -->
-      <div id="cleanSummary" style="display:none; margin-top: 18px;">
-        <div id="summaryText" class="meta-box" style="display:block; border-left-color:#34d399;"></div>
-        
-        <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Result Preview:</h4>
-        <div class="table-wrapper">
-          <table id="cleanedTable"></table>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
-          <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Full Health Report</button>
-        </div>
-         </div>
+  <!-- Right Slide-Out Drawer Panel -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+  <aside class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">Navigation Menu</div>
+      <button class="close-btn" onclick="toggleDrawer()">✕</button>
     </div>
 
-    <!-- TAB 2: CONVERTER -->
-    <div id="converterPane" class="tab-pane">
-      <div class="dropzone">
-        <input type="file" id="convertFile" accept=".csv, .xlsx, .xls">
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Convert Excel (.xlsx) or CSV directly to JSON</p>
-      </div>
-      <button class="btn" onclick="processJSONConvert()">Convert & Download JSON</button>
-      <div id="convertLog" class="meta-box" style="margin-top:14px;"></div>
-    </div>
+    <div class="drawer-body">
+      <!-- Home Option -->
+      <button class="nav-item active" onclick="activateSection('cleaner')">
+        <span>🏠</span> Home
+      </button>
 
-    <!-- TAB 3: BARCODE LABELS -->
-    <div id="barcodePane" class="tab-pane">
-      <div class="dropzone">
-        <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#e2e8f0;">Item SKU / Barcode Numbers (one per line):</p>
-        <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #374151; color:#fff; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+      <!-- DATA TOOLS Accordion -->
+      <button class="nav-item accordion-toggle" onclick="toggleAccordion('dataToolsGroup')">
+        <span style="display:flex; align-items:center; gap:10px;">
+          <span>🛠️</span> <strong>Data Tools</strong>
+        </span>
+        <span class="arrow" id="dataToolsArrow">▼</span>
+      </button>
+      
+      <!-- Sub-menu Tools (Hidden until Data Tools is tapped) -->
+      <div class="sub-menu" id="dataToolsGroup">
+        <div class="sub-item" onclick="activateSection('cleaner')">⚙️ CSV / Excel Cleaner</div>
+        <div class="sub-item" onclick="activateSection('converter')">🔄 Format Converter (JSON)</div>
+        <div class="sub-item" onclick="activateSection('barcode')">🏷️ Barcode Generator</div>
+        <div class="sub-item" onclick="alert('File Compare tool coming soon!')">📑 File Compare</div>
+        <div class="sub-item" onclick="alert('Inventory Reconciliation coming soon!')">📦 Inventory Reconciliation</div>
+        <div class="sub-item" onclick="alert('Data Quality Score coming soon!')">🎯 Data Quality Score</div>
       </div>
-      <button class="btn" onclick="createBarcodes()">Generate Labels</button>
-      <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
-      <div id="barcodePrintArea"></div>
-    </div>
 
-    <!-- Support Box -->
-    <div class="footer-support">
-      Enjoying QuickClean Toolkit? 
-      <a href="https://buymeacoffee.com/suhel786" target="_blank">
-        ☕ Buy me a coffee
+      <div class="divider"></div>
+
+      <!-- Other Options -->
+      <div class="nav-section-label">General & Settings</div>
+      <button class="nav-item" onclick="alert('History is stored locally during session.')">
+        <span>🕒</span> Processing History
+      </button>
+      <button class="nav-item" onclick="alert('QuickClean is 100% client-side and free.')">
+        <span>❓</span> Help & Support
+      </button>
+      <a href="https://buymeacoffee.com/suhel786" target="_blank" class="nav-item" style="color: #facc15; font-weight: 600;">
+        <span>☕</span> Buy Me a Coffee
       </a>
+      <button class="nav-item" onclick="alert('Feedback form will open here.')">
+        <span>💬</span> Feedback
+      </button>
     </div>
-  </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <div class="header-badge">
+        🔒 100% In-Browser & Confidential (No Cloud Storage)
+      </div>
+      <h1 id="viewTitle">QuickClean Business Data Toolkit</h1>
+      <p class="subtitle" id="viewDesc">Inspect data health, review flagged duplicates, and clean records safely.</p>
+
+      <!-- TOOL 1: CLEANER & DUPLICATE REVIEW -->
+      <div id="cleanerPane" class="tab-pane active">
+        <div class="dropzone">
+          <input type="file" id="dataFile" accept=".csv, .xlsx, .xls">
+          <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Choose CSV or Excel sheet (.csv, .xlsx, .xls)</p>
+        </div>
+
+        <div id="fileMeta" class="meta-box"></div>
+
+        <div id="healthCard" class="health-card">
+          <div class="health-header">
+            <strong style="font-size:14px; color:#f8fafc;">📊 Advanced Data Health Report</strong>
+            <span style="font-size:11px; background:#1e293b; padding:3px 8px; border-radius:4px; color:#38bdf8;">Scan Completed</span>
+          </div>
+          <div class="health-grid">
+            <div class="metric-card c-blue"><strong id="metricRows">0</strong><span>Total Rows</span></div>
+            <div class="metric-card c-red"><strong id="metricDups">0</strong><span>Duplicates</span></div>
+            <div class="metric-card c-amber"><strong id="metricBlanks">0</strong><span>Missing Values</span></div>
+            <div class="metric-card c-purple"><strong id="metricSpaces">0</strong><span>Extra Spaces</span></div>
+            <div class="metric-card c-pink"><strong id="metricCaps">0</strong><span>Case Mismatch</span></div>
+          </div>
+        </div>
+
+        <div id="dupReviewSection" style="display:none;">
+          <h4 style="margin:0 0 6px 0; font-size:13px; color:#f87171;">⚠️ Flagged Duplicate Rows:</h4>
+          <div class="table-wrapper">
+            <table id="dupTable"></table>
+          </div>
+        </div>
+
+        <div id="previewSection" style="display:none;">
+          <h4 style="margin:0 0 6px 0; font-size:13px; color:#94a3b8;">Original File Preview (First 5 Rows):</h4>
+          <div class="table-wrapper">
+            <table id="previewTable"></table>
+          </div>
+        </div>
+
+        <div class="options-group">
+          <h4>Duplicate Detection & Cleaning Options</h4>
+          <div class="checkbox-row">
+            <label><input type="checkbox" id="optTrim" checked> Trim spaces</label>
+            <label><input type="checkbox" id="optEmptyRows" checked> Remove empty rows</label>
+            <label><input type="checkbox" id="optFixCaps"> Auto-fix Name Capitalization</label>
+          </div>
+          <div>
+            <label style="font-size:13px; color:#cbd5e1; display:block;">Match Duplicate Records By:</label>
+            <select id="dupMode" onchange="recalculateDuplicates()">
+              <option value="entire">Entire Row Match</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn" onclick="executeSafeClean()">Clean & Export Data</button>
+
+        <div id="cleanSummary" style="display:none; margin-top: 18px;">
+          <div id="summaryText" class="meta-box" style="display:block; border-left-color:#34d399;"></div>
+          
+          <h4 style="margin:12px 0 6px 0; font-size:13px; color:#94a3b8;">Cleaned Result Preview:</h4>
+          <div class="table-wrapper">
+            <table id="cleanedTable"></table>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn" onclick="downloadCleanedFile()">Download Cleaned CSV</button>
+            <button class="btn btn-secondary" onclick="downloadIssueReport()">Download Full Health Report</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOL 2: JSON CONVERTER -->
+      <div id="converterPane" class="tab-pane">
+        <div class="dropzone">
+          <input type="file" id="convertFile" accept=".csv, .xlsx, .xls">
+          <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">Convert Excel (.xlsx) or CSV directly to JSON</p>
+        </div>
+        <button class="btn" onclick="processJSONConvert()">Convert & Download JSON</button>
+        <div id="convertLog" class="meta-box" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- TOOL 3: BARCODE LABELS -->
+      <div id="barcodePane" class="tab-pane">
+        <div class="dropzone">
+          <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#e2e8f0;">Item SKU / Barcode Numbers (one per line):</p>
+          <textarea id="barcodeList" style="width:100%; height:90px; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #374151; color:#fff; font-family:monospace;" placeholder="ITEM-001&#10;ITEM-002&#10;BOX-104"></textarea>
+        </div>
+        <button class="btn" onclick="createBarcodes()">Generate Labels</button>
+        <button class="btn btn-secondary" onclick="window.print()" id="printBtn" style="display:none; margin-top:10px;">🖨️ Print Labels / Save PDF</button>
+        <div id="barcodePrintArea"></div>
+      </div>
+
+    </div>
+  </main>
 
   <script>
+    // Drawer open/close logic
+    function toggleDrawer() {
+      const drawer = document.getElementById('sideDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    // Sub-menu accordion toggle
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      const arrow = document.getElementById('dataToolsArrow');
+      el.classList.toggle('show');
+      if (el.classList.contains('show')) {
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // View Navigation
+    function activateSection(toolKey) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const title = document.getElementById('viewTitle');
+      const desc = document.getElementById('viewDesc');
+
+      if (toolKey === 'cleaner') {
+        document.getElementById('cleanerPane').classList.add('active');
+        title.textContent = "CSV / Excel Cleaner & Health";
+        desc.textContent = "Inspect data health, review flagged duplicates, and clean records safely.";
+      } else if (toolKey === 'converter') {
+        document.getElementById('converterPane').classList.add('active');
+        title.textContent = "Format Converter (JSON)";
+        desc.textContent = "Convert Excel sheets or CSV spreadsheets into developer JSON format.";
+      } else if (toolKey === 'barcode') {
+        document.getElementById('barcodePane').classList.add('active');
+        title.textContent = "Barcode Generator & Labels";
+        desc.textContent = "Generate standard CODE128 barcodes from list of SKUs and print instantly.";
+      }
+      toggleDrawer(); // Auto close menu after selecting
+    }
+
+    // Core Data Processing Logic
     let rawData = [];
     let headers = [];
     let cleanedData = [];
     let flaggedDuplicates = [];
     let currentFileName = "data";
     let healthMetrics = { rows: 0, dups: 0, blanks: 0, spaces: 0, caps: 0 };
-
-    function switchView(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      if(tab === 'cleaner') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('cleanerPane').classList.add('active');
-      } else if(tab === 'converter') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('converterPane').classList.add('active');
-      } else {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('barcodePane').classList.add('active');
-      }
-    }
 
     document.getElementById('dataFile').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -388,7 +635,6 @@
       headers = rows[0];
       rawData = rows.slice(1).filter(r => r.some(c => c !== null && c !== undefined && c.toString().trim() !== ''));
 
-      // Populate Duplicate Match Options
       const dupSelect = document.getElementById('dupMode');
       dupSelect.innerHTML = '<option value="entire">Entire Row Match</option>';
       
@@ -398,12 +644,9 @@
           const opt = document.createElement('option');
           opt.value = idx;
           opt.textContent = `Match by ${name}`;
-          
-          // Auto-select smart columns (Email, Phone, SKU, ID)
           if (/email/i.test(name)) opt.textContent += " (Smart: Email)";
           if (/phone|mobile/i.test(name)) opt.textContent += " (Smart: Phone)";
           if (/sku|item_id|person_id|id/i.test(name)) opt.textContent += " (Smart: Identifier)";
-          
           dupSelect.appendChild(opt);
         }
       });
@@ -413,7 +656,7 @@
       metaBox.innerHTML = `<strong>Loaded File:</strong> ${file.name} | <strong>Size:</strong> ${(file.size/1024).toFixed(1)} KB | <strong>Records:</strong> ${rawData.length} | <strong>Columns:</strong> ${headers.length}`;
 
       recalculateDuplicates();
-      renderTable('previewTable', headers, rawData.slice(0, 5), false);
+      renderTable('previewTable', headers, rawData.slice(0, 5));
       document.getElementById('previewSection').style.display = 'block';
     }
 
@@ -428,13 +671,8 @@
       flaggedDuplicates = [];
 
       rawData.forEach((row, index) => {
-        const actualRowNumber = index + 2; // Row number in Excel/CSV
-        let key;
-        if (dupMode === 'entire') {
-          key = JSON.stringify(row);
-        } else {
-          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
-        }
+        const actualRowNumber = index + 2;
+        let key = (dupMode === 'entire') ? JSON.stringify(row) : (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
 
         if (key !== '' && key !== '""') {
           if (seen.has(key)) {
@@ -444,17 +682,15 @@
           }
         }
 
-        // Diagnostic checks
         row.forEach(cell => {
           if (!cell || cell.toString().trim() === '') blanks++;
           else {
             const str = cell.toString();
             if (str !== str.trim()) spaces++;
-            if (/[a-z]/.test(str) && /[A-Z]/.test(str) && str === str.toLowerCase()) caps++;
             if (str.length > 2 && str === str.toLowerCase() && isNaN(str)) caps++;
           }
         });
-          });
+      });
 
       healthMetrics = { rows: rawData.length, dups: flaggedDuplicates.length, blanks, spaces, caps };
       document.getElementById('metricRows').textContent = healthMetrics.rows;
@@ -464,7 +700,6 @@
       document.getElementById('metricCaps').textContent = healthMetrics.caps;
       document.getElementById('healthCard').style.display = 'block';
 
-      // Render Flagged Duplicate Details
       if (flaggedDuplicates.length > 0) {
         renderDuplicateTable('dupTable', headers, flaggedDuplicates.slice(0, 10));
         document.getElementById('dupReviewSection').style.display = 'block';
@@ -476,12 +711,10 @@
     function renderDuplicateTable(tableId, head, dupList) {
       const tbl = document.getElementById(tableId);
       tbl.innerHTML = '';
-      
       const trH = document.createElement('tr');
       const thIndex = document.createElement('th');
       thIndex.textContent = "Source Row #";
       trH.appendChild(thIndex);
-
       head.forEach(h => {
         const th = document.createElement('th');
         th.textContent = h;
@@ -495,7 +728,6 @@
         const tdIdx = document.createElement('td');
         tdIdx.innerHTML = `<span class="row-badge">Row ${item.rowNum}</span>`;
         tr.appendChild(tdIdx);
-
         item.originalRow.forEach(c => {
           const td = document.createElement('td');
           td.textContent = c;
@@ -506,9 +738,7 @@
     }
 
     function toTitleCase(str) {
-      return str.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
+      return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
     }
 
     function executeSafeClean() {
@@ -540,13 +770,7 @@
       let removedCount = 0;
 
       processed.forEach(row => {
-        let key;
-        if (dupMode === 'entire') {
-          key = JSON.stringify(row);
-        } else {
-          key = (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
-        }
-
+        let key = (dupMode === 'entire') ? JSON.stringify(row) : (row[parseInt(dupMode)] || '').toString().trim().toLowerCase();
         if (key && seen.has(key)) {
           removedCount++;
         } else {
@@ -556,9 +780,8 @@
       });
 
       cleanedData = unique;
-
-      renderTable('cleanedTable', headers, cleanedData.slice(0, 5), false);
-      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned Successfully:</strong> Preserved <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedCount}</strong> duplicate records.`;
+      renderTable('cleanedTable', headers, cleanedData.slice(0, 5));
+      document.getElementById('summaryText').innerHTML = `<strong>Data Cleaned:</strong> Kept <strong>${cleanedData.length}</strong> unique rows | Removed <strong>${removedCount}</strong> duplicates.`;
       document.getElementById('cleanSummary').style.display = 'block';
     }
 
@@ -572,7 +795,6 @@
         trH.appendChild(th);
       });
       tbl.appendChild(trH);
-
       rows.forEach(r => {
         const tr = document.createElement('tr');
         r.forEach(c => {
@@ -585,26 +807,18 @@
     }
 
     function downloadCleanedFile() {
-      const sanitized = cleanedData.map(row => 
-        row.map(cell => {
-          let str = (cell === null || cell === undefined) ? '' : cell.toString();
-          if (/^[=+\-@]/.test(str)) return "'" + str;
-          return str;
-        })
-      );
-      const csv = Papa.unparse([headers, ...sanitized]);
+      const csv = Papa.unparse([headers, ...cleanedData]);
       triggerDownload(csv, `${currentFileName}_cleaned.csv`, 'text/csv;charset=utf-8;');
     }
 
     function downloadIssueReport() {
       const reportRows = [
-        ["Health Diagnostic Category", "Detected Count", "Action Taken"],
-        ["Total Scanned Records", healthMetrics.rows, "Parsed Locally"],
-        ["Duplicate Rows Found", healthMetrics.dups, "Flagged with Row #"],
-        ["Missing / Empty Values", healthMetrics.blanks, "Audited"],
-        ["Extra Inconsistent Spaces", healthMetrics.spaces, "Trimmed"],
-        ["Case Mismatches (Names/Text)", healthMetrics.caps, "Normalized to Title Case"],
-        ["Audit Date", new Date().toLocaleString(), "Certified Safe"]
+        ["Health Category", "Count"],
+        ["Total Records", healthMetrics.rows],
+        ["Duplicates", healthMetrics.dups],
+        ["Missing Values", healthMetrics.blanks],
+        ["Extra Spaces", healthMetrics.spaces],
+        ["Case Mismatches", healthMetrics.caps]
       ];
       const csv = Papa.unparse(reportRows);
       triggerDownload(csv, `${currentFileName}_health_audit.csv`, 'text/csv;charset=utf-8;');
@@ -619,16 +833,14 @@
       reader.onload = function(e) {
         let json = [];
         if (file.name.endsWith('.csv')) {
-          const res = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
-          json = res.data;
+          json = Papa.parse(e.target.result, { header: true, skipEmptyLines: true }).data;
         } else {
           const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
           json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         }
-        const jsonStr = JSON.stringify(json, null, 2);
         document.getElementById('convertLog').style.display = 'block';
         document.getElementById('convertLog').textContent = `Converted ${json.length} items to JSON.`;
-        triggerDownload(jsonStr, `${file.name.split('.')[0]}.json`, 'application/json');
+        triggerDownload(JSON.stringify(json, null, 2), `${file.name.split('.')[0]}.json`, 'application/json');
       };
 
       if (file.name.endsWith('.csv')) reader.readAsText(file);
@@ -642,7 +854,7 @@
       const items = val.split('\n').map(s => s.trim()).filter(s => s.length > 0);
       area.innerHTML = '';
 
-      items.forEach((sku, i) => {
+      items.forEach((sku) => {
         const card = document.createElement('div');
         card.className = 'barcode-card';
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
