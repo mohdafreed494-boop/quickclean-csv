@@ -1,3 +1,6 @@
+
+index.html
+100%
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -608,7 +611,7 @@
       margin-bottom: 18px;
       flex: 1;
     }
-     .btn-open-tool {
+    .btn-open-tool {
       background: #f8fafc;
       border: 1px solid var(--border-light);
       color: var(--primary);
@@ -1106,7 +1109,7 @@
               <i class="fa-solid fa-circle-play"></i> Audit Quality
             </button>
           </div>
-          </div>
+        </div>
 
         <div class="hero-right">
           <div class="hero-mock-card">
@@ -1592,14 +1595,64 @@
     <section class="page-section" id="view-feedback">
       <div class="tool-view-card">
         <div class="tool-view-header">
-          <h2><i class="fa-regular fa-comment-dots" style="color:#f59e0b;"></i> Send Feedback</h2>
+          <h2><i class="fa-regular fa-comment-dots" style="color:#f59e0b;"></i> Send Feedback & Feature Interest</h2>
           <button class="btn-back-home" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
         </div>
-        <p style="font-size:13.5px; color:#64748b; margin-bottom:14px;">Have suggestions or facing an issue? Let us know!</p>
-        <textarea id="feedbackInput" style="width:100%; height:120px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-bottom:14px;" placeholder="Tell us how we can improve QuickClean..."></textarea>
-        <button class="btn-action-primary" style="width:fit-content;" onclick="handleFeedbackSubmit()">
-          <i class="fa-solid fa-paper-plane"></i> Submit Feedback
-        </button>
+        <p style="font-size:13.5px; color:#64748b; margin-bottom:18px;">Have suggestions, found an issue, or want to vote for upcoming features? Let us know below.</p>
+
+        <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)" style="display:flex; flex-direction:column; gap:14px; max-width:580px;">
+          <div>
+            <label for="fbType" style="font-size:13px; font-weight:600; color:#334155; display:block; margin-bottom:4px;">Feedback Type *</label>
+            <select id="fbType" class="select-dropdown" onchange="togglePremiumField()" required style="max-width:100%;">
+              <option value="General Feedback">General Feedback</option>
+              <option value="Bug or Problem">Bug or Problem</option>
+              <option value="Feature Request">Feature Request</option>
+              <option value="Premium Feature Interest">Future / Premium Feature Interest</option>
+            </select>
+          </div>
+
+          <div id="premiumFeatureBox" style="display:none;">
+            <label for="fbPremiumFeature" style="font-size:13px; font-weight:600; color:#0284c7; display:block; margin-bottom:4px;">Which upcoming feature are you interested in?</label>
+            <select id="fbPremiumFeature" class="select-dropdown" style="max-width:100%;">
+              <option value="Saved Processing History">Saved Processing History</option>
+              <option value="Bulk Processing">Bulk Processing</option>
+              <option value="Advanced CSV Cleaning">Advanced CSV Cleaning</option>
+              <option value="Smart File Compare">Smart File Compare</option>
+              <option value="Inventory Reconciliation">Inventory Reconciliation</option>
+              <option value="Advanced Data Quality Reports">Advanced Data Quality Reports</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="fbTool" style="font-size:13px; font-weight:600; color:#334155; display:block; margin-bottom:4px;">Related Tool (Optional)</label>
+            <select id="fbTool" class="select-dropdown" style="max-width:100%;">
+              <option value="General Toolkit">General Toolkit</option>
+              <option value="CSV Cleaner">CSV Cleaner</option>
+              <option value="Smart File Compare">Smart File Compare</option>
+              <option value="Inventory Reconciliation">Inventory Reconciliation</option>
+              <option value="Data Cleaning Rules">Data Cleaning Rules</option>
+              <option value="Data Quality Report">Data Quality Report</option>
+              <option value="JSON Converter">JSON Converter</option>
+              <option value="Barcode Generator">Barcode Generator</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="fbMessage" style="font-size:13px; font-weight:600; color:#334155; display:block; margin-bottom:4px;">Your Message *</label>
+            <textarea id="fbMessage" required minlength="5" style="width:100%; height:110px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-family:inherit;" placeholder="Describe what happened or what you'd like to see..."></textarea>
+          </div>
+
+          <div>
+            <label for="fbEmail" style="font-size:13px; font-weight:600; color:#334155; display:block; margin-bottom:4px;">Contact Email (Optional - only if you'd like a response)</label>
+            <input type="email" id="fbEmail" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="name@company.com">
+          </div>
+
+          <div id="fbStatusMsg" style="display:none; padding:10px 14px; border-radius:8px; font-size:13px;"></div>
+
+          <button type="submit" id="fbSubmitBtn" class="btn-action-primary" style="width:fit-content;">
+            <i class="fa-solid fa-paper-plane"></i> Submit Feedback
+          </button>
+        </form>
       </div>
     </section>
 
@@ -1683,6 +1736,8 @@
       if (navBtn) navBtn.classList.add('active');
 
       closeSidebarDrawer();
+      if (viewId === 'history') trackEvent('history_opened');
+      else trackEvent('tool_opened', { tool: viewId });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1939,6 +1994,7 @@
       stats.duplicatesRemoved += removedCount;
       stats.cleanedRows += cleanedData.length;
       recordSessionActivity(currentFileName, 'CSV Cleaner', `Removed ${removedCount} duplicates`);
+      trackEvent('file_processing_succeeded', { tool: 'CSV Cleaner', kept_rows: cleanedData.length });
     }
 
     function renderTable(tableId, head, rows) {
@@ -2016,6 +2072,7 @@
 
         stats.filesProcessed += 1;
         recordSessionActivity(file.name, 'JSON Converter', `Exported ${json.length} items`);
+        trackEvent('tool_used', { tool: 'JSON Converter' });
       };
 
       if (file.name.endsWith('.csv')) reader.readAsText(file);
@@ -2048,6 +2105,7 @@
       document.getElementById('btnBarcodePrintTrigger').style.display = 'inline-flex';
       stats.barcodesGenerated += items.length;
       recordSessionActivity(`Batch (${items.length} SKUs)`, 'Barcode Generator', 'Generated CODE128 labels');
+      trackEvent('tool_used', { tool: 'Barcode Generator', count: items.length });
     }
 
     // ----------------------------------------------------
@@ -2104,12 +2162,109 @@
       alert("Cleaning rules have been updated and synchronized with the CSV Cleaner!");
     }
 
-    function handleFeedbackSubmit() {
-      const val = document.getElementById('feedbackInput').value.trim();
-      if (!val) return alert("Please enter your feedback!");
-      alert("Thank you! Your feedback has been noted.");
-      document.getElementById('feedbackInput').value = '';
-      switchView('home');
+    // ----------------------------------------------------
+    // SUPABASE & GOOGLE ANALYTICS 4 INTEGRATION
+    // ----------------------------------------------------
+    const SUPABASE_URL = "https://dnnepzqxiftcfmsszbhs.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_hE4HnYQNboNW3oxCyQreBA__pk-jemC";
+    const GA_MEASUREMENT_ID = ""; // Optional: "G-XXXXXXXXXX"
+
+    if (GA_MEASUREMENT_ID) {
+      const gaScript = document.createElement('script');
+      gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+      gaScript.async = true;
+      document.head.appendChild(gaScript);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', GA_MEASUREMENT_ID, { anonymize_ip: true });
+
+      window.trackEvent = function(eventName, params = {}) {
+        if (typeof gtag === 'function') {
+          gtag('event', eventName, params);
+        }
+      };
+    } else {
+      window.trackEvent = function(eventName, params) {
+        // Zero tracking until GA_MEASUREMENT_ID is provided
+      };
+    }
+
+    function togglePremiumField() {
+      const type = document.getElementById('fbType').value;
+      const box = document.getElementById('premiumFeatureBox');
+      box.style.display = (type === 'Premium Feature Interest') ? 'block' : 'none';
+    }
+
+    let isSubmittingFb = false;
+    async function handleFeedbackSubmit(e) {
+      e.preventDefault();
+      if (isSubmittingFb) return;
+
+      const fbType = document.getElementById('fbType').value;
+      const tool = document.getElementById('fbTool').value;
+      const message = document.getElementById('fbMessage').value.trim();
+      const email = document.getElementById('fbEmail').value.trim();
+      const premiumFeature = (fbType === 'Premium Feature Interest') ? document.getElementById('fbPremiumFeature').value : null;
+      const statusBox = document.getElementById('fbStatusMsg');
+      const btn = document.getElementById('fbSubmitBtn');
+
+      if (!message || message.length < 5) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#fee2e2';
+        statusBox.style.color = '#b91c1c';
+        statusBox.textContent = 'Please enter a message with at least 5 characters.';
+        return;
+      }
+
+      isSubmittingFb = true;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+      statusBox.style.display = 'none';
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/feedbacks`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            feedback_type: fbType,
+            related_tool: tool,
+            message: message,
+            contact_email: email || null,
+            premium_feature: premiumFeature
+          })
+        });
+
+        if (!res.ok) throw new Error(`HTTP Status ${res.status}`);
+
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#f0fdf4';
+        statusBox.style.color = '#15803d';
+        statusBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thank you! Your feedback has been saved securely.';
+
+        document.getElementById('fbMessage').value = '';
+        document.getElementById('fbEmail').value = '';
+
+        trackEvent('feedback_submitted', { feedback_type: fbType, tool: tool });
+        if (premiumFeature) {
+          trackEvent('premium_interest_submitted', { feature: premiumFeature });
+        }
+      } catch (err) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#fee2e2';
+        statusBox.style.color = '#b91c1c';
+        statusBox.textContent = `Submission failed: ${err.message}. Please try again later.`;
+      } finally {
+        isSubmittingFb = false;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
+      }
     }
 
     function triggerDownloadBlob(content, filename, type) {
@@ -2122,3 +2277,4 @@
   </script>
 </body>
 </html>
+Displaying index.html.
