@@ -1,0 +1,334 @@
+
+admin.html
+100%
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickClean - Private Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+    .header {
+      background: #091122;
+      color: #fff;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid #1a273f;
+    }
+    .header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 1240px;
+      margin: 28px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-tile {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-tile strong { display: block; font-size: 22px; color: #0284c7; }
+    .stat-tile span { font-size: 11.5px; color: #64748b; text-transform: uppercase; }
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    input, select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; font-weight: 600; color: #475569; }
+    .btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #0369a1; }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-new { background: #fee2e2; color: #b91c1c; }
+    .badge-in_review { background: #fef3c7; color: #b45309; }
+    .badge-resolved { background: #dcfce7; color: #15803d; }
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>
+      <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
+      QuickClean Feedback Admin
+    </h1>
+    <div id="authActions" style="display:none;">
+      <span id="adminEmail" style="font-size:12px; color:#94a3b8; margin-right:12px;"></span>
+      <button class="btn" onclick="adminLogout()" style="background:#334155;">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Admin Login Screen -->
+    <div id="loginCard" class="card" style="max-width:380px; margin:70px auto;">
+      <h2 style="font-size:17px; margin-bottom:12px;">Admin Authorization Required</h2>
+      <p style="font-size:12.5px; color:#64748b; margin-bottom:16px;">Log in with your Supabase Admin email and password to view private feedback.</p>
+      
+      <form onsubmit="adminLogin(event)" style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Admin Email</label>
+          <input type="email" id="loginEmail" required style="width:100%;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Password</label>
+          <input type="password" id="loginPassword" required style="width:100%;">
+        </div>
+        <div id="loginErr" style="display:none; color:#b91c1c; font-size:12px;"></div>
+        <button type="submit" id="loginBtn" class="btn" style="margin-top:6px;">Sign In to Dashboard</button>
+      </form>
+    </div>
+
+    <!-- Authenticated Feedback Management Screen -->
+    <div id="dashboardCard" class="card" style="display:none;">
+      <div class="stats-row">
+        <div class="stat-tile"><strong id="statTotal">0</strong><span>Total Submissions</span></div>
+        <div class="stat-tile"><strong id="statUnresolved" style="color:#ef4444;">0</strong><span>Unresolved Items</span></div>
+        <div class="stat-tile"><strong id="statResolved" style="color:#10b981;">0</strong><span>Resolved</span></div>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="filterSearch" placeholder="Search message or email..." oninput="applyFilters()" style="flex:1; min-width:200px;">
+        <select id="filterType" onchange="applyFilters()">
+          <option value="">All Types</option>
+          <option value="Bug or Problem">Bug or Problem</option>
+          <option value="Feature Request">Feature Request</option>
+          <option value="General Feedback">General Feedback</option>
+          <option value="Premium Feature Interest">Premium Feature Interest</option>
+        </select>
+        <select id="filterStatus" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="New">New</option>
+          <option value="In Review">In Review</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <button class="btn" onclick="fetchFeedbacks()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Tool / Feature</th>
+              <th>Message</th>
+              <th>Contact Email</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackTbody">
+            <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://dnnepzqxiftcfmsszbhs.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_hE4HnYQNboNW3oxCyQreBA__pk-jemC";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let rawRecords = [];
+
+    async function initAdmin() {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('dashboardCard').style.display = 'block';
+        document.getElementById('authActions').style.display = 'block';
+        document.getElementById('adminEmail').textContent = session.user.email;
+        fetchFeedbacks();
+      } else {
+        document.getElementById('loginCard').style.display = 'block';
+        document.getElementById('dashboardCard').style.display = 'none';
+        document.getElementById('authActions').style.display = 'none';
+      }
+    }
+
+    async function adminLogin(e) {
+      e.preventDefault();
+      const err = document.getElementById('loginErr');
+      const btn = document.getElementById('loginBtn');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = "Signing In...";
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      btn.disabled = false;
+      btn.textContent = "Sign In to Dashboard";
+
+      if (error) {
+        err.textContent = error.message;
+        err.style.display = 'block';
+      } else {
+        initAdmin();
+      }
+    }
+
+    async function adminLogout() {
+      await client.auth.signOut();
+      initAdmin();
+    }
+
+    async function fetchFeedbacks() {
+      const tbody = document.getElementById('feedbackTbody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Fetching data...</td></tr>';
+
+      const { data, error } = await client
+        .from('feedbacks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">Failed: ${error.message}</td></tr>`;
+        return;
+      }
+
+      rawRecords = data || [];
+      calculateStats();
+      applyFilters();
+    }
+
+    function calculateStats() {
+      document.getElementById('statTotal').textContent = rawRecords.length;
+      document.getElementById('statUnresolved').textContent = rawRecords.filter(r => r.status !== 'Resolved').length;
+      document.getElementById('statResolved').textContent = rawRecords.filter(r => r.status === 'Resolved').length;
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('filterSearch').value.toLowerCase();
+      const type = document.getElementById('filterType').value;
+      const status = document.getElementById('filterStatus').value;
+
+      const filtered = rawRecords.filter(r => {
+        const matchSearch = r.message.toLowerCase().includes(q) || (r.contact_email && r.contact_email.toLowerCase().includes(q));
+        const matchType = !type || r.feedback_type === type;
+        const matchStatus = !status || r.status === status;
+        return matchSearch && matchType && matchStatus;
+      });
+
+      renderTbody(filtered);
+    }
+
+    function renderTbody(items) {
+      const tbody = document.getElementById('feedbackTbody');
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No feedback records found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td>${new Date(item.created_at).toLocaleDateString()}</td>
+          <td><strong>${item.feedback_type}</strong></td>
+          <td>${item.premium_feature ? `<span style="color:#0284c7; font-weight:600;">[Interest] ${item.premium_feature}</span>` : (item.related_tool || '-')}</td>
+          <td style="max-width:320px; word-break:break-word;">${item.message}</td>
+          <td>${item.contact_email ? `<a href="mailto:${item.contact_email}" style="color:#0284c7;">${item.contact_email}</a>` : '<span style="color:#94a3b8;">None</span>'}</td>
+          <td><span class="badge badge-${item.status.toLowerCase().replace(' ', '_')}">${item.status}</span></td>
+          <td>
+            <select onchange="changeStatus('${item.id}', this.value)" style="padding:4px 6px; font-size:12px;">
+              <option value="New" ${item.status === 'New' ? 'selected' : ''}>New</option>
+              <option value="In Review" ${item.status === 'In Review' ? 'selected' : ''}>In Review</option>
+              <option value="Resolved" ${item.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function changeStatus(id, newStatus) {
+      const { error } = await client
+        .from('feedbacks')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) {
+        alert("Failed to update status: " + error.message);
+        fetchFeedbacks();
+      } else {
+        const item = rawRecords.find(r => r.id === id);
+        if (item) item.status = newStatus;
+        calculateStats();
+        applyFilters();
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
+Displaying admin.html.
